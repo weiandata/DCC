@@ -9,6 +9,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- Add the `dcc_findings` violation-list object: the structured
+  interface between the Detect and Execute stages (record x check x
+  evidence x severity x quality dimension).
+- Add the five v1-core response-quality detectors: `detect_missing_items()`,
+  `detect_straightlining()` (vectorized longstring),
+  `detect_response_time()` (absolute and median-relative cuts),
+  `detect_trap_items()`, and `detect_score_anomaly()` (within-group
+  IQR/z-score outliers plus group-mean shift findings).
+- Add the declarative YAML rule engine subset: `dcc_rules()` (rule file
+  with MD5 hash for the audit trail) and `dcc_detect()` (pure,
+  deterministic evaluation of `range`/`set`/`expr` checks and detector
+  configs; `expr` runs in a restricted no-I/O environment; `detect`
+  provenance appended when run on a `dcc_data`).
 - Add the DCC R package skeleton (`DESCRIPTION`, `NAMESPACE`, `R/`,
   `tests/`) targeting the Detect-Execute-Report design (`docs/design.md`).
 - Add `dcc_read()`: multi-format input layer (CSV/TSV, Excel, SPSS,
