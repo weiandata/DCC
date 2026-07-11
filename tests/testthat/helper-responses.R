@@ -14,7 +14,7 @@ fixture_responses <- function() {
       1, 2, 3, 2, 1, 4, 5, 2, 3, 1,  # S001 normal
       2, 3, 2, 4, 5, 1, 2, 3, 4, 5,  # S002 normal
       4, 4, 4, 4, 4, 4, 4, 4, 4, 4,  # S003 straight-liner
-      1, NA, 2, NA, 3, NA, 1, 2, 4, 5, # S004 some missing
+      1, NA, 2, NA, 3, NA, 1, NA, 4, 5, # S004 40% missing
       NA, NA, NA, NA, NA, NA, NA, 1, 2, 3, # S005 70% missing
       5, 4, 3, 2, 1, 5, 4, 3, 2, 1,  # S006 normal
       1, 1, 1, 2, 2, 2, 3, 3, 3, 4,  # S007 short runs only

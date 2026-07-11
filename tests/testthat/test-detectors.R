@@ -6,7 +6,7 @@ test_that("detect_missing_items flags high-missing respondents only", {
   expect_identical(unique(f$check_id), "Q_MISSING_ITEMS")
   expect_identical(unique(f$dimension), "completeness")
 
-  # lower threshold also catches S004 (40% missing > 30%)
+  # lower threshold also catches S004 (40% missing exceeds 30%)
   f2 <- detect_missing_items(df, item_names(), max_prop = 0.3,
                              id_var = "sid")
   expect_setequal(f2$record_id, c("S004", "S005"))
