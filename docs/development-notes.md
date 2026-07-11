@@ -30,6 +30,13 @@ Engineering Handbook.
   fields is unreliable; deterministic tests pass `encoding=` explicitly
   and test auto-detection separately on a longer sample.
 
+### Test design
+
+- **Never put a fixture exactly on a threshold.** A respondent with
+  30% missing tested against `prop > 0.3` fails silently (and 3/10 is
+  not even exact in floating point). Fixtures should clearly exceed or
+  clearly stay under every boundary they exercise.
+
 ### Markdown and link checks
 
 - **markdownlint (repo config):** table rows and separator lines need
