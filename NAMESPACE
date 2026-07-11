@@ -1,0 +1,18 @@
+# Hand-maintained until roxygen2 is wired into CI. Keep in sync with
+# @export tags in R/.
+export(dcc_read)
+export(dcc_detect_encoding)
+export(dcc_data)
+export(dcc_provenance)
+export(dcc_read_report)
+export(dcc_l0_diagnose)
+
+S3method(print, dcc_data)
+S3method(print, dcc_read_report)
+S3method(dim, dcc_data)
+S3method(as.data.frame, dcc_data)
+
+import(data.table)
+importFrom(stringi, stri_enc_detect, stri_conv, stri_read_raw)
+importFrom(tools, md5sum, file_ext)
+importFrom(utils, packageVersion, head)

@@ -9,7 +9,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
-- Add future changes here before release.
+- Add the DCC R package skeleton (`DESCRIPTION`, `NAMESPACE`, `R/`,
+  `tests/`) targeting the Detect-Execute-Report design (`docs/design.md`).
+- Add `dcc_read()`: multi-format input layer (CSV/TSV, Excel, SPSS,
+  Stata, SAS, Parquet, Feather, rectangular JSON) with encoding
+  auto-detection (UTF-8, GB18030/GBK, BIG5, latin1) and explicit override.
+- Add the `dcc_data` container with metadata and an append-only
+  provenance chain.
+- Add `dcc_l0_diagnose()`: level-0 structural diagnostics producing a
+  machine-readable read report (findings share the detect-stage shape).
+- Add testthat suite including an encoding round-trip matrix and typed
+  error checks.
+- Add R CMD check workflow for continuous integration.
 
 ## [1.0.0] - 2026-07-10
 
