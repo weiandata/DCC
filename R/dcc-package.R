@@ -5,9 +5,9 @@
 #' `docs/design.md` in the repository for the full design document.
 #'
 #' @section v0.1 scope:
-#' * [dcc_read()] — multi-format, multi-encoding input layer.
-#' * [dcc_data()] — data container with provenance chain.
-#' * [dcc_l0_diagnose()] — level-0 structural diagnostics (read report).
+#' * [dcc_read()] -- multi-format, multi-encoding input layer.
+#' * [dcc_data()] -- data container with provenance chain.
+#' * [dcc_l0_diagnose()] -- level-0 structural diagnostics (read report).
 #'
 #' @keywords internal
 #' @import data.table
@@ -17,7 +17,8 @@
 "_PACKAGE"
 
 # data.table NSE variables used in this package
-utils::globalVariables(c(".", ".N", ".SD"))
+utils::globalVariables(c(".", ".N", ".SD", "name", "n_missing",
+                         "pct_missing"))
 
 dcc_version_string <- function() {
   as.character(utils::packageVersion("DCC"))

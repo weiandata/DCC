@@ -32,19 +32,39 @@ test_that("dcc_detect_encoding handles BOM and empty files", {
   expect_identical(dcc_detect_encoding(empty)$encoding, "UTF-8")
 })
 
-test_that("round-trip: same content from all first-class encodings", {
-  encodings <- c("UTF-8", "GB18030", "BIG5")
-  ref <- NULL
-  for (enc in encodings) {
+test_that("round-trip: content survives every first-class encoding", {
+  # Simplified fixture for UTF-8/GB18030; traditional for BIG5
+  # (simplified hanzi are not representable in BIG5).
+  cases <- list(
+    list(enc = "UTF-8", df = fixture_df()),
+    list(enc = "GB18030", df = fixture_df()),
+    list(enc = "BIG5", df = fixture_df_trad())
+  )
+  for (case in cases) {
     f <- tempfile(fileext = ".csv")
-    write_fixture_csv(f, enc)
-    x <- dcc_read(f) # auto-detected
-    expect_identical(x$meta$encoding, enc, label = enc)
-    df <- as.data.frame(x)
-    if (is.null(ref)) ref <- df else expect_identical(df, ref, label = enc)
+    write_fixture_csv(f, case$enc, df = case$df)
+    # Explicit encoding: exercises the conversion path deterministically.
+    x <- dcc_read(f, encoding = case$enc)
+    expect_identical(x$meta$encoding, case$enc, label = case$enc)
+    expect_identical(as.data.frame(x)$school, case$df$school,
+                     label = case$enc)
   }
-  # 北京一中 must survive every encoding intact
-  expect_identical(ref$school[1], "北京一中")
+})
+
+test_that("BIG5 is auto-detected on a realistic sample", {
+  # Detection needs signal: use a longer traditional-Chinese column.
+  df <- fixture_df_trad()
+  df$comment <- c(
+    "這是一份用於測試字元編碼偵測的繁體中文樣本資料。",
+    "問卷資料清洗需要正確處理不同編碼的輸入檔案。",
+    "臺北高雄臺中臺南桃園新竹基隆嘉義屏東宜蘭花蓮臺東。"
+  )
+  f <- tempfile(fileext = ".csv")
+  write_fixture_csv(f, "BIG5", df = df)
+  det <- dcc_detect_encoding(f)
+  expect_identical(det$encoding, "BIG5")
+  x <- dcc_read(f)
+  expect_identical(as.data.frame(x)$school, df$school)
 })
 
 test_that("explicit encoding override is honoured", {

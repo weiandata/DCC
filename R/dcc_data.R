@@ -4,7 +4,7 @@
 #' read report, and an append-only provenance chain. Every DCC stage
 #' (detect, execute, report) receives and returns this container; stages
 #' append to the provenance chain and never rewrite it (raw data is
-#' immutable — cleaning produces new versions).
+#' immutable -- cleaning produces new versions).
 #'
 #' @param data A `data.frame` or `data.table`.
 #' @param meta Named list of source metadata (see [dcc_read()]).

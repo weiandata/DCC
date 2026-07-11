@@ -106,7 +106,7 @@ Detection produces a `dcc_findings` table — the single interface between
 detection and execution:
 
 | column | meaning |
-|---|---|
+| --- | --- |
 | `record_id` | respondent / row identifier |
 | `variable` | affected variable(s), NA for record-level checks |
 | `check_id` | stable identifier of the rule or detector |
@@ -117,7 +117,7 @@ detection and execution:
 ### 5.2 Built-in response-quality detectors (v1 core)
 
 | function | purpose | notes |
-|---|---|---|
+| --- | --- | --- |
 | `detect_score_anomaly()` | group-wise score distribution anomalies (between-group differences, outlying scores) | grouping variables supplied by user; methods: IQR, z-score, configurable |
 | `detect_trap_items()` | flag respondents failing trap / attention-check items | trap definitions supplied as an external key file |
 | `detect_response_time()` | flag too-fast or anomalous total / per-item response times | absolute thresholds and distribution-based (e.g., fraction of median) |
@@ -184,7 +184,7 @@ DCC therefore provides `dcc_to_irtc(result)` which returns exactly this
 shape from a scored, form-mapped dataset:
 
 | element | source in DCC |
-|---|---|
+| --- | --- |
 | `resp` | `dcc_score()` output pivoted onto master item bank columns (via `dcc_map_forms()`) |
 | `pid` / `group` / `pweights` | pass-through columns declared in the codebook |
 | `Q` | optional item-dimension columns of the master item table |
@@ -230,7 +230,7 @@ produces plain-file exports for external auditors.
 ## 9. Dependencies (proposed)
 
 | area | packages |
-|---|---|
+| --- | --- |
 | core | data.table, stringi |
 | input | readr, readxl, haven, arrow, jsonlite |
 | labels/missing | labelled (haven classes) |
@@ -273,7 +273,7 @@ either are MAJOR releases with migration notes in `CHANGELOG.md`.
 ## 13. Roadmap
 
 | milestone | scope |
-|---|---|
+| --- | --- |
 | v0.1 | input layer + `dcc_data` object + L0 diagnostics |
 | v0.2 | five core detectors + findings object + rule engine (subset) |
 | v0.3 | execution engine + audit log + `dcc_score` / `dcc_map_forms` |

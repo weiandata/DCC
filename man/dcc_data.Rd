@@ -1,0 +1,33 @@
+% Hand-maintained until roxygen2 is wired into CI; keep in sync with R/dcc_data.R.
+\name{dcc_data}
+\alias{dcc_data}
+\title{The dcc_data container}
+\usage{
+dcc_data(data, meta = list(), read_report = NULL, provenance = NULL)
+}
+\arguments{
+\item{data}{A \code{data.frame} or \code{data.table}.}
+
+\item{meta}{Named list of source metadata (see \code{\link{dcc_read}}).}
+
+\item{read_report}{A \code{dcc_read_report} object, or \code{NULL}.}
+
+\item{provenance}{List of provenance records; normally created
+internally.}
+}
+\value{
+An object of class \code{dcc_data}: a list with elements \code{data}
+(a \code{data.table}), \code{meta}, \code{read_report}, and
+\code{provenance}.
+}
+\description{
+A \code{dcc_data} object bundles the dataset with its metadata, the
+level-0 read report, and an append-only provenance chain. Every DCC
+stage (detect, execute, report) receives and returns this container;
+stages append to the provenance chain and never rewrite it (raw data is
+immutable; cleaning produces new versions).
+}
+\examples{
+x <- dcc_data(data.frame(id = 1:3, score = c(90, 85, 77)))
+dcc_provenance(x)
+}

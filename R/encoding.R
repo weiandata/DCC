@@ -75,6 +75,6 @@ read_file_utf8 <- function(path, encoding) {
   } else {
     txt <- stringi::stri_conv(raw, from = encoding, to = "UTF-8")
   }
-  # Strip BOM if present
-  sub("^﻿", "", txt)
+  # Strip BOM if present (U+FEFF; escape keeps this file ASCII-only)
+  sub("^\ufeff", "", txt)
 }
