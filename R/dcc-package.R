@@ -18,7 +18,9 @@
 
 # data.table NSE variables used in this package
 utils::globalVariables(c(".", ".N", ".SD", "name", "n_missing",
-                         "pct_missing"))
+                         "pct_missing", ".dcc_id", ".dcc_score",
+                         ".dcc_group", ".dcc_lo", ".dcc_hi", ".dcc_mu",
+                         ".dcc_sd", ".dcc_gmu"))
 
 dcc_version_string <- function() {
   as.character(utils::packageVersion("DCC"))
