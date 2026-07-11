@@ -1,0 +1,32 @@
+Package: DCC
+Type: Package
+Title: Data Cleaning Center for Survey and Assessment Data
+Version: 0.1.0
+Authors@R: c(
+    person("WeianData Engineering", role = c("aut", "cre"),
+           email = "engineering@weiandata.example"))
+Description: Rule-driven, auditable cleaning of survey and assessment
+    response data, implementing the WeianData Detect-Execute-Report
+    workflow. Version 0.1 provides the input layer: multi-format,
+    multi-encoding file reading ('CSV', 'Excel', 'SPSS', 'Stata', 'SAS',
+    'Parquet', 'JSON'), the 'dcc_data' container with a provenance chain,
+    and level-0 structural diagnostics producing a machine-readable read
+    report.
+License: file LICENSE
+Encoding: UTF-8
+Language: en
+Depends: R (>= 4.1)
+Imports:
+    data.table (>= 1.14.0),
+    stringi (>= 1.7.0),
+    tools,
+    utils
+Suggests:
+    readxl,
+    haven,
+    arrow,
+    jsonlite,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2

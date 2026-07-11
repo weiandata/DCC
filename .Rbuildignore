@@ -1,0 +1,13 @@
+^\.github$
+^docs$
+^examples$
+^scripts$
+^benchmarks$
+^CHANGELOG\.md$
+^CODEOWNERS$
+^CONTRIBUTING\.md$
+^SECURITY\.md$
+^README\.md$
+^\.editorconfig$
+^\.markdownlint-cli2\.yaml$
+^\.gitignore$
