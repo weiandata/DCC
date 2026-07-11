@@ -234,7 +234,7 @@ raw → technically correct → consistent → aggregated → formatted
 - Eurostat 校验层级：<https://cros.ec.europa.eu/book-page/validation-levels>；GSBPM 与校验：<https://cros.ec.europa.eu/book-page/validation-and-gsbpm>
 - World Bank DIME 数据清洗：<https://dimewiki.worldbank.org/Data_Cleaning>；清洗检查单：<https://dimewiki.worldbank.org/Checklist:_Data_Cleaning>；高频检查：<https://dimewiki.worldbank.org/High_Frequency_Checks>；DIME Analytics Data Handbook 第 5 章：<https://worldbank.github.io/dime-data-handbook/processing.html>
 - J-PAL 数据清洗与管理：<https://www.povertyactionlab.org/resource/data-cleaning-and-management>
-- UNICEF 数据质量框架：<https://data.unicef.org/wp-content/uploads/2022/01/Data-Quality-Framework.pdf>
+- UNICEF 数据质量框架：<https://data.unicef.org/resources/data-quality-framework/>
 
 作答质量检测：
 
