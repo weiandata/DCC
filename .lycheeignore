@@ -1,0 +1,2 @@
+# Valid links that block automated checkers (bot protection returns 403).
+https://data.unicef.org/.*
