@@ -29,9 +29,7 @@ dcc_read <- function(path, format = "auto", encoding = "auto", ...) {
     dcc_abort("File not found: ", path, class = "dcc_io_error")
   }
 
-  format <- match.arg(format, c("auto", "csv", "tsv", "excel", "spss",
-                                "stata", "sas", "parquet", "feather",
-                                "json"))
+  format <- match.arg(format, c("auto", dcc_read_formats()))
   if (format == "auto") {
     format <- infer_format(path)
   }

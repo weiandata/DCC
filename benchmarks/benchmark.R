@@ -85,11 +85,14 @@ for (n in scales) {
     f <- dcc_detect(x, rules, id_var = "sid")
   )[["elapsed"]]
   t_execute <- system.time(
+    # Only declare actions for checks that fire on this synthetic data:
+    # unused action IDs are rejected (dcc_execute validates the plan), and
+    # the clean random items trigger neither straightlining nor >50%
+    # missingness. R001 (~1% out-of-range) and Q_TRAP_ITEMS (~20% failed
+    # trap) supply the execute-stage change volume the benchmark times.
     res <- dcc_execute(x, f,
                        actions = list(R001 = "set_na",
-                                      Q_TRAP_ITEMS = "flag",
-                                      Q_STRAIGHTLINING = "flag",
-                                      Q_MISSING_ITEMS = "flag"),
+                                      Q_TRAP_ITEMS = "flag"),
                        id_var = "sid")
   )[["elapsed"]]
 

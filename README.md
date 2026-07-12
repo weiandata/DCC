@@ -75,24 +75,39 @@ response-quality detectors — missing items, straight-lining, response time,
 trap items, and score anomalies — producing a structured `dcc_findings` object.
 
 **Execute.** `dcc_execute()` applies declarative actions (`exclude`, `set_na`,
-`recode`, `flag`) mapped to rule IDs. Input data is never mutated; every change
-is written to a cell-level audit log with old/new value, triggering rule,
-method, timestamp, and rule/key hashes. `dcc_score()` and `dcc_map_forms()`
-handle answer-key scoring and multi-form item-bank alignment.
+`recode`, `flag`) mapped to rule IDs. The whole plan is validated before any
+data changes — unknown action IDs, unmapped recodes, and missing or duplicated
+record IDs are errors, and findings without an explicit action are returned
+*unhandled* rather than silently dispositioned. Input data is never mutated;
+every change is written to a cell-level audit log that carries the exact
+`finding_id` it came from, with old/new value, triggering rule, method,
+timestamp, and rule/key hashes. `dcc_score()` and `dcc_map_forms()` handle
+answer-key scoring and multi-form item-bank alignment.
 
 **Report.** `dcc_report()` produces a self-contained, dependency-free HTML
 report with a management summary and an audit layer that reconciles findings
-against changes. `dcc_trace()` gives cell-level lineage; `dcc_manifest()` /
-`dcc_rerun()` provide one-command, hash-verified reproduction.
+against changes on the exact `finding_id`, assigning each finding one terminal
+status. `dcc_trace()` gives cell-level lineage; `dcc_manifest()` / `dcc_rerun()`
+provide one-command, hash-verified reproduction.
 
 **Scale.** Core work runs on `data.table` for million-row in-memory workloads.
 `dcc_detect_chunked()` streams larger-than-memory files with an adaptive backend
 (`data.table` for delimited text, `arrow` for Parquet/Feather), with findings
 identical to the in-memory path.
 
+**Contracts.** `dcc_capabilities()` returns a versioned, machine-readable list
+of every Stable, Experimental, and Planned feature, rule type, action type, and
+input format. `dcc_schema()` returns published JSON Schemas for findings, audit
+logs, rule files, action maps, and manifests, so programmatic and AI callers
+work against a stable contract.
+
 ## Documentation
 
 - `vignette("dcc-pipeline")` — end-to-end walkthrough
+- [AI usage guide](AI_USAGE.md) — the safe validate-before-execute flow for
+  general-purpose AI callers
+- [Remediation engineering plan](ENGINEERING_PLAN.md) — approved baseline for
+  subsequent development and release acceptance
 - [Design document](docs/design.md)
 - [Development notes](docs/development-notes.md)
 - [CHANGELOG](CHANGELOG.md) / [NEWS](NEWS.md)

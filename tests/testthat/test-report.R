@@ -32,7 +32,6 @@ test_that("audit report embeds reconciliation and the change log", {
   html <- dcc_report(res, audience = "audit")
   expect_match(html, "Findings-to-changes reconciliation")
   expect_match(html, "2 of 2 finding\\(s\\) handled")
-  expect_match(html, "unreconciled changes: 0")
   expect_match(html, "Cell-level change log")
   expect_match(html, "S002")
 })
@@ -54,19 +53,34 @@ test_that("HTML output is escaped", {
   expect_match(html, "evil &lt;tag&gt;", fixed = TRUE)
 })
 
-test_that("dcc_reconcile flags unhandled findings", {
-  df <- fixture_responses()
-  f <- dcc_findings("S001", variable = "q1", check_id = "C",
-                    evidence = "e")
-  res <- dcc_execute(df, f, actions = list(C = "set_na"), id_var = "sid")
+test_that("reconciliation uses exact finding IDs and exposes unhandled rows", {
+  f <- dcc_findings(c("S001", "S001"), variable = c("q1", "q1"),
+                    check_id = c("C", "C"), evidence = c("first", "second"))
+  res <- dcc_execute(fixture_responses(), f, actions = list(C = "flag"),
+                     id_var = "sid")
   rec <- dcc_reconcile(res)
-  expect_true(all(rec$handled))
-  expect_identical(attr(rec, "unreconciled_changes"), 0L)
+  expect_identical(rec$status, c("flagged", "flagged"))
+  expect_setequal(rec$finding_id, f$finding_id)
 
-  # simulate a lost log: strip the audit table
+  # an audit row that joins to no finding is an integrity failure
+  res$audit$finding_id[1] <- "missing-id"
+  expect_error(dcc_reconcile(res), class = "dcc_reconcile_error")
+
+  # with no actions every finding is terminally unhandled
+  unresolved <- dcc_execute(fixture_responses(), f, actions = list(),
+                            id_var = "sid")
+  expect_identical(dcc_reconcile(unresolved)$status,
+                   c("unhandled", "unhandled"))
+})
+
+test_that("a lost audit row makes a handled finding unhandled", {
+  df <- fixture_responses()
+  f <- dcc_findings("S001", variable = "q1", check_id = "C", evidence = "e")
+  res <- dcc_execute(df, f, actions = list(C = "set_na"), id_var = "sid")
+  expect_identical(dcc_reconcile(res)$status, "changed")
+  # simulate a dropped audit row: the finding can no longer reconcile
   res$audit <- res$audit[0L]
-  rec2 <- dcc_reconcile(res)
-  expect_false(any(rec2$handled))
+  expect_identical(dcc_reconcile(res)$status, "unhandled")
 })
 
 test_that("dcc_trace returns the cell history", {

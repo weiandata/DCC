@@ -4,7 +4,7 @@
 \title{Run record-local checks over a file in chunks}
 \usage{
 dcc_detect_chunked(path, rules, chunk_size = 100000L, id_var = NULL,
-  sep = ",", backend = c("auto", "csv", "arrow"), encoding = "auto")
+  sep = NULL, backend = c("auto", "csv", "arrow"), encoding = "auto")
 }
 \arguments{
 \item{path}{Path to the input file: a delimited text file (CSV/TSV)
@@ -18,8 +18,10 @@ for the \code{csv} backend, or a Parquet/Feather file for the
 \item{id_var}{Name of the record-id column, or \code{NULL} to use
 global row numbers (consistent across chunks).}
 
-\item{sep}{Field separator for the \code{csv} backend (default
-\code{","}); ignored by the \code{arrow} backend.}
+\item{sep}{Field separator for the \code{csv} backend. \code{NULL}
+(default) infers the separator from the extension -- a tab for
+\code{.tsv}, a comma otherwise; pass an explicit value to override.
+Ignored by the \code{arrow} backend.}
 
 \item{backend}{One of \code{"auto"} (default), \code{"csv"}, or
 \code{"arrow"}.}
@@ -51,7 +53,9 @@ Two backends share this entry point and produce identical findings:
 the \code{csv} backend streams a delimited file with
 \code{\link[data.table]{fread}} (fread-native \code{UTF-8}/\code{latin1}
 encoding only; column types are locked from the first chunk so later
-chunks cannot drift), and the \code{arrow} backend streams a
+chunks cannot drift; each record must lie on a single line, so embedded
+newlines in quoted fields are unsupported -- read such files whole with
+\code{\link{dcc_read}}), and the \code{arrow} backend streams a
 Parquet/Feather file as record batches (requires the \code{arrow}
 package; types come from the file schema and the columnar format is
 always \code{UTF-8}, so the encoding restriction does not apply). With

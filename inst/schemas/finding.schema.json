@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/weiandata/DCC/schemas/finding.schema.json",
+  "title": "DCC finding",
+  "description": "One row of a dcc_findings table.",
+  "type": "object",
+  "required": [
+    "finding_id",
+    "record_id",
+    "variable",
+    "check_id",
+    "evidence",
+    "severity",
+    "dimension"
+  ],
+  "properties": {
+    "finding_id": { "type": "string" },
+    "record_id": { "type": ["string", "null"] },
+    "variable": { "type": ["string", "null"] },
+    "check_id": { "type": "string" },
+    "evidence": { "type": ["string", "null"] },
+    "severity": { "type": "string", "enum": ["info", "warn", "fail"] },
+    "dimension": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}
