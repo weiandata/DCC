@@ -95,9 +95,17 @@ provide one-command, hash-verified reproduction.
 (`data.table` for delimited text, `arrow` for Parquet/Feather), with findings
 identical to the in-memory path.
 
+**Contracts.** `dcc_capabilities()` returns a versioned, machine-readable list
+of every Stable, Experimental, and Planned feature, rule type, action type, and
+input format. `dcc_schema()` returns published JSON Schemas for findings, audit
+logs, rule files, action maps, and manifests, so programmatic and AI callers
+work against a stable contract.
+
 ## Documentation
 
 - `vignette("dcc-pipeline")` — end-to-end walkthrough
+- [AI usage guide](AI_USAGE.md) — the safe validate-before-execute flow for
+  general-purpose AI callers
 - [Remediation engineering plan](ENGINEERING_PLAN.md) — approved baseline for
   subsequent development and release acceptance
 - [Design document](docs/design.md)

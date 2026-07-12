@@ -7,6 +7,38 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-12
+
+Additive-contracts release (Phases 4 and 5 of the engineering plan):
+machine-readable capabilities and JSON Schemas for AI callers, plus a
+one-command workflow and structured validators for survey staff. All changes
+are additive; no 1.0.x call changes shape.
+
+### Added
+
+- Add `dcc_run()`: a one-command `preview`/`execute`/`verify`/`rerun` workflow
+  driven by a `dcc_config()`, writing a fixed output layout
+  (`cleaned-data.csv`, `findings.xlsx`, `audit-log.csv`,
+  `management-report.html`, `audit-report.html`, `manifest.yaml`,
+  `run-summary.txt`). Preview is the default and the raw input is never
+  modified in any mode. Add `dcc_run_files()` and `dcc_config()` /
+  `dcc_validate_config()`.
+- Add structured validators `dcc_validate_rules()`, `dcc_validate_data()`, and
+  `dcc_doctor()` returning a `dcc_validation` report (`code`, `severity`,
+  `field`, affected `rows`, `fix`), plus `dcc_validation_errors()`.
+- Add `dcc_capabilities()`: a versioned, deterministic capability document
+  (`contract_version`, `package_version`, `features` with status and `since`,
+  `rule_types`, `action_types`, `formats`, `unsupported`). `dcc_execute()` and
+  `dcc_read()` now build their action-name and format sets from the same
+  internal source of truth, so the document cannot drift from the engine.
+- Add `dcc_schema()` and published draft-07 JSON Schemas under `inst/schemas/`
+  for a finding, an audit-log row, a rule file, an action map, and a manifest.
+- Add public accessors `dcc_unhandled()`, `dcc_item_map()`, and
+  `dcc_mapping_findings()` so callers never read hidden object attributes.
+- Add `AI_USAGE.md` documenting the safe validate-before-execute flow, the
+  approved public functions, complete rule/action examples, unsupported
+  operations, success checks, and raw-data safety for AI systems.
+
 ## [1.0.1] - 2026-07-12
 
 Audit-correctness and format-reliability release. All changes are additive to

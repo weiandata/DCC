@@ -234,7 +234,7 @@ validate_execution_plan <- function(dt, findings, actions, id_var, ids,
               paste(unknown, collapse = ", "), ".",
               class = "dcc_execute_error")
   }
-  allowed <- c("exclude", "set_na", "flag", "recode")
+  allowed <- dcc_action_types()
   for (i in which(explicit)) {
     act <- actions[[f_chk[i]]]
     act_name <- if (is.list(act)) act$action %||% "" else act

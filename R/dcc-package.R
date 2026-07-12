@@ -16,6 +16,10 @@
 #'   reports, cell lineage, manifest-based reproduction.
 #' * [dcc_detect_chunked()] -- larger-than-memory detection with an
 #'   adaptive CSV/Arrow backend.
+#' * [dcc_capabilities()] / [dcc_schema()] -- machine-readable capability
+#'   document and published JSON Schemas; [dcc_unhandled()],
+#'   [dcc_item_map()], [dcc_mapping_findings()] -- public result
+#'   accessors.
 #'
 #' @keywords internal
 #' @import data.table

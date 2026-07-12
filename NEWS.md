@@ -1,3 +1,36 @@
+# DCC 1.1.0
+
+Additive-contracts release: machine-readable capabilities and formal schemas
+for AI callers, plus a one-command workflow and structured validators for
+survey staff. Every change is additive; no 1.0.x call changes shape.
+
+* `dcc_run()` runs the whole Detect -> Execute -> Report pipeline from a
+  `dcc_config()` and writes a fixed output layout (`cleaned-data.csv`,
+  `findings.xlsx`, `audit-log.csv`, the two HTML reports, `manifest.yaml`,
+  `run-summary.txt`). Preview is the default mode and the raw input file is
+  never modified in any mode. `dcc_run_files()` lists what was written.
+* `dcc_config()` bundles rules, actions, an id column, and items; a spreadsheet
+  reader (`dcc_read_config()`) is planned.
+* `dcc_validate_rules()`, `dcc_validate_data()`, `dcc_validate_config()`, and
+  `dcc_doctor()` return a structured `dcc_validation` report (`code`,
+  `severity`, `field`, affected `rows`, and a suggested `fix`) and change
+  nothing. `dcc_run()` validates before it detects or executes.
+* `dcc_capabilities()` returns a versioned, deterministic document of every
+  feature (with `Stable`/`Experimental`/`Planned` status and `since`), rule
+  type, action type, and input format, plus the operations DCC does not
+  support. The action-type and format lists are the same source of truth the
+  engine uses, so the document cannot drift from the implementation.
+* `dcc_schema()` returns published draft-07 JSON Schemas (installed under
+  `inst/schemas/`) for a finding, an audit-log row, a rule file, an action map,
+  and a manifest.
+* Added public accessors so callers never read hidden attributes:
+  `dcc_unhandled()` (a result's unhandled findings), `dcc_item_map()` and
+  `dcc_mapping_findings()` (a `dcc_map_forms()` result's item map and mapping
+  problems).
+* Added `AI_USAGE.md`: the approved public functions and the safe
+  capabilities -> validate -> preview -> execute -> reconcile -> export ->
+  verify flow for AI systems.
+
 # DCC 1.0.1
 
 Audit-correctness and format-reliability release. Every finding now has a
