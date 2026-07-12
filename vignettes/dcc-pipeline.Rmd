@@ -75,8 +75,10 @@ found
 ## Execute
 
 `dcc_execute()` applies declarative actions mapped to rule IDs. Input data is
-never mutated; unmapped findings are flagged rather than dropped. Below we blank
-the out-of-range score and flag the incomplete respondent.
+never mutated, the whole plan is validated before any change, and findings
+without an explicit action are returned *unhandled* rather than silently
+flagged or dropped. Below we blank the out-of-range score and flag the
+incomplete respondent.
 
 ```{r execute}
 res <- dcc_execute(

@@ -41,15 +41,45 @@ test_that("dcc_execute applies exclude, set_na, recode and flag", {
   expect_true(is.na(set_na_row$new_value))
 })
 
-test_that("unmapped findings get the default action (flag), not dropped", {
+test_that("findings without an explicit action remain unhandled", {
   df <- fixture_responses()
-  res <- dcc_execute(df, simple_findings(), actions = list(),
-                     id_var = "sid")
+  f <- simple_findings()
+  res <- dcc_execute(df, f, actions = list(), id_var = "sid")
   log <- dcc_audit_log(res)
-  expect_identical(nrow(log), 3L) # every finding produced a log row
-  expect_identical(unique(log$action), "flag")
+  # No action means no disposition: nothing is logged and nothing is
+  # auto-flagged, but no finding is dropped -- it surfaces as unhandled.
+  expect_identical(nrow(log), 0L)
+  expect_setequal(res$unhandled$finding_id, f$finding_id)
   expect_identical(res$n_excluded, 0L)
   expect_identical(nrow(as.data.frame(dcc_cleaned(res))), nrow(df))
+})
+
+test_that("audit rows carry the exact source finding_id", {
+  f <- dcc_findings(c("S001", "S001"), variable = c("q1", "q1"),
+                    check_id = c("R1", "R2"), evidence = c("a", "b"))
+  res <- dcc_execute(fixture_responses(), f,
+                     actions = list(R1 = "flag", R2 = "flag"), id_var = "sid")
+  expect_identical(names(dcc_audit_log(res))[1], "finding_id")
+  expect_setequal(dcc_audit_log(res)$finding_id, f$finding_id)
+})
+
+test_that("execution rejects invalid plans before it changes data", {
+  f <- dcc_findings("S001", variable = "q1", check_id = "R1", evidence = "a")
+  # unknown action id
+  expect_error(dcc_execute(fixture_responses(), f,
+                           actions = list(UNKNOWN = "flag"), id_var = "sid"),
+               class = "dcc_execute_error")
+  # recode map missing the observed old value (S001/q1 is 1, map has 9)
+  expect_error(dcc_execute(fixture_responses(), f,
+                           actions = list(R1 = list(action = "recode",
+                                                    map = c("9" = "5"))),
+                           id_var = "sid"),
+               class = "dcc_execute_error")
+  # duplicated record ids in the data
+  dup <- fixture_responses(); dup$sid[2] <- dup$sid[1]
+  expect_error(dcc_execute(dup, f, actions = list(R1 = "flag"),
+                           id_var = "sid"),
+               class = "dcc_execute_error")
 })
 
 test_that("closed loop: every audit row joins to a finding", {
@@ -143,10 +173,23 @@ test_that("record-less (group-level) findings can be flagged", {
   f <- dcc_findings(NA_character_, variable = "score",
                     check_id = "Q_GROUP_SCORE_SHIFT",
                     evidence = "group (grp=B) mean shifted")
-  res <- dcc_execute(df, f, id_var = "sid") # default flag
+  res <- dcc_execute(df, f, actions = list(Q_GROUP_SCORE_SHIFT = "flag"),
+                     id_var = "sid")
   log <- dcc_audit_log(res)
   expect_identical(nrow(log), 1L)
   expect_identical(log$action, "flag")
   expect_true(is.na(log$record_id))
   expect_identical(res$n_excluded, 0L)
+})
+
+test_that("group-level findings cannot be excluded or set to NA", {
+  df <- fixture_responses()
+  f <- dcc_findings(NA_character_, variable = "score",
+                    check_id = "Q_GROUP_SCORE_SHIFT",
+                    evidence = "group (grp=B) mean shifted")
+  expect_error(
+    dcc_execute(df, f, actions = list(Q_GROUP_SCORE_SHIFT = "exclude"),
+                id_var = "sid"),
+    class = "dcc_execute_error"
+  )
 })

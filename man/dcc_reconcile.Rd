@@ -10,16 +10,18 @@ dcc_reconcile(x)
 }
 \value{
 The findings table extended with \code{action} (the executed action,
-\code{NA} if none) and \code{handled} (logical). The number of audit
-rows that do not match any finding is attached as the
-\code{unreconciled_changes} attribute (must be 0 in a healthy
-pipeline).
+\code{NA} if none), \code{status} (one of \code{"changed"},
+\code{"excluded"}, \code{"flagged"}, or \code{"unhandled"}), and
+\code{handled} (logical).
 }
 \description{
-Verifies DCC's closed-loop guarantee from both directions: every
-finding should have at least one audit-log row, and every audit-log
-row must trace back to a finding -- a change without a detected
-violation is a pipeline violation.
+Verifies DCC's closed-loop guarantee on the exact finding identity:
+every audit-log row must join back to a finding by \code{finding_id},
+and every finding is assigned exactly one terminal \code{status}. There
+is no loose \code{record_id + check_id} matching, so a change can never
+be attributed to the wrong finding and an unhandled finding can never
+be reported as handled. An audit row whose \code{finding_id} is absent
+from the findings table raises a \code{dcc_reconcile_error}.
 }
 \examples{
 df <- data.frame(sid = "S1", q1 = 9)

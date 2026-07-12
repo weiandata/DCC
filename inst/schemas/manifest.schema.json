@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/weiandata/DCC/schemas/manifest.schema.json",
+  "title": "DCC reproducibility manifest",
+  "description": "A dcc_manifest() object.",
+  "type": "object",
+  "required": [
+    "dcc_version",
+    "created",
+    "input",
+    "ruleset",
+    "id_var",
+    "default",
+    "actions",
+    "output"
+  ],
+  "properties": {
+    "dcc_version": { "type": "string" },
+    "created": { "type": "string" },
+    "input": {
+      "type": "object",
+      "required": ["source", "file_hash", "format", "encoding"],
+      "properties": {
+        "source": { "type": "string" },
+        "file_hash": { "type": "string" },
+        "format": { "type": "string" },
+        "encoding": { "type": "string" }
+      }
+    },
+    "ruleset": {
+      "type": "object",
+      "required": ["source", "hash"],
+      "properties": {
+        "source": { "type": ["string", "null"] },
+        "hash": { "type": ["string", "null"] }
+      }
+    },
+    "id_var": { "type": ["string", "null"] },
+    "default": { "type": "string" },
+    "actions": { "type": "object" },
+    "output": {
+      "type": "object",
+      "required": ["data_hash", "audit_hash", "n_excluded"],
+      "properties": {
+        "data_hash": { "type": "string" },
+        "audit_hash": { "type": "string" },
+        "n_excluded": { "type": "integer" }
+      }
+    }
+  }
+}

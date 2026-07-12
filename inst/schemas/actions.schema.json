@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/weiandata/DCC/schemas/actions.schema.json",
+  "title": "DCC action map",
+  "description": "The named list mapping check_id to an execution action.",
+  "type": "object",
+  "additionalProperties": {
+    "oneOf": [
+      { "type": "string", "enum": ["exclude", "set_na", "flag"] },
+      {
+        "type": "object",
+        "required": ["action", "map"],
+        "properties": {
+          "action": { "const": "recode" },
+          "map": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    ]
+  }
+}

@@ -153,3 +153,20 @@ checks:
   f2 <- dcc_detect(df, rs, id_var = "sid")
   expect_identical(as.data.frame(f1), as.data.frame(f2))
 })
+
+test_that("dcc_detect derives repeatable IDs from data and rules", {
+  skip_if_not_installed("yaml")
+  rs <- dcc_rules(write_rules('
+checks:
+  - id: R001
+    type: range
+    variable: score
+    max: 100
+'))
+  df <- fixture_responses()
+  df$score[2] <- 150
+  f1 <- dcc_detect(df, rs, id_var = "sid")
+  f2 <- dcc_detect(df, rs, id_var = "sid")
+  expect_identical(f1$finding_id, f2$finding_id)
+  expect_match(f1$finding_id[1], paste0("^[0-9]+:detect-", rs$hash, "-"))
+})

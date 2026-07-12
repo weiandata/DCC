@@ -15,17 +15,23 @@
 #' @param evidence Character vector describing the measured evidence.
 #' @param severity One of `"info"`, `"warn"`, `"fail"` (recycled).
 #' @param dimension Quality dimension label (recycled).
+#' @param run_id One non-empty run identifier used to make finding IDs stable.
 #'
 #' @return A `dcc_findings` object (also a `data.table`).
 #' @export
 dcc_findings <- function(record_id = character(), variable = NA_character_,
                          check_id = character(), evidence = character(),
-                         severity = "warn", dimension = NA_character_) {
+                         severity = "warn", dimension = NA_character_,
+                         run_id = "manual") {
   # Size on record_id/evidence: check_id and severity are usually
   # scalars, and a zero-hit detector must yield zero findings.
   n <- max(length(record_id), length(evidence))
   if (n == 0L) {
     return(empty_findings())
+  }
+  if (length(run_id) != 1L || is.na(run_id) || !nzchar(run_id)) {
+    dcc_abort("`run_id` must be one non-empty string.",
+              class = "dcc_type_error")
   }
   severity <- as.character(severity)
   bad <- setdiff(unique(severity), c("info", "warn", "fail"))
@@ -34,10 +40,14 @@ dcc_findings <- function(record_id = character(), variable = NA_character_,
               ". Use \"info\", \"warn\" or \"fail\".",
               class = "dcc_type_error")
   }
+  record_id <- rep_len(as.character(record_id), n)
+  variable <- rep_len(as.character(variable), n)
+  check_id <- rep_len(as.character(check_id), n)
   out <- data.table::data.table(
-    record_id = rep_len(as.character(record_id), n),
-    variable = rep_len(as.character(variable), n),
-    check_id = rep_len(as.character(check_id), n),
+    finding_id = new_finding_ids(run_id, check_id, record_id, variable),
+    record_id = record_id,
+    variable = variable,
+    check_id = check_id,
     evidence = rep_len(as.character(evidence), n),
     severity = rep_len(severity, n),
     dimension = rep_len(as.character(dimension), n)
@@ -49,13 +59,36 @@ dcc_findings <- function(record_id = character(), variable = NA_character_,
 
 empty_findings <- function() {
   out <- data.table::data.table(
-    record_id = character(), variable = character(),
+    finding_id = character(), record_id = character(), variable = character(),
     check_id = character(), evidence = character(),
     severity = character(), dimension = character()
   )
   data.table::setattr(out, "class",
                       c("dcc_findings", class(data.table::data.table())))
   out
+}
+
+new_finding_ids <- function(run_id, check_id, record_id, variable) {
+  record_part <- ifelse(is.na(record_id), "<group>", record_id)
+  variable_part <- ifelse(is.na(variable), "<record>", variable)
+  encode_part <- function(x) {
+    paste0(nchar(x, type = "chars"), ":", x)
+  }
+  key <- paste(run_id, check_id, record_part, variable_part, sep = "\r")
+  occurrence <- stats::ave(seq_along(key), key,
+                           FUN = function(x) seq_along(x) - 1L)
+  paste(encode_part(run_id), encode_part(check_id), encode_part(record_part),
+        encode_part(variable_part), occurrence, sep = "|")
+}
+
+finding_run_ids <- function(finding_id) {
+  match <- regexec("^([0-9]+):", finding_id)
+  parts <- regmatches(finding_id, match)
+  vapply(seq_along(finding_id), function(i) {
+    len <- as.integer(parts[[i]][2L])
+    start <- nchar(parts[[i]][1L], type = "chars") + 1L
+    substr(finding_id[i], start, start + len - 1L)
+  }, character(1))
 }
 
 # rbind a list of dcc_findings preserving the class.
@@ -65,6 +98,9 @@ bind_findings <- function(lst) {
     return(empty_findings())
   }
   out <- data.table::rbindlist(lst, use.names = TRUE)
+  out[, finding_id := new_finding_ids(
+    finding_run_ids(finding_id), check_id, record_id, variable
+  )]
   data.table::setattr(out, "class",
                       c("dcc_findings", class(data.table::data.table())))
   out

@@ -7,6 +7,84 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-12
+
+Additive-contracts release (Phases 4 and 5 of the engineering plan):
+machine-readable capabilities and JSON Schemas for AI callers, plus a
+one-command workflow and structured validators for survey staff. All changes
+are additive; no 1.0.x call changes shape.
+
+### Added
+
+- Add `dcc_run()`: a one-command `preview`/`execute`/`verify`/`rerun` workflow
+  driven by a `dcc_config()`, writing a fixed output layout
+  (`cleaned-data.csv`, `findings.xlsx`, `audit-log.csv`,
+  `management-report.html`, `audit-report.html`, `manifest.yaml`,
+  `run-summary.txt`). Preview is the default and the raw input is never
+  modified in any mode. Add `dcc_run_files()` and `dcc_config()` /
+  `dcc_validate_config()`.
+- Add structured validators `dcc_validate_rules()`, `dcc_validate_data()`, and
+  `dcc_doctor()` returning a `dcc_validation` report (`code`, `severity`,
+  `field`, affected `rows`, `fix`), plus `dcc_validation_errors()`.
+- Add `dcc_capabilities()`: a versioned, deterministic capability document
+  (`contract_version`, `package_version`, `features` with status and `since`,
+  `rule_types`, `action_types`, `formats`, `unsupported`). `dcc_execute()` and
+  `dcc_read()` now build their action-name and format sets from the same
+  internal source of truth, so the document cannot drift from the engine.
+- Add `dcc_schema()` and published draft-07 JSON Schemas under `inst/schemas/`
+  for a finding, an audit-log row, a rule file, an action map, and a manifest.
+- Add public accessors `dcc_unhandled()`, `dcc_item_map()`, and
+  `dcc_mapping_findings()` so callers never read hidden object attributes.
+- Add `AI_USAGE.md` documenting the safe validate-before-execute flow, the
+  approved public functions, complete rule/action examples, unsupported
+  operations, success checks, and raw-data safety for AI systems.
+
+## [1.0.1] - 2026-07-12
+
+Audit-correctness and format-reliability release. All changes are additive to
+the public `dcc_findings` and audit-log schemas; no valid public call changes
+shape.
+
+### Added
+
+- Add a deterministic `finding_id` to every finding (run + check + record +
+  variable + occurrence), assigned by `dcc_findings()`, `bind_findings()`,
+  `dcc_detect()`, and `dcc_detect_chunked()`. The detect run prefix is derived
+  from the rule and source-file hashes, so identical data and rules reproduce
+  identical identities.
+- Add a `finding_id` column to the audit log (its new first column), copied
+  exactly from the finding that produced each change.
+- Add `result$unhandled`: the `dcc_findings` subset with no explicit action.
+- Add a `status` column to `dcc_reconcile()` output (`changed`, `excluded`,
+  `flagged`, `unhandled`).
+- Add `dcc_detect_chunked(sep = NULL)` separator inference (tab for `.tsv`,
+  comma otherwise) and data.table-compatible first-chunk type locking.
+- Add `tests/testthat/test-format-matrix.R` certifying CSV, TSV, JSON, Excel,
+  SPSS, Stata, SAS, Parquet, and Feather input, plus Arrow multi-batch
+  Parquet/Feather parity in `test-chunked.R`. Add `writexl` to `Suggests` and
+  to the R CMD check dependency set.
+
+### Fixed
+
+- `dcc_execute()` now validates the complete plan before touching data:
+  unknown action IDs, unmapped recodes, missing or duplicated record IDs, and
+  cell-level actions on group-level findings raise `dcc_execute_error` instead
+  of silently degrading. A bad plan can no longer leave a half-applied dataset.
+- `dcc_reconcile()` joins audit rows to findings on the exact `finding_id`
+  instead of a loose `record_id + check_id` match, so a change can never be
+  attributed to the wrong finding; an orphan audit row raises
+  `dcc_reconcile_error`.
+- Chunked CSV/TSV runs no longer warn on exact chunk multiples, later
+  all-`NA` chunks, quoted delimiters, embedded newlines, or latin1 input.
+
+### Changed
+
+- Findings without an explicit action are returned unhandled rather than
+  auto-flagged; `dcc_execute(default =)` is retained for call compatibility but
+  no longer auto-dispositions.
+- `dcc_reconcile()` drops the `unreconciled_changes` attribute in favour of the
+  per-finding terminal `status`.
+
 ## [1.0.0] - 2026-07-12
 
 First stable, CRAN-targeted release. The public API (exported `dcc_*`
