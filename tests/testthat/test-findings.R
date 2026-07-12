@@ -37,13 +37,27 @@ test_that("findings receive deterministic IDs with occurrence suffixes", {
   )
   expect_identical(
     f$finding_id,
-    c("run-42|R1|S1|q1|1", "run-42|R1|S1|q1|2", "run-42|R1|S2|q1|1")
+    c("6:run-42|2:R1|2:S1|2:q1|0", "6:run-42|2:R1|2:S1|2:q1|1",
+      "6:run-42|2:R1|2:S2|2:q1|0")
   )
   expect_identical(dcc_findings("S1", check_id = "R1", evidence = "a")$finding_id,
-                   "manual|R1|S1|<record>|1")
+                   "6:manual|2:R1|2:S1|8:<record>|0")
   expect_identical(names(dcc_findings()),
                    c("finding_id", "record_id", "variable", "check_id",
                      "evidence", "severity", "dimension"))
+})
+
+test_that("binding regenerates collision-safe IDs within a run", {
+  a <- dcc_findings("S1", variable = "q1", check_id = "R1", evidence = "a")
+  b <- dcc_findings("S1", variable = "q1", check_id = "R1", evidence = "b")
+  bound <- bind_findings(list(a, b))
+  expect_identical(anyDuplicated(bound$finding_id), 0L)
+
+  left <- dcc_findings("S1", variable = "q1", check_id = "a|b",
+                       evidence = "x", run_id = "run")
+  right <- dcc_findings("b|S1", variable = "q1", check_id = "a",
+                        evidence = "x", run_id = "run")
+  expect_false(identical(left$finding_id, right$finding_id))
 })
 
 test_that("print method runs", {

@@ -168,5 +168,5 @@ checks:
   f1 <- dcc_detect(df, rs, id_var = "sid")
   f2 <- dcc_detect(df, rs, id_var = "sid")
   expect_identical(f1$finding_id, f2$finding_id)
-  expect_match(f1$finding_id[1], paste0("^detect-", rs$hash, "-"))
+  expect_match(f1$finding_id[1], paste0("^[0-9]+:detect-", rs$hash, "-"))
 })

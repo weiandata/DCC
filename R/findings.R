@@ -71,9 +71,23 @@ empty_findings <- function() {
 new_finding_ids <- function(run_id, check_id, record_id, variable) {
   record_part <- ifelse(is.na(record_id), "<group>", record_id)
   variable_part <- ifelse(is.na(variable), "<record>", variable)
+  encode_part <- function(x) {
+    paste0(nchar(x, type = "chars"), ":", x)
+  }
   key <- paste(run_id, check_id, record_part, variable_part, sep = "\r")
-  occurrence <- ave(seq_along(key), key, FUN = seq_along)
-  paste(run_id, check_id, record_part, variable_part, occurrence, sep = "|")
+  occurrence <- ave(seq_along(key), key, FUN = function(x) seq_along(x) - 1L)
+  paste(encode_part(run_id), encode_part(check_id), encode_part(record_part),
+        encode_part(variable_part), occurrence, sep = "|")
+}
+
+finding_run_ids <- function(finding_id) {
+  match <- regexec("^([0-9]+):", finding_id)
+  parts <- regmatches(finding_id, match)
+  vapply(seq_along(finding_id), function(i) {
+    len <- as.integer(parts[[i]][2L])
+    start <- nchar(parts[[i]][1L], type = "chars") + 1L
+    substr(finding_id[i], start, start + len - 1L)
+  }, character(1))
 }
 
 # rbind a list of dcc_findings preserving the class.
@@ -83,6 +97,9 @@ bind_findings <- function(lst) {
     return(empty_findings())
   }
   out <- data.table::rbindlist(lst, use.names = TRUE)
+  out[, finding_id := new_finding_ids(
+    finding_run_ids(finding_id), check_id, record_id, variable
+  )]
   data.table::setattr(out, "class",
                       c("dcc_findings", class(data.table::data.table())))
   out

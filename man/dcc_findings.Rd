@@ -32,7 +32,7 @@ by the Detect stage and consumed by the Execute stage: columns
 \code{finding_id}, \code{record_id}, \code{variable}, \code{check_id},
 \code{evidence}, \code{severity} and \code{dimension}. The additive
 \code{finding_id} is deterministic within a run and includes the rule,
-record, variable, and occurrence. It is the single interface
+record, variable, and zero-based occurrence. It is the single interface
 between detection and execution in the Detect-Execute-Report workflow.
 }
 \examples{
