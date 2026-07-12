@@ -9,6 +9,22 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- Add `dcc_report()`: dual-layer self-contained HTML reports (no
+  pandoc dependency) -- management summary (findings by quality
+  dimension and severity, change volumes, provenance, hashes) and
+  audit layer (reconciliation table plus capped cell-level change
+  log).
+- Add `dcc_reconcile()`: two-way closed-loop verification -- unhandled
+  findings are listed and changes without a matching finding are
+  counted as `unreconciled_changes`.
+- Add `dcc_trace()`: cell-level lineage -- all findings and logged
+  changes for one record or one cell of the cleaned data.
+- Add `dcc_manifest()` / `dcc_rerun()`: manifest-based one-command
+  reproduction. The manifest captures input and rule hashes, actions
+  and output content hashes; rerun re-executes read -> detect ->
+  execute, refusing (typed errors) when the raw data or rules changed,
+  and verifies the cleaned data and audit log byte-identically
+  (timestamps excluded).
 - Add `dcc_execute()`: the Execute stage. Declarative actions
   (`exclude`, `set_na`, `recode`, `flag`) mapped to `check_id`s;
   unmapped findings are flagged, never dropped; input data is
