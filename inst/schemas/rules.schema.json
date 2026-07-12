@@ -20,6 +20,7 @@
               "range",
               "set",
               "expr",
+              "skip_logic",
               "missing_items",
               "straightlining",
               "response_time",
@@ -34,6 +35,17 @@
           "max": { "type": "number" },
           "values": { "type": "array" },
           "expr": { "type": "string" },
+          "when": {
+            "type": "object",
+            "properties": {
+              "variable": { "type": "string" },
+              "equals": {}
+            }
+          },
+          "then_not_required": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "items": { "type": "array", "items": { "type": "string" } },
           "max_prop": { "type": "number" },
           "max_run": { "type": "integer" },

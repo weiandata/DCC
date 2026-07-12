@@ -172,3 +172,15 @@ at 1e4 rows pass happily through both quadratics.
   toolchain. Verification there is limited to parsing and pure-base
   logic via webR (Node/wasm); the authoritative gate is the R CMD check
   workflow plus a local `devtools::test()` run.
+
+### `dcc_to_irtc()` deferred to a later release (1.1.0 decision)
+
+- Per the v1.1.0 functionality-alignment plan, `dcc_to_irtc()` ships only
+  with a stable, end-to-end-tested output contract (`resp`, `pid`,
+  `group`, `pweights`, `Q`, anchor information). That contract is not yet
+  frozen, so `dcc_to_irtc()` is **Planned**, not implemented: it carries
+  no Stable claim and `dcc_capabilities()` reports it as `Planned`. The
+  concurrent-calibration layout produced by `dcc_map_forms()` (structural
+  `NA` for not-administered items, `is_anchor` carried through) remains
+  the supported building block until the IRTC export is specified and
+  tested.

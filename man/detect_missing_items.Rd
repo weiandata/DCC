@@ -4,7 +4,7 @@
 \title{Detect excessive item nonresponse per respondent}
 \usage{
 detect_missing_items(x, items, max_prop = 0.5, id_var = NULL,
-  severity = "warn")
+  severity = "warn", structural = NULL)
 }
 \arguments{
 \item{x}{A \code{dcc_data} object or data.frame.}
@@ -17,6 +17,13 @@ detect_missing_items(x, items, max_prop = 0.5, id_var = NULL,
 numbers.}
 
 \item{severity}{Severity assigned to findings (default \code{"warn"}).}
+
+\item{structural}{Optional logical matrix (rows aligned to the data,
+columns to \code{items}) marking cells that were \emph{not administered}
+-- e.g. from a \code{skip_logic} rule. Not-administered cells are
+excluded from both the numerator and denominator of the missing
+proportion. \code{NULL} (default) treats every item as administered and
+is byte-identical to the pre-1.1.0 behaviour.}
 }
 \value{
 A \code{\link{dcc_findings}} table (check id \code{Q_MISSING_ITEMS},

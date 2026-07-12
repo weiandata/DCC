@@ -50,7 +50,7 @@ dcc_action_types <- function() {
 
 # The declarative rule/detector types dcc_detect() evaluates.
 dcc_rule_types <- function() {
-  c("range", "set", "expr", "missing_items", "straightlining",
+  c("range", "set", "expr", "skip_logic", "missing_items", "straightlining",
     "response_time", "trap_items", "score_anomaly")
 }
 
@@ -93,9 +93,9 @@ dcc_capability_features <- function() {
     feat("json_schemas", "Stable", "1.1.0"),
     feat("validators", "Stable", "1.1.0"),
     feat("one_command_run", "Stable", "1.1.0"),
-    feat("apply_codebook", "Planned", NA_character_),
-    feat("skip_logic", "Planned", NA_character_),
-    feat("excel_config", "Planned", NA_character_),
+    feat("apply_codebook", "Stable", "1.1.0"),
+    feat("skip_logic", "Stable", "1.1.0"),
+    feat("excel_config", "Stable", "1.1.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(

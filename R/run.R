@@ -196,7 +196,11 @@ dcc_run <- function(data, config, output_dir,
   }
 
   found <- dcc_detect(x, config$rules, id_var = id_var)
-  actions <- if (mode == "preview") list() else config$actions
+  # Apply only the dispositions whose check actually fired: a config
+  # legitimately declares actions for every rule, but a rule that found
+  # nothing has no finding to act on (dcc_execute rejects unused IDs).
+  active <- config$actions[names(config$actions) %in% found$check_id]
+  actions <- if (mode == "preview") list() else active
   res <- dcc_execute(x, found, actions = actions, id_var = id_var)
 
   fnd <- as.data.frame(res$findings)

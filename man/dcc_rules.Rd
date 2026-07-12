@@ -19,10 +19,12 @@ top-level key \code{checks} holds a list of rules; each rule has
 \code{dimension}, and type-specific fields: \code{range}
 (\code{variable}, \code{min}/\code{max}), \code{set} (\code{variable},
 \code{values}), \code{expr} (an R expression evaluated per record in a
-restricted environment), or a detector type (\code{missing_items},
-\code{straightlining}, \code{response_time}, \code{trap_items},
-\code{score_anomaly}) whose fields are passed to the matching
-\code{detect_*()} function.
+restricted environment), \code{skip_logic} (\code{when}
+\{\code{variable}, \code{equals}\} and \code{then_not_required}, marking
+skipped items as not administered for the missing-items detector), or a
+detector type (\code{missing_items}, \code{straightlining},
+\code{response_time}, \code{trap_items}, \code{score_anomaly}) whose
+fields are passed to the matching \code{detect_*()} function.
 }
 \examples{
 f <- tempfile(fileext = ".yaml")

@@ -83,8 +83,14 @@ dcc_detect <- function(x, rules, id_var = NULL) {
     dcc_abort("`rules` must be a dcc_ruleset from dcc_rules().",
               class = "dcc_type_error")
   }
+  skip_rules <- Filter(
+    function(ch) identical(ch$type %||% "", "skip_logic"), rules$checks)
+  structural <- build_structural_map(x, skip_rules, id_var)
   results <- lapply(rules$checks, function(ch) {
-    eval_check(x, ch, id_var = id_var)
+    if (identical(ch$type %||% "", "skip_logic")) {
+      return(empty_findings())
+    }
+    eval_check(x, ch, id_var = id_var, structural = structural)
   })
   findings <- bind_findings(results)
   resolved <- resolve_data(x, id_var)
@@ -111,7 +117,65 @@ dcc_detect <- function(x, rules, id_var = NULL) {
   findings
 }
 
-eval_check <- function(x, ch, id_var = NULL) {
+# Build a structural-missingness map from skip_logic rules. Returns a
+# logical matrix (data rows x affected variables) where TRUE marks a
+# cell that was *not administered* because a skip condition held, or
+# NULL when there are no skip_logic rules. Row order matches
+# resolve_data(x, id_var), which is what the detectors also use.
+build_structural_map <- function(x, skip_rules, id_var = NULL) {
+  if (!length(skip_rules)) {
+    return(NULL)
+  }
+  r <- resolve_data(x, id_var)
+  dt <- r$dt
+  vars <- unique(unlist(lapply(skip_rules,
+                               function(ch) unlist(ch$then_not_required))))
+  if (!length(vars)) {
+    return(NULL)
+  }
+  m <- matrix(FALSE, nrow = nrow(dt), ncol = length(vars),
+              dimnames = list(NULL, vars))
+  for (ch in skip_rules) {
+    when <- ch$when
+    v <- when$variable
+    if (is.null(v) || !v %in% names(dt)) {
+      dcc_abort("skip_logic check '", ch$id %||% "?",
+                "': `when.variable` '", v %||% "<missing>",
+                "' not found in the data.", class = "dcc_rule_error")
+    }
+    if (is.null(when$equals)) {
+      dcc_abort("skip_logic check '", ch$id %||% "?",
+                "' needs `when.equals`.", class = "dcc_rule_error")
+    }
+    hit <- !is.na(dt[[v]]) &
+      as.character(dt[[v]]) == as.character(when$equals)
+    for (nr in unlist(ch$then_not_required)) {
+      if (nr %in% colnames(m)) {
+        m[hit, nr] <- TRUE
+      }
+    }
+  }
+  m
+}
+
+# Align a structural map to a specific set of item columns (in `items`
+# order), FALSE for items the map does not cover. NULL when there is no
+# map or none of the items are covered.
+subset_structural <- function(structural, items) {
+  if (is.null(structural) || !length(items)) {
+    return(NULL)
+  }
+  present <- intersect(items, colnames(structural))
+  if (!length(present)) {
+    return(NULL)
+  }
+  out <- matrix(FALSE, nrow = nrow(structural), ncol = length(items),
+                dimnames = list(NULL, items))
+  out[, present] <- structural[, present, drop = FALSE]
+  out
+}
+
+eval_check <- function(x, ch, id_var = NULL, structural = NULL) {
   type <- ch$type %||% ""
   severity <- ch$severity %||% "warn"
   dimension <- ch$dimension %||% NA_character_
@@ -119,10 +183,12 @@ eval_check <- function(x, ch, id_var = NULL) {
     range = eval_range_check(x, ch, id_var, severity, dimension),
     set = eval_set_check(x, ch, id_var, severity, dimension),
     expr = eval_expr_check(x, ch, id_var, severity, dimension),
+    skip_logic = empty_findings(),
     missing_items = detect_missing_items(
       x, items = unlist(ch$items),
       max_prop = ch$max_prop %||% 0.5,
-      id_var = id_var, severity = severity
+      id_var = id_var, severity = severity,
+      structural = subset_structural(structural, unlist(ch$items))
     ),
     straightlining = detect_straightlining(
       x, items = unlist(ch$items),

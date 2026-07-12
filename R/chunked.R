@@ -240,6 +240,12 @@ stream_detect_arrow <- function(path, rules, chunk_size, id_var) {
 
 assert_chunk_safe <- function(ch) {
   type <- ch$type %||% ""
+  if (type == "skip_logic") {
+    dcc_abort("Check '", ch$id, "' (skip_logic) shapes missing-items ",
+              "detection across rules and is not supported in chunked ",
+              "mode; run dcc_detect() in memory instead.",
+              class = "dcc_chunk_error")
+  }
   if (type == "score_anomaly") {
     dcc_abort("Check '", ch$id, "' (score_anomaly) needs whole-file ",
               "group statistics and cannot run chunked; run ",

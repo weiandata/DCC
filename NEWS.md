@@ -9,8 +9,17 @@ survey staff. Every change is additive; no 1.0.x call changes shape.
   `findings.xlsx`, `audit-log.csv`, the two HTML reports, `manifest.yaml`,
   `run-summary.txt`). Preview is the default mode and the raw input file is
   never modified in any mode. `dcc_run_files()` lists what was written.
-* `dcc_config()` bundles rules, actions, an id column, and items; a spreadsheet
-  reader (`dcc_read_config()`) is planned.
+* `dcc_read_config()` reads an Excel cleaning-plan workbook into a
+  `dcc_config()`, so survey staff configure a run in a spreadsheet instead of
+  YAML; `dcc_write_config_template()` writes a starter workbook.
+* `dcc_apply_codebook()` applies a declarative codebook (rename, recode,
+  missing declaration, type, labels, roles) with a `dry_run` preview that
+  shares one planner with the apply path, so a change is previewed exactly as
+  applied. The raw input is never overwritten.
+* A declarative `skip_logic` rule marks skipped items as *not administered* so
+  the missing-items detector no longer counts a legitimately skipped item as
+  missingness.
+* `dcc_config()` bundles rules, actions, an id column, and items.
 * `dcc_validate_rules()`, `dcc_validate_data()`, `dcc_validate_config()`, and
   `dcc_doctor()` return a structured `dcc_validation` report (`code`,
   `severity`, `field`, affected `rows`, and a suggested `fix`) and change

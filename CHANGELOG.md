@@ -9,10 +9,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [1.1.0] - 2026-07-12
 
-Additive-contracts release (Phases 4 and 5 of the engineering plan):
+Additive-contracts release (Phases 3, 4, and 5 of the engineering plan):
 machine-readable capabilities and JSON Schemas for AI callers, plus a
-one-command workflow and structured validators for survey staff. All changes
-are additive; no 1.0.x call changes shape.
+one-command workflow, an Excel configuration, a declarative codebook, and skip
+logic for survey staff. All changes are additive; no 1.0.x call changes shape.
 
 ### Added
 
@@ -23,6 +23,17 @@ are additive; no 1.0.x call changes shape.
   `run-summary.txt`). Preview is the default and the raw input is never
   modified in any mode. Add `dcc_run_files()` and `dcc_config()` /
   `dcc_validate_config()`.
+- Add `dcc_read_config()` and `dcc_write_config_template()`: an Excel
+  cleaning-plan workbook that converts to a `dcc_config()`, so survey staff
+  configure a run without writing YAML.
+- Add `dcc_apply_codebook()` and `dcc_codebook_changes()`: a declarative
+  codebook (rename, recode, missing declaration, type, labels, roles) with a
+  `dry_run` preview that shares one planner with the apply path. Raw input is
+  never overwritten.
+- Add a declarative `skip_logic` rule type and a structural-missingness map:
+  `detect_missing_items()` gains a `structural` argument so a legitimately
+  skipped item is excluded from the missing proportion (default behaviour
+  unchanged). Chunked detection rejects `skip_logic` with `dcc_chunk_error`.
 - Add structured validators `dcc_validate_rules()`, `dcc_validate_data()`, and
   `dcc_doctor()` returning a `dcc_validation` report (`code`, `severity`,
   `field`, affected `rows`, `fix`), plus `dcc_validation_errors()`.

@@ -23,19 +23,37 @@ NULL
 #' @param max_prop Maximum tolerated missing proportion (default 0.5).
 #' @param id_var Name of the record-id column, or `NULL` for row numbers.
 #' @param severity Severity assigned to findings (default `"warn"`).
+#' @param structural Optional logical matrix (rows aligned to the data,
+#'   columns to `items`) marking cells that were *not administered* --
+#'   e.g. from a `skip_logic` rule. Not-administered cells are excluded
+#'   from both the numerator and the denominator of the missing
+#'   proportion, so a legitimately skipped item is not counted as
+#'   missingness. `NULL` (default) treats every item as administered and
+#'   is byte-identical to the pre-1.1.0 behaviour.
 #' @return A [dcc_findings()] table (check id `Q_MISSING_ITEMS`).
 #' @export
 detect_missing_items <- function(x, items, max_prop = 0.5, id_var = NULL,
-                                 severity = "warn") {
+                                 severity = "warn", structural = NULL) {
   r <- resolve_data(x, id_var)
   m <- resolve_items(r$dt, items)
-  prop <- rowMeans(is.na(m))
-  hit <- which(prop > max_prop)
+  if (is.null(structural)) {
+    prop <- rowMeans(is.na(m))
+    hit <- which(prop > max_prop)
+    evidence <- sprintf("%.0f%% of %d items missing (max %.0f%%)",
+                        100 * prop[hit], length(items), 100 * max_prop)
+  } else {
+    administered <- !structural
+    n_admin <- rowSums(administered)
+    n_missing <- rowSums(is.na(m) & administered)
+    prop <- ifelse(n_admin > 0L, n_missing / n_admin, 0)
+    hit <- which(prop > max_prop)
+    evidence <- sprintf("%.0f%% of %d administered items missing (max %.0f%%)",
+                        100 * prop[hit], n_admin[hit], 100 * max_prop)
+  }
   dcc_findings(
     record_id = r$ids[hit],
     check_id = "Q_MISSING_ITEMS",
-    evidence = sprintf("%.0f%% of %d items missing (max %.0f%%)",
-                       100 * prop[hit], length(items), 100 * max_prop),
+    evidence = evidence,
     severity = severity,
     dimension = "completeness"
   )
