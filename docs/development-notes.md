@@ -4,6 +4,67 @@ Practical lessons collected while developing DCC. Newest entries first.
 These complement, and never override, the repository standard and the
 Engineering Handbook.
 
+## 2026-07-12 — execute is linear, or it is not usable
+
+The 1e6-row CI benchmark timed `dcc_execute()` at ~1040s (budget 60s)
+while read/detect/chunked stayed at 1-3s. Two O(n^2) paths, both
+invisible at the 1e4 scale the unit tests use:
+
+- **Never grow a result with `x[[length(x) + 1]] <-`.** Each append
+  copies the whole list, so building a 210k-row audit log that way is
+  O(n^2). Pre-size the buffer (`vector("list", nrow(findings))`) and
+  write by an incrementing counter; `rbindlist()` the used prefix at
+  the end.
+- **`list[[character]]` is a linear name scan.** `row_of[[record_id]]`
+  on a list with up to 1e6 names is O(n) per finding, O(n^2) overall.
+  Hash the ids to positions once with `match(record_id, names(row_of))`
+  and index by integer.
+- **Hoist constants out of the hot loop.** `dcc_timestamp()` (a
+  `format(Sys.time())`) and `packageVersion()` were recomputed per
+  change; compute once per run. Timestamps are excluded from
+  reproducibility comparisons, so one run-level timestamp is also more
+  correct.
+
+Lesson: benchmark at the scale the package claims to serve. Unit tests
+at 1e4 rows pass happily through both quadratics.
+
+## 2026-07-12 — v1.0 CRAN-readiness
+
+### Licensing and ownership
+
+- **A permissive license does not transfer copyright.** DCC is MIT, but
+  the copyright stays with the funding company. Ownership is expressed
+  in the LICENSE copyright line and in `Authors@R` via the `cph`
+  (copyright holder) and `fnd` (funder) roles -- independent of which
+  OSI license is chosen. The maintainer (`cre`) is a person with a
+  reachable email, as CRAN requires; swap it for a company address
+  before an actual submission if preferred.
+- **MIT on CRAN uses two files.** `License: MIT + file LICENSE`, a
+  two-line `LICENSE` (`YEAR:` / `COPYRIGHT HOLDER:`) that R CMD check
+  parses, and the full text in `LICENSE.md`. Keep the company's Chinese
+  legal name out of the parsed `LICENSE`/`DESCRIPTION` (ASCII only) and
+  put the bilingual notice in `LICENSE.md`, which is UTF-8.
+
+### Documentation
+
+- **Every exported function needs a runnable example for CRAN.** Three
+  were missing (`dcc_detect_chunked`, `dcc_manifest`, `dcc_rerun`).
+  Examples that need a Suggests package guard on
+  `requireNamespace("yaml", ...)`, matching the existing detector
+  examples.
+- **Gate vignette evaluation on Suggests.** The pipeline vignette reads
+  YAML rules, so its setup chunk sets `eval = requireNamespace("yaml")`
+  and `VignetteBuilder: knitr` / `knitr` + `rmarkdown` are declared, so
+  the vignette still builds where a suggested package is absent.
+
+### Changelog hygiene
+
+- **Disambiguate the template's version from the package's.** The repo
+  was seeded from the WeianData template whose own release was 1.0.0;
+  that CHANGELOG entry was relabelled "Template baseline" so it does not
+  collide with the DCC package 1.0.0. Package release notes also live in
+  `NEWS.md`, the file CRAN and R users read.
+
 ## 2026-07-12 — v0.5 performance backends
 
 ### Adaptive chunked backend
@@ -29,6 +90,32 @@ Engineering Handbook.
   `chunked_arrow` stages are informational (no budget): streaming
   throughput is dominated by the host I/O layer, so a hard threshold
   there would be a flaky gate, not a regression signal.
+
+### CI failures caught on the first real R CMD check
+
+- **Compare finding rows, not finding attributes.** `dcc_findings`
+  objects carry object-level attributes (`dcc_data` after
+  `dcc_detect()`; `n_rows`/`n_chunks`/`backend` after
+  `dcc_detect_chunked()`). `expect_identical()` compares attributes
+  too, so a parity test between the chunked and in-memory paths fails
+  on the attribute mismatch alone. Strip every non-structural
+  attribute (keep only `names`/`row.names`/`class`) in the test's
+  normalizer before comparing. `as.data.frame(dt)[order, ]` does *not*
+  reliably drop `setattr`-set attributes here, so strip them
+  explicitly.
+- **ICU misfires to ISO-8859-2 on pure-ASCII data.** The synthetic
+  benchmark rows (ids, digits, `A`/`B`/`C`) carry no multibyte signal,
+  so `stri_enc_detect` guessed ISO-8859-2 and the fread-native encoding
+  guard rejected the file. Same root cause as the v0.1 "auto-detection
+  needs signal" lesson. Fix: `dcc_detect_chunked()` now takes an
+  `encoding` override (mirroring `dcc_read()`); callers on low-signal
+  data pass `encoding = "UTF-8"` instead of relying on detection.
+- **The sandbox cannot commit to a mounted `.git`.** The FUSE mount
+  denies `unlink` on `.git` files, so once a `git commit` writes
+  `index.lock` it can never be removed and every later git call reports
+  "another git process seems to be running". Authoritative commits are
+  made on the host, not in the sandbox; the sandbox is for editing and
+  webR-level verification only.
 
 ## 2026-07-11 — v0.1 input layer: first full CI pass
 

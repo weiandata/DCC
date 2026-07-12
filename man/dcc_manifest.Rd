@@ -25,6 +25,26 @@ rule file path and hash, the executed actions, id/default
 configuration, and content hashes of the cleaned data and the audit
 log (timestamps excluded).
 }
+\examples{
+csv <- tempfile(fileext = ".csv")
+writeLines(c("sid,score", "S1,90", "S2,150"), csv)
+rules_file <- tempfile(fileext = ".yaml")
+writeLines(c(
+  "checks:",
+  "  - id: R001",
+  "    type: range",
+  "    variable: score",
+  "    min: 0",
+  "    max: 100"
+), rules_file)
+if (requireNamespace("yaml", quietly = TRUE)) {
+  x <- dcc_read(csv)
+  f <- dcc_detect(x, dcc_rules(rules_file), id_var = "sid")
+  res <- dcc_execute(x, f, actions = list(R001 = "set_na"),
+                     id_var = "sid")
+  dcc_manifest(res)
+}
+}
 \seealso{
 \code{\link{dcc_rerun}}
 }

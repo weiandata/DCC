@@ -7,6 +7,46 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-12
+
+First stable, CRAN-targeted release. The public API (exported `dcc_*`
+functions, the `dcc_findings` and audit-log schemas) is now considered
+stable; breaking changes to either schema will be major releases.
+
+### Added
+
+- Add `vignettes/dcc-pipeline.Rmd`: an end-to-end walkthrough of the
+  Detect -> Execute -> Report workflow (`VignetteBuilder: knitr`).
+- Add runnable `\examples` to `dcc_detect_chunked()`, `dcc_manifest()`,
+  and `dcc_rerun()`, completing example coverage for every exported
+  function.
+- Add `NEWS.md` (package-level release notes) and `URL`/`BugReports`
+  links in `DESCRIPTION`.
+
+### Fixed
+
+- Make `dcc_execute()` linear in the number of findings. Two hidden
+  quadratic paths made large runs pathological (about 1040s for ~210k
+  changes over 1e6 rows): the audit log grew a list with
+  `list[[length + 1]] <-`, and each finding resolved its rows with a
+  `row_of[[record_id]]` linear name scan. The audit and exclusion
+  buffers are now pre-sized, record ids are hashed to row positions
+  once via `match()`, and the per-run timestamp/version/hash are
+  stamped once instead of per change. Cleaned data and audit output are
+  unchanged.
+
+### Changed
+
+- Rewrite `README.md` as the DCC package README (overview, install,
+  end-to-end example, workflow, documentation links) in place of the
+  repository-template placeholder.
+- Set the license to `MIT`: add the `MIT + file LICENSE` declaration,
+  the two-line `LICENSE`, and the full-text `LICENSE.md`. Copyright is
+  held by WeianData Technology (Beijing) Co., Ltd.
+- Record authorship and ownership in `DESCRIPTION` via `Authors@R`:
+  Kunxiang Ma as author/maintainer, the company as copyright holder
+  (`cph`) and funder (`fnd`).
+
 ## [0.5.0] - 2026-07-12
 
 First release of the DCC package: the complete Detect-Execute-Report
@@ -100,7 +140,11 @@ workflow with an adaptive larger-than-memory backend.
   `min_median_ratio` (`~`, disables the median-relative cut) from an
   absent key (keeps the 1/3 default).
 
-## [1.0.0] - 2026-07-10
+## [Template baseline] - 2026-07-10
+
+The WeianData repository template this package was seeded from (its own
+1.0.0), kept here for provenance; DCC package versions are tracked in
+the sections above and in `NEWS.md`.
 
 ### Added
 

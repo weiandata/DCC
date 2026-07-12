@@ -59,6 +59,25 @@ always \code{UTF-8}, so the encoding restriction does not apply). With
 \code{arrow} for \code{.parquet}/\code{.feather}, \code{csv} for
 \code{.csv}/\code{.tsv}/\code{.txt}.
 }
+\examples{
+csv <- tempfile(fileext = ".csv")
+writeLines(c("sid,score", "S1,90", "S2,150", "S3,70"), csv)
+rules_file <- tempfile(fileext = ".yaml")
+writeLines(c(
+  "checks:",
+  "  - id: R001",
+  "    type: range",
+  "    variable: score",
+  "    min: 0",
+  "    max: 100"
+), rules_file)
+if (requireNamespace("yaml", quietly = TRUE)) {
+  # stream the file two rows at a time; encoding set explicitly since
+  # short ASCII files defeat charset auto-detection
+  dcc_detect_chunked(csv, dcc_rules(rules_file), chunk_size = 2L,
+                     id_var = "sid", encoding = "UTF-8")
+}
+}
 \seealso{
 \code{\link{dcc_detect}} for in-memory detection.
 }
