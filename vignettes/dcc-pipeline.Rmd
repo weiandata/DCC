@@ -1,0 +1,136 @@
+---
+title: "The DCC cleaning pipeline: Detect, Execute, Report"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The DCC cleaning pipeline: Detect, Execute, Report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+# The rule engine reads YAML, so only evaluate chunks when it is installed.
+has_yaml <- requireNamespace("yaml", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = has_yaml
+)
+library(DCC)
+```
+
+DCC treats data cleaning as an auditable pipeline. Raw data is immutable, every
+correction is driven by a declarative and versioned rule, and each change is
+recorded at the cell level so the whole run can be reproduced from a manifest.
+This vignette walks one small dataset through the full **Detect -> Execute ->
+Report** workflow.
+
+## A small dataset and a rule set
+
+We start from a tiny response file. `S2` has an out-of-range score and `S3` is
+missing an item.
+
+```{r data}
+csv <- tempfile(fileext = ".csv")
+writeLines(c(
+  "sid,score,q1,q2,q3",
+  "S1,90,1,2,3",
+  "S2,150,2,2,2",
+  "S3,70,1,,3"
+), csv)
+```
+
+Rules live outside the code as declarative YAML. Here we flag scores outside
+`[0, 100]` and respondents missing more than a third of their items.
+
+```{r rules}
+rules_file <- tempfile(fileext = ".yaml")
+writeLines(c(
+  "checks:",
+  "  - id: R001",
+  "    type: range",
+  "    variable: score",
+  "    min: 0",
+  "    max: 100",
+  "    severity: fail",
+  "  - id: D001",
+  "    type: missing_items",
+  "    items: [q1, q2, q3]",
+  "    max_prop: 0.3"
+), rules_file)
+```
+
+## Detect
+
+`dcc_read()` loads the file (with encoding detection and structural
+diagnostics) and `dcc_rules()` parses the rule set, recording its hash for the
+audit trail. `dcc_detect()` then returns a structured `dcc_findings` object.
+
+```{r detect}
+x     <- dcc_read(csv)
+rules <- dcc_rules(rules_file)
+found <- dcc_detect(x, rules, id_var = "sid")
+found
+```
+
+## Execute
+
+`dcc_execute()` applies declarative actions mapped to rule IDs. Input data is
+never mutated; unmapped findings are flagged rather than dropped. Below we blank
+the out-of-range score and flag the incomplete respondent.
+
+```{r execute}
+res <- dcc_execute(
+  x, found,
+  actions = list(R001 = "set_na", Q_MISSING_ITEMS = "flag"),
+  id_var = "sid"
+)
+dcc_cleaned(res)
+```
+
+Every change is captured in the cell-level audit log, with the old and new
+value, the triggering rule, and the method.
+
+```{r audit}
+dcc_audit_log(res)
+```
+
+## Report
+
+`dcc_report()` writes a self-contained HTML report -- a management summary plus
+an audit layer that reconciles findings against changes -- with no external
+rendering dependency.
+
+```{r report}
+report_path <- tempfile(fileext = ".html")
+dcc_report(res, report_path)
+file.exists(report_path)
+```
+
+## Trace and reproduce
+
+`dcc_trace()` returns the full history of any cell in the cleaned data.
+
+```{r trace}
+dcc_trace(res, "S2", "score")
+```
+
+Finally, `dcc_manifest()` captures the input and rule hashes, the actions, and
+the output hashes; `dcc_rerun()` re-executes the whole pipeline and verifies the
+result is byte-identical (timestamps excluded).
+
+```{r rerun}
+check <- dcc_rerun(dcc_manifest(res))
+check$reproduced
+```
+
+## Larger-than-memory input
+
+For files that do not fit in memory, `dcc_detect_chunked()` streams the input
+with an adaptive backend -- `data.table` for delimited text, `arrow` for
+Parquet/Feather -- producing findings identical to the in-memory path for
+record-local checks.
+
+```{r chunked}
+dcc_detect_chunked(csv, rules, chunk_size = 2L, id_var = "sid",
+                   encoding = "UTF-8")
+```

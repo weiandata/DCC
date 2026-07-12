@@ -4,7 +4,7 @@
 #' implementing the WeianData Detect-Execute-Report workflow. See
 #' `docs/design.md` in the repository for the full design document.
 #'
-#' @section Scope (through v0.5):
+#' @section Scope (v1.0, stable API):
 #' * [dcc_read()] / [dcc_data()] / [dcc_l0_diagnose()] -- multi-format,
 #'   multi-encoding input layer, container with provenance, level-0
 #'   diagnostics.

@@ -1,122 +1,110 @@
-# WeianData Repository Template
+# DCC — Data Cleaning Center
 
-The official language-independent starting point for repositories owned or
-maintained by WeianData.
+Rule-driven, auditable cleaning of survey and assessment response data,
+implementing the WeianData **Detect → Execute → Report** workflow.
 
-Status: Active
+Status: Active · Owner: WeianData Engineering · License: MIT
 
-Owner: WeianData Engineering
+## Overview
 
-## Project Overview
+DCC treats data cleaning as an auditable pipeline rather than a pile of ad-hoc
+edits. Raw data is immutable; every correction is driven by a declarative,
+versioned rule and recorded at the cell level, so any value in the cleaned
+dataset can be traced back to the finding and rule that changed it, and a whole
+run can be reproduced from a manifest.
 
-This repository is the golden template for new WeianData software, research,
-documentation, SDK, AI, infrastructure, and static-site repositories. It
-provides the common governance and documentation baseline without choosing a
-programming language, framework, package manager, or deployment model.
+It is built for survey and educational-assessment data: multi-format and
+multi-encoding input, response-quality detectors, answer-key scoring, multi-form
+item-bank alignment, and self-contained HTML reports.
 
-After creating a repository from this template, replace this overview with the
-new project's purpose, audience, status, owner, supported use cases, and
-non-goals.
+## Installation
 
-## Features
-
-- A predictable, AI-friendly repository structure.
-- Issue and pull request templates for reviewable work.
-- Language-neutral Markdown and link checks.
-- Contribution, security, versioning, and ownership defaults.
-- Dedicated locations for documentation, examples, and utility scripts.
-
-This template intentionally contains no business logic, source layout, test
-layout, dependency manifest, dataset, container configuration, or
-language-specific automation. Add only the components required by the new
-project and its selected operating mode.
-
-## Repository Structure
-
-```text
-.
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   ├── workflows/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── docs/
-├── examples/
-├── scripts/
-├── .editorconfig
-├── .gitignore
-├── CHANGELOG.md
-├── CODEOWNERS
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-└── SECURITY.md
+```r
+# install.packages("remotes")
+remotes::install_github("weiandata/DCC")
 ```
 
-Language-native source and test directories belong in the generated
-repository, not in this common template.
+Only `data.table` and `stringi` are hard dependencies. Format- and
+feature-specific packages (`readxl`, `haven`, `arrow`, `jsonlite`, `yaml`) are
+suggested and loaded on demand.
 
-## Getting Started
+## Quick start
 
-1. On GitHub, open this repository and select **Use this template**.
-2. Choose **Create a new repository**.
-3. Enter a lowercase, hyphen-separated repository name and select the correct
-   owner and visibility.
-4. Clone the generated repository and create a short-lived topic branch from
-   `main`.
-5. Replace all project placeholders, choose a license or proprietary notice,
-   and tailor the structure to the language and operating mode.
-6. Add reproducible setup, validation, security, and release automation before
-   the repository is relied on.
-7. Configure branch protection, required checks, and appropriate reviewers in
-   GitHub.
+```r
+library(DCC)
 
-Repository names use lowercase kebab case, for example `irt-engine` or
-`knowledge-base`.
+# 1. A small response file and a declarative rule set
+csv <- tempfile(fileext = ".csv")
+writeLines(c("sid,score", "S1,90", "S2,150", "S3,70"), csv)
 
-## Development
+rules_file <- tempfile(fileext = ".yaml")
+writeLines(c(
+  "checks:",
+  "  - id: R001",
+  "    type: range",
+  "    variable: score",
+  "    min: 0",
+  "    max: 100"
+), rules_file)
 
-Changes use short-lived branches named `<category>/<kebab-case-topic>`, such as
-`feature/add-score-export` or `docs/clarify-setup`. Submit changes through a
-pull request and keep `main` releasable. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for commit, review, testing, and evidence requirements.
+# 2. Read -> Detect -> Execute
+x     <- dcc_read(csv)
+rules <- dcc_rules(rules_file)
+found <- dcc_detect(x, rules, id_var = "sid")            # S2 is out of range
+res   <- dcc_execute(x, found,
+                     actions = list(R001 = "set_na"),    # blank the bad cell
+                     id_var = "sid")
 
-The shared workflow checks Markdown style and links. Generated repositories
-must add the language-specific build, test, dependency, security, and release
-checks required by their project.
+dcc_cleaned(res)      # the corrected data
+dcc_audit_log(res)    # one row per change, with old/new value and rule
+
+# 3. Report, trace, reproduce
+dcc_report(res, tempfile(fileext = ".html"))  # dual-layer HTML report
+dcc_trace(res, "S2", "score")                 # full history of one cell
+dcc_rerun(dcc_manifest(res))$reproduced       # TRUE: byte-identical rerun
+```
+
+See `vignette("dcc-pipeline", package = "DCC")` for the full walkthrough.
+
+## The workflow
+
+**Detect.** `dcc_read()` loads CSV/TSV, Excel, SPSS/Stata/SAS, Parquet/Feather,
+and rectangular JSON with encoding auto-detection. `dcc_detect()` evaluates a
+versioned `dcc_rules()` set: range/set/expression checks plus five
+response-quality detectors — missing items, straight-lining, response time,
+trap items, and score anomalies — producing a structured `dcc_findings` object.
+
+**Execute.** `dcc_execute()` applies declarative actions (`exclude`, `set_na`,
+`recode`, `flag`) mapped to rule IDs. Input data is never mutated; every change
+is written to a cell-level audit log with old/new value, triggering rule,
+method, timestamp, and rule/key hashes. `dcc_score()` and `dcc_map_forms()`
+handle answer-key scoring and multi-form item-bank alignment.
+
+**Report.** `dcc_report()` produces a self-contained, dependency-free HTML
+report with a management summary and an audit layer that reconciles findings
+against changes. `dcc_trace()` gives cell-level lineage; `dcc_manifest()` /
+`dcc_rerun()` provide one-command, hash-verified reproduction.
+
+**Scale.** Core work runs on `data.table` for million-row in-memory workloads.
+`dcc_detect_chunked()` streams larger-than-memory files with an adaptive backend
+(`data.table` for delimited text, `arrow` for Parquet/Feather), with findings
+identical to the in-memory path.
 
 ## Documentation
 
-- [Documentation index](docs/README.md)
-- [Repository standard summary](docs/repository-standard.md)
-- [Template development guide](docs/Repository_Template_Development_Guide.md)
-- [WeianData Engineering Handbook](https://github.com/weiandata/.github/blob/main/handbook/README.md)
+- `vignette("dcc-pipeline")` — end-to-end walkthrough
+- [Design document](docs/design.md)
+- [Development notes](docs/development-notes.md)
+- [CHANGELOG](CHANGELOG.md) / [NEWS](NEWS.md)
+- [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md)
 
-The Engineering Handbook is the normative source for engineering rules. This
-template implements safe defaults and does not replace or redefine those
-standards.
+## Data and security
 
-## Repository Lifecycle
-
-Every repository moves through planning, development, testing, release,
-maintenance, and eventual archival. The owner must keep purpose, status,
-validation evidence, supported versions, and maintenance expectations current
-throughout that lifecycle.
-
-## Data and Security
-
-Do not commit credentials, secrets, personal information, restricted client
-data, or unapproved datasets. Use synthetic, public, or explicitly authorized
-fixtures and follow [SECURITY.md](SECURITY.md) for private vulnerability
-reporting.
-
-## Support
-
-Use the repository's issue templates for non-sensitive defects, features, and
-documentation work. Report security concerns only through the private channels
-listed in [SECURITY.md](SECURITY.md).
+All example and test data are synthetic. Do not commit credentials, secrets,
+personal information, or unapproved datasets; follow [SECURITY.md](SECURITY.md)
+for private vulnerability reporting.
 
 ## License
 
-The included [LICENSE](LICENSE) is intentionally a placeholder. Every generated
-repository must replace it with an approved license or an explicit proprietary
-notice before distribution or external reliance.
+Released under the [MIT License](LICENSE.md).
+Copyright © 2026 WeianData Technology (Beijing) Co., Ltd. (惟数据科技(北京)有限公司).
