@@ -72,48 +72,52 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     )
   }
 
+  # Vector indexing instead of per-row data.table subsetting: the loop
+  # must stay cheap when findings run into the hundreds of thousands.
+  f_rid <- findings$record_id
+  f_var <- findings$variable
+  f_chk <- findings$check_id
   for (i in seq_len(nrow(findings))) {
-    f <- findings[i, ]
-    act <- actions[[f$check_id]] %||% default
+    act <- actions[[f_chk[i]]] %||% default
     act_name <- if (is.list(act)) act$action %||% "" else act
-    if (is.na(f$record_id)) {
+    if (is.na(f_rid[i])) {
       # Record-less findings (e.g. group-level) can only be flagged.
       rows <- integer()
     } else {
-      rows <- row_of[[f$record_id]]
+      rows <- row_of[[f_rid[i]]]
       if (is.null(rows)) {
-        dcc_abort("Finding record_id '", f$record_id, "' not found in ",
+        dcc_abort("Finding record_id '", f_rid[i], "' not found in ",
                   "data (check `id_var`).", class = "dcc_execute_error")
       }
     }
     switch(act_name,
       exclude = {
         excluded_rows <- union(excluded_rows, rows)
-        log_change(f$record_id, NA_character_, NA, NA, "exclude",
-                   f$check_id, "record excluded from cleaned dataset")
+        log_change(f_rid[i], NA_character_, NA, NA, "exclude",
+                   f_chk[i], "record excluded from cleaned dataset")
       },
       set_na = {
-        v <- f$variable
+        v <- f_var[i]
         if (is.na(v) || !v %in% names(dt)) {
-          dcc_abort("Finding for check '", f$check_id, "' has no usable ",
+          dcc_abort("Finding for check '", f_chk[i], "' has no usable ",
                     "`variable`; set_na needs a cell to clear.",
                     class = "dcc_execute_error")
         }
         old <- dt[[v]][rows]
         data.table::set(dt, i = rows, j = v, value = NA)
-        log_change(rep(f$record_id, length(rows)), v, old, NA, "set_na",
-                   f$check_id, "cell set to NA")
+        log_change(rep(f_rid[i], length(rows)), v, old, NA, "set_na",
+                   f_chk[i], "cell set to NA")
       },
       recode = {
-        v <- f$variable
+        v <- f_var[i]
         map <- act$map
         if (is.na(v) || !v %in% names(dt)) {
-          dcc_abort("Finding for check '", f$check_id, "' has no usable ",
+          dcc_abort("Finding for check '", f_chk[i], "' has no usable ",
                     "`variable`; recode needs a cell.",
                     class = "dcc_execute_error")
         }
         if (is.null(map) || is.null(names(map))) {
-          dcc_abort("recode action for check '", f$check_id, "' needs a ",
+          dcc_abort("recode action for check '", f_chk[i], "' needs a ",
                     "named `map`.", class = "dcc_execute_error")
         }
         old <- dt[[v]][rows]
@@ -124,17 +128,17 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
           new_raw <- unname(map[key[hitmap]])
           new_vals[hitmap] <- methods::as(new_raw, class(dt[[v]])[1])
           data.table::set(dt, i = rows, j = v, value = new_vals)
-          log_change(rep(f$record_id, sum(hitmap)), v, old[hitmap],
-                     new_raw, "recode", f$check_id,
+          log_change(rep(f_rid[i], sum(hitmap)), v, old[hitmap],
+                     new_raw, "recode", f_chk[i],
                      "cell recoded via action map")
         }
       },
       flag = {
-        log_change(f$record_id, f$variable, NA, NA, "flag", f$check_id,
+        log_change(f_rid[i], f_var[i], NA, NA, "flag", f_chk[i],
                    "reviewed and kept (no data change)")
       },
       dcc_abort("Unknown action '", act_name, "' for check '",
-                f$check_id, "'.", class = "dcc_execute_error")
+                f_chk[i], "'.", class = "dcc_execute_error")
     )
   }
 

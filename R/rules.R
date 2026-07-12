@@ -120,7 +120,13 @@ eval_check <- function(x, ch, id_var = NULL) {
     response_time = detect_response_time(
       x, time_var = ch$time_var,
       min_seconds = ch$min_seconds,
-      min_median_ratio = ch$min_median_ratio %||% (1 / 3),
+      # An explicitly null key (min_median_ratio: ~) disables the
+      # median-relative cut; an absent key keeps the default.
+      min_median_ratio = if ("min_median_ratio" %in% names(ch)) {
+        ch$min_median_ratio
+      } else {
+        1 / 3
+      },
       id_var = id_var, severity = severity
     ),
     trap_items = detect_trap_items(
