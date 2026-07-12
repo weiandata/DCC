@@ -26,7 +26,8 @@ test_that("dcc_apply_codebook applies the previewed changes", {
   expect_identical(ad$age[1], 25L)         # coerced to integer
   expect_true("gender" %in% names(ad))     # renamed
   expect_false("sex" %in% names(ad))
-  expect_identical(ad$gender, c("M", "F")) # recoded
+  # recoded (the column also carries the intended `label` attribute)
+  expect_equal(ad$gender, c("M", "F"), ignore_attr = TRUE)
   expect_true("codebook" %in% dcc_provenance(applied)$stage)
 })
 
