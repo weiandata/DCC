@@ -21,7 +21,9 @@
 dcc_findings <- function(record_id = character(), variable = NA_character_,
                          check_id = character(), evidence = character(),
                          severity = "warn", dimension = NA_character_) {
-  n <- max(length(record_id), length(check_id), length(evidence))
+  # Size on record_id/evidence: check_id and severity are usually
+  # scalars, and a zero-hit detector must yield zero findings.
+  n <- max(length(record_id), length(evidence))
   if (n == 0L) {
     return(empty_findings())
   }
