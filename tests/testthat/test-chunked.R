@@ -48,6 +48,53 @@ test_that("chunked findings equal in-memory findings", {
   }
 })
 
+test_that("auto backend records which backend ran", {
+  fx <- chunk_fixture()
+  chunked <- dcc_detect_chunked(fx$csv, fx$rules, chunk_size = 5L,
+                                id_var = "sid")
+  expect_identical(attr(chunked, "backend", exact = TRUE), "csv")
+})
+
+test_that("arrow backend equals in-memory findings", {
+  skip_if_not_installed("arrow")
+  fx <- chunk_fixture()
+  pq <- tempfile(fileext = ".parquet")
+  arrow::write_parquet(data.table::fread(fx$csv), pq)
+  in_mem <- dcc_detect(dcc_read(fx$csv), fx$rules, id_var = "sid")
+  # auto-selection picks the arrow backend from the .parquet extension
+  for (cs in c(3L, 5L, 4L, 100L)) {
+    chunked <- dcc_detect_chunked(pq, fx$rules, chunk_size = cs,
+                                  id_var = "sid")
+    expect_identical(attr(chunked, "backend", exact = TRUE), "arrow")
+    expect_identical(normalize_findings(chunked),
+                     normalize_findings(in_mem),
+                     label = paste("arrow chunk_size", cs))
+  }
+})
+
+test_that("arrow backend rejects a missing id_var with a typed error", {
+  skip_if_not_installed("arrow")
+  fx <- chunk_fixture()
+  pq <- tempfile(fileext = ".parquet")
+  arrow::write_parquet(data.table::fread(fx$csv), pq)
+  expect_error(
+    dcc_detect_chunked(pq, fx$rules, id_var = "nope"),
+    class = "dcc_type_error"
+  )
+})
+
+test_that("unknown extension needs an explicit backend", {
+  fx <- chunk_fixture()
+  odd <- tempfile(fileext = ".dat")
+  file.copy(fx$csv, odd)
+  expect_error(dcc_detect_chunked(odd, fx$rules),
+               class = "dcc_type_error")
+  # explicit override reads the same bytes as CSV
+  forced <- dcc_detect_chunked(odd, fx$rules, id_var = "sid",
+                               backend = "csv")
+  expect_identical(attr(forced, "backend", exact = TRUE), "csv")
+})
+
 test_that("chunked row-number ids are globally consistent", {
   fx <- chunk_fixture()
   chunked <- dcc_detect_chunked(fx$csv, fx$rules, chunk_size = 3L)

@@ -4,6 +4,32 @@ Practical lessons collected while developing DCC. Newest entries first.
 These complement, and never override, the repository standard and the
 Engineering Handbook.
 
+## 2026-07-12 — v0.5 performance backends
+
+### Adaptive chunked backend
+
+- **One entry, two streaming backends.** `dcc_detect_chunked()` keeps
+  a single public signature and dispatches on a `backend` argument
+  (`auto`/`csv`/`arrow`). `auto` reads the file extension only, so
+  backend choice is inspectable and testable without opening the file.
+  The chosen backend is stored as a `backend` attribute on the
+  findings for provenance and tests.
+- **Arrow sidesteps the encoding restriction.** The fread path needs
+  an fread-native encoding (UTF-8/latin1); Parquet/Feather are
+  columnar UTF-8 with types in the schema, so the Arrow path needs no
+  encoding guard and no first-chunk column-type locking -- the schema
+  is stable across record batches by construction.
+- **Stream Arrow with a batch reader, not a full read.** Use
+  `arrow::Scanner$create(ds, batch_size = chunk_size)` +
+  `ToRecordBatchReader()` and pull one batch at a time; a plain
+  `read_parquet()` would materialise the whole file and defeat the
+  bounded-memory goal. `open_dataset()` defaults to Parquet, so pass
+  `format = "arrow"` for `.feather`/`.arrow` inputs.
+- **Keep new benchmark stages non-gating.** The `chunked_csv` /
+  `chunked_arrow` stages are informational (no budget): streaming
+  throughput is dominated by the host I/O layer, so a hard threshold
+  there would be a flaky gate, not a regression signal.
+
 ## 2026-07-11 — v0.1 input layer: first full CI pass
 
 ### R CMD check

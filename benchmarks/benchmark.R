@@ -105,6 +105,36 @@ for (n in scales) {
       findings = nrow(f), changes = nrow(dcc_audit_log(res))
     )
   }
+
+  # Larger-than-memory backends (design section 8). Every benchmark
+  # check (range, straightlining, missing_items, trap_items) is
+  # chunk-safe, so the streaming paths reuse the same rule set. These
+  # stages are informational -- they exercise the streaming backends at
+  # scale without a hard budget, since backend speed depends heavily on
+  # the host I/O layer.
+  t_csv_chunk <- system.time(
+    fc <- dcc_detect_chunked(csv, rules, id_var = "sid",
+                             backend = "csv")
+  )[["elapsed"]]
+  results[[length(results) + 1L]] <- data.table(
+    rows = n, stage = "chunked_csv", seconds = round(t_csv_chunk, 2),
+    limit = NA_real_, ok = TRUE,
+    findings = nrow(fc), changes = NA_integer_
+  )
+  if (requireNamespace("arrow", quietly = TRUE)) {
+    pq <- tempfile(fileext = ".parquet")
+    arrow::write_parquet(dt, pq)
+    t_arrow_chunk <- system.time(
+      fa <- dcc_detect_chunked(pq, rules, id_var = "sid")
+    )[["elapsed"]]
+    results[[length(results) + 1L]] <- data.table(
+      rows = n, stage = "chunked_arrow",
+      seconds = round(t_arrow_chunk, 2),
+      limit = NA_real_, ok = TRUE,
+      findings = nrow(fa), changes = NA_integer_
+    )
+    unlink(pq)
+  }
   unlink(c(csv, rules_file))
 }
 

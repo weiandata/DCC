@@ -7,8 +7,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-12
+
+First release of the DCC package: the complete Detect-Execute-Report
+workflow with an adaptive larger-than-memory backend.
+
 ### Added
 
+- Add an adaptive backend to `dcc_detect_chunked()`: a `backend`
+  argument (`"auto"`/`"csv"`/`"arrow"`) selects between the delimited
+  (fread) path and a new Arrow path that streams Parquet/Feather files
+  as record batches. `"auto"` picks the backend from the file
+  extension; the Arrow path takes types from the file schema and is
+  encoding-agnostic. Findings are identical across backends and to
+  in-memory `dcc_detect()`, and the chosen backend is recorded as a
+  `backend` attribute.
 - Add `dcc_detect_chunked()`: larger-than-memory detection for
   delimited files. Record-local checks run chunk by chunk with results
   identical to in-memory `dcc_detect()`; cross-record checks
@@ -17,7 +30,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Add `benchmarks/benchmark.R` and the `R-benchmark` workflow: CI
   regression gate timing read/detect/execute at 1e4 and 1e6 rows
   (larger scales via `DCC_BENCH_ROWS`), with per-stage budgets and CSV
-  artifacts.
+  artifacts, plus informational `chunked_csv`/`chunked_arrow` streaming
+  stages.
 
 - Add `dcc_report()`: dual-layer self-contained HTML reports (no
   pandoc dependency) -- management summary (findings by quality
