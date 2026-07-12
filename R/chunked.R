@@ -27,7 +27,9 @@
 #'   (`UTF-8` or `latin1`); convert other encodings once via
 #'   [dcc_read()] + export before chunked runs. Column types are
 #'   locked from the first chunk so a later all-`NA` column cannot
-#'   drift to another type.
+#'   drift to another type. Each record must lie on a single line;
+#'   embedded newlines inside quoted fields are not supported by the
+#'   line-based stream (read such files whole with [dcc_read()]).
 #' * `"arrow"` -- streams a Parquet or Feather file as Arrow record
 #'   batches (requires the `arrow` package). Types come from the file
 #'   schema and are stable across batches, and the columnar format is

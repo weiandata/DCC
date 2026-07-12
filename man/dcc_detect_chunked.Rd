@@ -53,7 +53,9 @@ Two backends share this entry point and produce identical findings:
 the \code{csv} backend streams a delimited file with
 \code{\link[data.table]{fread}} (fread-native \code{UTF-8}/\code{latin1}
 encoding only; column types are locked from the first chunk so later
-chunks cannot drift), and the \code{arrow} backend streams a
+chunks cannot drift; each record must lie on a single line, so embedded
+newlines in quoted fields are unsupported -- read such files whole with
+\code{\link{dcc_read}}), and the \code{arrow} backend streams a
 Parquet/Feather file as record batches (requires the \code{arrow}
 package; types come from the file schema and the columnar format is
 always \code{UTF-8}, so the encoding restriction does not apply). With

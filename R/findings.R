@@ -75,7 +75,8 @@ new_finding_ids <- function(run_id, check_id, record_id, variable) {
     paste0(nchar(x, type = "chars"), ":", x)
   }
   key <- paste(run_id, check_id, record_part, variable_part, sep = "\r")
-  occurrence <- ave(seq_along(key), key, FUN = function(x) seq_along(x) - 1L)
+  occurrence <- stats::ave(seq_along(key), key,
+                           FUN = function(x) seq_along(x) - 1L)
   paste(encode_part(run_id), encode_part(check_id), encode_part(record_part),
         encode_part(variable_part), occurrence, sep = "|")
 }

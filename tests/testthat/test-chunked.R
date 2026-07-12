@@ -68,10 +68,13 @@ test_that("auto backend records which backend ran", {
 
 test_that("chunked TSV infers tabs and locks types without warnings", {
   skip_if_not_installed("yaml")
+  # `note` carries a quoted tab (the delimiter) to exercise quoted-field
+  # parsing. Records stay on one physical line: the CSV backend chunks by
+  # line, so embedded newlines are out of scope (convert via dcc_read()).
   df <- data.frame(
     sid = c("S1", "S2", "S3", "S4"),
     score = c(101, NA, NA, 99),
-    note = c("a\tb", "line1\nline2", NA, "ok")
+    note = c("a\tb", "plain", NA, "ok")
   )
   path <- tempfile(fileext = ".tsv")
   data.table::fwrite(df, path, sep = "\t", quote = TRUE)

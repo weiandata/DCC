@@ -1,4 +1,8 @@
 ^\.github$
+^AGENTS\.md$
+^ENGINEERING_PLAN\.md$
+^LICENSE\.md$
+^\.codegraph$
 ^docs$
 ^examples$
 ^scripts$
