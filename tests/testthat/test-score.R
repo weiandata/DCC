@@ -49,7 +49,16 @@ test_that("pluggable scoring_fn overrides built-ins", {
   half <- function(resp, krow) rep(0.5, length(resp))
   out <- dcc_score(score_df(), score_key(), scoring_fn = half)
   df <- as.data.frame(out)
-  expect_identical(unique(df$it1_score), 0.5)
+  # custom score for answered items; omit policy still governs NA
+  # responses (S3's it1 is NA -> 0 under the default zero policy)
+  expect_identical(df$it1_score, c(0.5, 0.5, 0))
+  expect_identical(df$it2_score, c(0.5, 0.5, 0.5))
+
+  out_na <- as.data.frame(
+    dcc_score(score_df(), score_key(), omit_policy = "na",
+              scoring_fn = half)
+  )
+  expect_identical(out_na$it1_score, c(0.5, 0.5, NA_real_))
 })
 
 test_that("answer key from CSV records hash in provenance", {
