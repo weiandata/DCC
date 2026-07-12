@@ -167,7 +167,12 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     list(
       data = out_data,
       audit = audit_dt,
-      n_excluded = length(excluded_rows)
+      n_excluded = length(excluded_rows),
+      findings = findings,
+      actions = actions,
+      id_var = id_var,
+      default = default,
+      ruleset_hash = ruleset_hash %||% NA_character_
     ),
     class = "dcc_result"
   )

@@ -22,7 +22,8 @@ utils::globalVariables(c(".", ".N", ".SD", "name", "n_missing",
                          ".dcc_group", ".dcc_lo", ".dcc_hi", ".dcc_mu",
                          ".dcc_sd", ".dcc_gmu", "type", "points",
                          "partial", "form", "source", "master",
-                         "is_anchor"))
+                         "is_anchor", "record_id", "check_id", "action",
+                         "handled", "dimension", "severity"))
 
 dcc_version_string <- function() {
   as.character(utils::packageVersion("DCC"))

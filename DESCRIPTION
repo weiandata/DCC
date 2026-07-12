@@ -1,7 +1,7 @@
 Package: DCC
 Type: Package
 Title: Data Cleaning Center for Survey and Assessment Data
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
     person("WeianData Engineering", role = c("aut", "cre"),
            email = "engineering@weiandata.example"))
@@ -13,8 +13,10 @@ Description: Rule-driven, auditable cleaning of survey and assessment
     diagnostics, five built-in response-quality detectors (missing
     items, straight-lining, response time, trap items, score
     anomalies), a declarative 'YAML' rule engine, an execution engine
-    with a cell-level audit log, answer-key scoring, and multi-form to
-    master item bank mapping for downstream calibration.
+    with a cell-level audit log, answer-key scoring, multi-form to
+    master item bank mapping, dual-layer 'HTML' reports with
+    findings-to-changes reconciliation, cell-level lineage tracing, and
+    manifest-based one-command reproduction.
 License: file LICENSE
 Encoding: UTF-8
 Language: en
