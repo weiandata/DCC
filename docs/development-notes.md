@@ -4,6 +4,30 @@ Practical lessons collected while developing DCC. Newest entries first.
 These complement, and never override, the repository standard and the
 Engineering Handbook.
 
+## 2026-07-12 — execute is linear, or it is not usable
+
+The 1e6-row CI benchmark timed `dcc_execute()` at ~1040s (budget 60s)
+while read/detect/chunked stayed at 1-3s. Two O(n^2) paths, both
+invisible at the 1e4 scale the unit tests use:
+
+- **Never grow a result with `x[[length(x) + 1]] <-`.** Each append
+  copies the whole list, so building a 210k-row audit log that way is
+  O(n^2). Pre-size the buffer (`vector("list", nrow(findings))`) and
+  write by an incrementing counter; `rbindlist()` the used prefix at
+  the end.
+- **`list[[character]]` is a linear name scan.** `row_of[[record_id]]`
+  on a list with up to 1e6 names is O(n) per finding, O(n^2) overall.
+  Hash the ids to positions once with `match(record_id, names(row_of))`
+  and index by integer.
+- **Hoist constants out of the hot loop.** `dcc_timestamp()` (a
+  `format(Sys.time())`) and `packageVersion()` were recomputed per
+  change; compute once per run. Timestamps are excluded from
+  reproducibility comparisons, so one run-level timestamp is also more
+  correct.
+
+Lesson: benchmark at the scale the package claims to serve. Unit tests
+at 1e4 rows pass happily through both quadratics.
+
 ## 2026-07-12 — v1.0 CRAN-readiness
 
 ### Licensing and ownership

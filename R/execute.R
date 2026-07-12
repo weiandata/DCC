@@ -52,12 +52,27 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   r <- resolve_data(x, id_var)
   dt <- data.table::copy(r$dt)
   row_of <- split(seq_len(nrow(dt)), r$ids)
+  row_names <- names(row_of)
 
-  audit <- list()
-  excluded_rows <- integer()
+  # Stamp constant fields once per run: recomputing the timestamp and
+  # versions per change is both wasteful and (for timestamps) excluded
+  # from reproducibility comparisons anyway.
+  ts <- dcc_timestamp()
+  ver <- dcc_version_string()
+  rh <- ruleset_hash %||% NA_character_
+
+  # Pre-size the audit and exclusion buffers: at most one log entry and
+  # one exclusion per finding, so indexed writes stay O(1) and the whole
+  # loop is linear (a growing `list[[length+1]] <-` is O(n^2)).
+  n_find <- nrow(findings)
+  audit <- vector("list", n_find)
+  ai <- 0L
+  excluded_chunks <- vector("list", n_find)
+  ei <- 0L
   log_change <- function(record_id, variable, old, new, action, check_id,
                          method) {
-    audit[[length(audit) + 1L]] <<- data.table::data.table(
+    ai <<- ai + 1L
+    audit[[ai]] <<- data.table::data.table(
       record_id = record_id,
       variable = variable %||% NA_character_,
       old_value = as.character(old),
@@ -65,9 +80,9 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
       action = action,
       check_id = check_id,
       method = method,
-      timestamp = dcc_timestamp(),
-      dcc_version = dcc_version_string(),
-      ruleset_hash = ruleset_hash %||% NA_character_,
+      timestamp = ts,
+      dcc_version = ver,
+      ruleset_hash = rh,
       keyfile_hash = NA_character_
     )
   }
@@ -77,6 +92,9 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   f_rid <- findings$record_id
   f_var <- findings$variable
   f_chk <- findings$check_id
+  # Hash record ids to row-group positions once; a per-finding
+  # `row_of[[character]]` lookup is a linear scan of up to n names.
+  f_pos <- match(f_rid, row_names)
   for (i in seq_len(nrow(findings))) {
     act <- actions[[f_chk[i]]] %||% default
     act_name <- if (is.list(act)) act$action %||% "" else act
@@ -84,15 +102,17 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
       # Record-less findings (e.g. group-level) can only be flagged.
       rows <- integer()
     } else {
-      rows <- row_of[[f_rid[i]]]
-      if (is.null(rows)) {
+      pos <- f_pos[i]
+      if (is.na(pos)) {
         dcc_abort("Finding record_id '", f_rid[i], "' not found in ",
                   "data (check `id_var`).", class = "dcc_execute_error")
       }
+      rows <- row_of[[pos]]
     }
     switch(act_name,
       exclude = {
-        excluded_rows <- union(excluded_rows, rows)
+        ei <- ei + 1L
+        excluded_chunks[[ei]] <- rows
         log_change(f_rid[i], NA_character_, NA, NA, "exclude",
                    f_chk[i], "record excluded from cleaned dataset")
       },
@@ -142,11 +162,16 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     )
   }
 
+  excluded_rows <- if (ei) {
+    unique(unlist(excluded_chunks[seq_len(ei)], use.names = FALSE))
+  } else {
+    integer()
+  }
   keep <- setdiff(seq_len(nrow(dt)), excluded_rows)
   cleaned_dt <- dt[keep]
 
-  audit_dt <- if (length(audit)) {
-    data.table::rbindlist(audit)
+  audit_dt <- if (ai) {
+    data.table::rbindlist(audit[seq_len(ai)])
   } else {
     empty_audit_log()
   }

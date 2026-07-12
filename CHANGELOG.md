@@ -23,6 +23,18 @@ stable; breaking changes to either schema will be major releases.
 - Add `NEWS.md` (package-level release notes) and `URL`/`BugReports`
   links in `DESCRIPTION`.
 
+### Fixed
+
+- Make `dcc_execute()` linear in the number of findings. Two hidden
+  quadratic paths made large runs pathological (about 1040s for ~210k
+  changes over 1e6 rows): the audit log grew a list with
+  `list[[length + 1]] <-`, and each finding resolved its rows with a
+  `row_of[[record_id]]` linear name scan. The audit and exclusion
+  buffers are now pre-sized, record ids are hashed to row positions
+  once via `match()`, and the per-run timestamp/version/hash are
+  stamped once instead of per change. Cleaned data and audit output are
+  unchanged.
+
 ### Changed
 
 - Rewrite `README.md` as the DCC package README (overview, install,
