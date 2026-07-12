@@ -6,10 +6,11 @@
 #' * `"summary"` -- management layer: findings by quality dimension and
 #'   severity, change volumes by action, exclusion counts, provenance
 #'   chain and rule/key hashes.
-#' * `"audit"` -- audit layer: everything in the summary plus the
-#'   findings-to-changes reconciliation ([dcc_reconcile()]) and the
-#'   cell-level change log (capped at `max_rows` rows in HTML; the
-#'   complete log is exported with [dcc_export_log()]).
+#' * `"audit"` -- audit layer: everything in the summary plus the full
+#'   findings table (with evidence), the findings-to-changes
+#'   reconciliation ([dcc_reconcile()]) and the cell-level change log
+#'   (both capped at `max_rows` rows in HTML; the complete log is
+#'   exported with [dcc_export_log()]).
 #'
 #' The HTML is generated directly (no pandoc/rmarkdown dependency) so
 #' reports render identically on CI and analyst machines.
@@ -75,6 +76,17 @@ dcc_report <- function(x, path = NULL, audience = c("summary", "audit"),
                       with = FALSE]))
 
   if (audience == "audit") {
+    add("<h2>Findings</h2>")
+    if (nrow(f)) {
+      shown_f <- utils::head(data.table::as.data.table(f), max_rows)
+      if (nrow(f) > nrow(shown_f)) {
+        add("<p class='meta'>showing first ", nrow(shown_f), " of ",
+            nrow(f), " findings.</p>")
+      }
+      add(html_table(shown_f))
+    } else {
+      add("<p>No findings.</p>")
+    }
     add("<h2>Findings-to-changes reconciliation</h2>")
     rec <- dcc_reconcile(x)
     add("<p>", sum(rec$handled), " of ", nrow(rec),

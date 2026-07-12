@@ -13,8 +13,8 @@ dcc_report(x, path = NULL, audience = c("summary", "audit"),
 return the HTML string.}
 
 \item{audience}{\code{"summary"} (management layer, default) or
-\code{"audit"} (adds findings-to-changes reconciliation and the
-cell-level change log).}
+\code{"audit"} (adds the full findings table with evidence, the
+findings-to-changes reconciliation, and the cell-level change log).}
 
 \item{max_rows}{Maximum audit-log rows embedded in the HTML (default
 1000); the complete log is exported with
