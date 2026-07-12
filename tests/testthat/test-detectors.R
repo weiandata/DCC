@@ -85,6 +85,16 @@ test_that("detectors error informatively on bad input", {
                class = "dcc_type_error")
 })
 
+test_that("zero-hit detectors return zero findings", {
+  df <- fixture_responses()
+  f <- detect_missing_items(df, item_names(), max_prop = 0.99,
+                            id_var = "sid")
+  expect_identical(nrow(f), 0L)
+  f2 <- detect_trap_items(df[df$sid == "S001", ],
+                          traps = list(trap1 = 3), id_var = "sid")
+  expect_identical(nrow(f2), 0L)
+})
+
 test_that("detectors accept dcc_data objects", {
   x <- dcc_data(fixture_responses())
   f <- detect_straightlining(x, item_names(), max_run = 10L,

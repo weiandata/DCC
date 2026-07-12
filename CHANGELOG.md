@@ -9,6 +9,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- Add `dcc_execute()`: the Execute stage. Declarative actions
+  (`exclude`, `set_na`, `recode`, `flag`) mapped to `check_id`s;
+  unmapped findings are flagged, never dropped; input data is
+  immutable and every change is logged at cell level (old/new value,
+  triggering check, method, timestamp, versions, rule/key hashes).
+- Add `dcc_audit_log()` / `dcc_cleaned()` accessors and
+  `dcc_export_log()` (Parquet default, CSV for auditors).
+- Add `dcc_score()`: answer-key scoring (single choice,
+  multiple-select all-or-nothing and partial credit), omit policies
+  `zero`/`na`, pluggable `scoring_fn` extension point, key-file hash
+  recorded in provenance.
+- Add `dcc_map_forms()`: multi-form to master item bank alignment with
+  structural `NA` for not-administered items (IRTC
+  concurrent-calibration layout), `is_anchor` carried through, and
+  mapping problems emitted as findings.
 - Add the `dcc_findings` violation-list object: the structured
   interface between the Detect and Execute stages (record x check x
   evidence x severity x quality dimension).
