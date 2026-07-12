@@ -46,12 +46,17 @@
 #' @param sep Field separator for the `csv` backend (default `","`);
 #'   ignored by the `arrow` backend.
 #' @param backend One of `"auto"` (default), `"csv"`, or `"arrow"`.
+#' @param encoding Encoding of the `csv` backend input: `"auto"`
+#'   (default, auto-detected) or an explicit name such as `"UTF-8"` or
+#'   `"latin1"`. Pass one explicitly when auto-detection misfires on
+#'   pure-ASCII or low-signal data. Ignored by the `arrow` backend.
 #' @return A [dcc_findings()] table with `n_rows` (total rows scanned),
 #'   `n_chunks`, and `backend` attributes.
 #' @export
 dcc_detect_chunked <- function(path, rules, chunk_size = 100000L,
                                id_var = NULL, sep = ",",
-                               backend = c("auto", "csv", "arrow")) {
+                               backend = c("auto", "csv", "arrow"),
+                               encoding = "auto") {
   if (!file.exists(path)) {
     dcc_abort("File not found: ", path, class = "dcc_io_error")
   }
@@ -68,7 +73,7 @@ dcc_detect_chunked <- function(path, rules, chunk_size = 100000L,
   }
 
   out <- switch(backend,
-    csv = stream_detect_csv(path, rules, chunk_size, id_var, sep),
+    csv = stream_detect_csv(path, rules, chunk_size, id_var, sep, encoding),
     arrow = stream_detect_arrow(path, rules, chunk_size, id_var)
   )
   data.table::setattr(out, "backend", backend)
@@ -106,15 +111,22 @@ detect_one_chunk <- function(dt, rules, offset, id_var) {
 }
 
 # CSV/TSV backend: stream the file with fread, chunk by chunk.
-stream_detect_csv <- function(path, rules, chunk_size, id_var, sep) {
-  enc <- dcc_detect_encoding(path)
-  if (!enc$encoding %in% c("UTF-8", "latin1")) {
+stream_detect_csv <- function(path, rules, chunk_size, id_var, sep,
+                              encoding = "auto") {
+  enc <- if (identical(encoding, "auto")) {
+    dcc_detect_encoding(path)$encoding
+  } else {
+    normalize_encoding(encoding)
+  }
+  if (!enc %in% c("UTF-8", "latin1")) {
     dcc_abort("Chunked detection needs an fread-native encoding ",
-              "(UTF-8/latin1); detected ", enc$encoding,
-              ". Convert once via dcc_read() and re-export first.",
+              "(UTF-8/latin1); ",
+              if (identical(encoding, "auto")) "detected " else "got ",
+              enc, ". Pass encoding = \"UTF-8\"/\"latin1\", or convert ",
+              "once via dcc_read() and re-export first.",
               class = "dcc_encoding_error")
   }
-  fread_enc <- if (enc$encoding == "latin1") "Latin-1" else "UTF-8"
+  fread_enc <- if (enc == "latin1") "Latin-1" else "UTF-8"
 
   header <- names(data.table::fread(path, sep = sep, nrows = 0L,
                                     encoding = fread_enc))

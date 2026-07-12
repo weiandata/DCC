@@ -21,7 +21,8 @@ workflow with an adaptive larger-than-memory backend.
   extension; the Arrow path takes types from the file schema and is
   encoding-agnostic. Findings are identical across backends and to
   in-memory `dcc_detect()`, and the chosen backend is recorded as a
-  `backend` attribute.
+  `backend` attribute. The `csv` backend gains an `encoding` override
+  for inputs where charset auto-detection misfires (e.g. pure-ASCII).
 - Add `dcc_detect_chunked()`: larger-than-memory detection for
   delimited files. Record-local checks run chunk by chunk with results
   identical to in-memory `dcc_detect()`; cross-record checks

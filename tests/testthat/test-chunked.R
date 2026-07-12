@@ -32,6 +32,12 @@ chunk_fixture <- function() {
 normalize_findings <- function(f) {
   d <- as.data.frame(f)[order(f$record_id, f$check_id), ]
   rownames(d) <- NULL
+  # Drop object-level attributes (dcc_data, n_rows, n_chunks, backend,
+  # ...) so comparisons are on the finding rows only.
+  for (a in setdiff(names(attributes(d)),
+                    c("names", "row.names", "class"))) {
+    attr(d, a) <- NULL
+  }
   d
 }
 

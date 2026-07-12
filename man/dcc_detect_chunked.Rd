@@ -4,7 +4,7 @@
 \title{Run record-local checks over a file in chunks}
 \usage{
 dcc_detect_chunked(path, rules, chunk_size = 100000L, id_var = NULL,
-  sep = ",", backend = c("auto", "csv", "arrow"))
+  sep = ",", backend = c("auto", "csv", "arrow"), encoding = "auto")
 }
 \arguments{
 \item{path}{Path to the input file: a delimited text file (CSV/TSV)
@@ -23,6 +23,12 @@ global row numbers (consistent across chunks).}
 
 \item{backend}{One of \code{"auto"} (default), \code{"csv"}, or
 \code{"arrow"}.}
+
+\item{encoding}{Encoding of the \code{csv} backend input:
+\code{"auto"} (default, auto-detected) or an explicit name such as
+\code{"UTF-8"} or \code{"latin1"}. Pass one explicitly when
+auto-detection misfires on pure-ASCII or low-signal data. Ignored by
+the \code{arrow} backend.}
 }
 \value{
 A \code{\link{dcc_findings}} table with \code{n_rows} (total rows

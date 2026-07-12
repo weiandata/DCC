@@ -114,7 +114,7 @@ for (n in scales) {
   # the host I/O layer.
   t_csv_chunk <- system.time(
     fc <- dcc_detect_chunked(csv, rules, id_var = "sid",
-                             backend = "csv")
+                             backend = "csv", encoding = "UTF-8")
   )[["elapsed"]]
   results[[length(results) + 1L]] <- data.table(
     rows = n, stage = "chunked_csv", seconds = round(t_csv_chunk, 2),
