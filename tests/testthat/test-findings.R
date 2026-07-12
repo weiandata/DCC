@@ -9,7 +9,7 @@ test_that("dcc_findings builds and validates", {
   expect_s3_class(f, "dcc_findings")
   expect_identical(nrow(f), 2L)
   expect_identical(names(f),
-                   c("record_id", "variable", "check_id", "evidence",
+                   c("finding_id", "record_id", "variable", "check_id", "evidence",
                      "severity", "dimension"))
   expect_error(dcc_findings("S1", check_id = "C", evidence = "e",
                             severity = "catastrophic"),
@@ -25,6 +25,25 @@ test_that("empty findings and binding work", {
   b <- bind_findings(list(e, f, NULL))
   expect_identical(nrow(b), 1L)
   expect_s3_class(b, "dcc_findings")
+})
+
+test_that("findings receive deterministic IDs with occurrence suffixes", {
+  f <- dcc_findings(
+    record_id = c("S1", "S1", "S2"),
+    variable = c("q1", "q1", "q1"),
+    check_id = c("R1", "R1", "R1"),
+    evidence = c("a", "b", "c"),
+    run_id = "run-42"
+  )
+  expect_identical(
+    f$finding_id,
+    c("run-42|R1|S1|q1|1", "run-42|R1|S1|q1|2", "run-42|R1|S2|q1|1")
+  )
+  expect_identical(dcc_findings("S1", check_id = "R1", evidence = "a")$finding_id,
+                   "manual|R1|S1|<record>|1")
+  expect_identical(names(dcc_findings()),
+                   c("finding_id", "record_id", "variable", "check_id",
+                     "evidence", "severity", "dimension"))
 })
 
 test_that("print method runs", {

@@ -5,7 +5,7 @@
 \usage{
 dcc_findings(record_id = character(), variable = NA_character_,
   check_id = character(), evidence = character(), severity = "warn",
-  dimension = NA_character_)
+  dimension = NA_character_, run_id = "manual")
 }
 \arguments{
 \item{record_id}{Character vector (or coercible) of record ids.}
@@ -20,6 +20,8 @@ dcc_findings(record_id = character(), variable = NA_character_,
 (recycled).}
 
 \item{dimension}{Quality dimension label (recycled).}
+
+\item{run_id}{One non-empty run identifier used to make finding IDs stable.}
 }
 \value{
 A \code{dcc_findings} object (also a \code{data.table}).
@@ -27,8 +29,10 @@ A \code{dcc_findings} object (also a \code{data.table}).
 \description{
 A \code{dcc_findings} object is the structured violation list produced
 by the Detect stage and consumed by the Execute stage: columns
-\code{record_id}, \code{variable}, \code{check_id}, \code{evidence},
-\code{severity} and \code{dimension}. It is the single interface
+\code{finding_id}, \code{record_id}, \code{variable}, \code{check_id},
+\code{evidence}, \code{severity} and \code{dimension}. The additive
+\code{finding_id} is deterministic within a run and includes the rule,
+record, variable, and occurrence. It is the single interface
 between detection and execution in the Detect-Execute-Report workflow.
 }
 \examples{
