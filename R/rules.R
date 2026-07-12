@@ -88,7 +88,12 @@ dcc_detect <- function(x, rules, id_var = NULL) {
   })
   findings <- bind_findings(results)
   resolved <- resolve_data(x, id_var)
-  run_id <- paste("detect", rules$hash, hash_table(resolved$dt), sep = "-")
+  source_hash <- if (inherits(x, "dcc_data") && !is.null(x$meta$file_hash)) {
+    x$meta$file_hash
+  } else {
+    hash_table(resolved$dt)
+  }
+  run_id <- paste("detect", rules$hash, source_hash, sep = "-")
   if (nrow(findings)) {
     findings[, finding_id := new_finding_ids(
       run_id, check_id, record_id, variable

@@ -16,29 +16,43 @@
 #' * `list(action = "recode", map = c(old = new, ...))` -- replace the
 #'   cell value using the map (values compared as character).
 #'
-#' Findings whose `check_id` has no entry in `actions` receive
-#' `default` (`"flag"` unless overridden), so no finding silently
-#' disappears.
+#' Findings whose `check_id` has no entry in `actions` are returned as
+#' `unhandled` (a `dcc_findings` subset) and produce no audit row: an
+#' unhandled finding is never silently reported as handled. Every audit
+#' row carries the exact `finding_id` of the finding that produced it,
+#' and the whole execution plan is validated before any data changes.
 #'
 #' @param x A [dcc_data()] object or data.frame.
-#' @param findings A [dcc_findings()] table from the Detect stage.
+#' @param findings A [dcc_findings()] table from the Detect stage with
+#'   unique, non-empty `finding_id` values.
 #' @param actions Named list mapping `check_id`s to actions (see
-#'   Details).
+#'   Details). Every name must match a `check_id` in `findings`;
+#'   unknown action IDs are an error.
 #' @param id_var Name of the record-id column matching the findings'
-#'   `record_id`, or `NULL` for row numbers.
-#' @param default Action for findings without an `actions` entry
-#'   (default `"flag"`).
+#'   `record_id`, or `NULL` for row numbers. When supplied, the column
+#'   must contain non-missing, unique ids.
+#' @param default Deprecated and no longer applied: findings without an
+#'   explicit action are returned unhandled rather than auto-dispositioned.
+#'   Retained only for call compatibility.
 #' @param ruleset_hash Optional rule-file hash to stamp into the audit
 #'   log (taken from the findings' `dcc_data` attribute when available).
 #' @return A `dcc_result` object: list with `data` (the new
-#'   [dcc_data()] version), `audit` (the cell-level audit log), and
-#'   `n_excluded`. Accessors: [dcc_audit_log()], [dcc_cleaned()].
+#'   [dcc_data()] version), `audit` (the cell-level audit log, whose
+#'   first column is `finding_id`), `unhandled` (findings with no
+#'   explicit action), and `n_excluded`. Accessors: [dcc_audit_log()],
+#'   [dcc_cleaned()].
 #' @export
 dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
                         default = "flag", ruleset_hash = NULL) {
   if (!inherits(findings, "dcc_findings")) {
     dcc_abort("`findings` must be a dcc_findings table from dcc_detect() ",
               "or a detect_*() function.", class = "dcc_type_error")
+  }
+  if (!is.list(actions) ||
+      (length(actions) &&
+       (is.null(names(actions)) || any(!nzchar(names(actions)))))) {
+    dcc_abort("`actions` must be a named list mapping check_id to actions.",
+              class = "dcc_execute_error")
   }
   if (is.null(ruleset_hash)) {
     src <- attr(findings, "dcc_data", exact = TRUE)
@@ -50,9 +64,26 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     }
   }
   r <- resolve_data(x, id_var)
-  dt <- data.table::copy(r$dt)
-  row_of <- split(seq_len(nrow(dt)), r$ids)
+  dt0 <- r$dt
+  ids <- r$ids
+  row_of <- split(seq_len(nrow(dt0)), ids)
   row_names <- names(row_of)
+
+  f_rid <- findings$record_id
+  f_var <- findings$variable
+  f_chk <- findings$check_id
+  f_id <- findings$finding_id
+  # Hash record ids to row-group positions once; a per-finding
+  # `row_of[[character]]` lookup is a linear scan of up to n names.
+  f_pos <- match(f_rid, row_names)
+  explicit <- f_chk %in% names(actions)
+
+  # Reject an invalid execution request before any data is touched, so a
+  # bad plan can never leave a half-applied dataset behind.
+  validate_execution_plan(dt0, findings, actions, id_var, ids, explicit,
+                          f_rid, f_var, f_chk, f_id, f_pos, row_of)
+
+  dt <- data.table::copy(dt0)
 
   # Stamp constant fields once per run: recomputing the timestamp and
   # versions per change is both wasteful and (for timestamps) excluded
@@ -69,10 +100,11 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   ai <- 0L
   excluded_chunks <- vector("list", n_find)
   ei <- 0L
-  log_change <- function(record_id, variable, old, new, action, check_id,
-                         method) {
+  log_change <- function(finding_id, record_id, variable, old, new, action,
+                         check_id, method) {
     ai <<- ai + 1L
     audit[[ai]] <<- data.table::data.table(
+      finding_id = finding_id,
       record_id = record_id,
       variable = variable %||% NA_character_,
       old_value = as.character(old),
@@ -87,59 +119,29 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     )
   }
 
-  # Vector indexing instead of per-row data.table subsetting: the loop
-  # must stay cheap when findings run into the hundreds of thousands.
-  f_rid <- findings$record_id
-  f_var <- findings$variable
-  f_chk <- findings$check_id
-  # Hash record ids to row-group positions once; a per-finding
-  # `row_of[[character]]` lookup is a linear scan of up to n names.
-  f_pos <- match(f_rid, row_names)
-  for (i in seq_len(nrow(findings))) {
-    act <- actions[[f_chk[i]]] %||% default
+  # Only findings with an explicit action are executed; the rest are
+  # returned unhandled (validated above, so every action here is sound).
+  for (i in which(explicit)) {
+    act <- actions[[f_chk[i]]]
     act_name <- if (is.list(act)) act$action %||% "" else act
-    if (is.na(f_rid[i])) {
-      # Record-less findings (e.g. group-level) can only be flagged.
-      rows <- integer()
-    } else {
-      pos <- f_pos[i]
-      if (is.na(pos)) {
-        dcc_abort("Finding record_id '", f_rid[i], "' not found in ",
-                  "data (check `id_var`).", class = "dcc_execute_error")
-      }
-      rows <- row_of[[pos]]
-    }
+    rows <- if (is.na(f_rid[i])) integer() else row_of[[f_pos[i]]]
     switch(act_name,
       exclude = {
         ei <- ei + 1L
         excluded_chunks[[ei]] <- rows
-        log_change(f_rid[i], NA_character_, NA, NA, "exclude",
+        log_change(f_id[i], f_rid[i], NA_character_, NA, NA, "exclude",
                    f_chk[i], "record excluded from cleaned dataset")
       },
       set_na = {
         v <- f_var[i]
-        if (is.na(v) || !v %in% names(dt)) {
-          dcc_abort("Finding for check '", f_chk[i], "' has no usable ",
-                    "`variable`; set_na needs a cell to clear.",
-                    class = "dcc_execute_error")
-        }
         old <- dt[[v]][rows]
         data.table::set(dt, i = rows, j = v, value = NA)
-        log_change(rep(f_rid[i], length(rows)), v, old, NA, "set_na",
+        log_change(f_id[i], rep(f_rid[i], length(rows)), v, old, NA, "set_na",
                    f_chk[i], "cell set to NA")
       },
       recode = {
         v <- f_var[i]
         map <- act$map
-        if (is.na(v) || !v %in% names(dt)) {
-          dcc_abort("Finding for check '", f_chk[i], "' has no usable ",
-                    "`variable`; recode needs a cell.",
-                    class = "dcc_execute_error")
-        }
-        if (is.null(map) || is.null(names(map))) {
-          dcc_abort("recode action for check '", f_chk[i], "' needs a ",
-                    "named `map`.", class = "dcc_execute_error")
-        }
         old <- dt[[v]][rows]
         key <- as.character(old)
         hitmap <- key %in% names(map)
@@ -148,17 +150,15 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
           new_raw <- unname(map[key[hitmap]])
           new_vals[hitmap] <- methods::as(new_raw, class(dt[[v]])[1])
           data.table::set(dt, i = rows, j = v, value = new_vals)
-          log_change(rep(f_rid[i], sum(hitmap)), v, old[hitmap],
+          log_change(f_id[i], rep(f_rid[i], sum(hitmap)), v, old[hitmap],
                      new_raw, "recode", f_chk[i],
                      "cell recoded via action map")
         }
       },
       flag = {
-        log_change(f_rid[i], f_var[i], NA, NA, "flag", f_chk[i],
+        log_change(f_id[i], f_rid[i], f_var[i], NA, NA, "flag", f_chk[i],
                    "reviewed and kept (no data change)")
-      },
-      dcc_abort("Unknown action '", act_name, "' for check '",
-                f_chk[i], "'.", class = "dcc_execute_error")
+      }
     )
   }
 
@@ -176,6 +176,10 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     empty_audit_log()
   }
 
+  unhandled <- findings[!explicit]
+  data.table::setattr(unhandled, "class",
+                      c("dcc_findings", class(data.table::data.table())))
+
   base <- if (inherits(x, "dcc_data")) x else dcc_data(r$dt)
   out_data <- dcc_data(
     cleaned_dt,
@@ -187,6 +191,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
         n_findings = nrow(findings),
         n_changes = nrow(audit_dt),
         n_excluded = length(excluded_rows),
+        n_unhandled = nrow(unhandled),
         ruleset_hash = ruleset_hash %||% NA_character_
       )
     )))
@@ -198,6 +203,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
       audit = audit_dt,
       n_excluded = length(excluded_rows),
       findings = findings,
+      unhandled = unhandled,
       actions = actions,
       id_var = id_var,
       default = default,
@@ -207,8 +213,77 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   )
 }
 
+# Validate a complete execution request before any data change. Aborts
+# with `dcc_execute_error` on any integrity or action problem so the
+# caller never gets a partially applied dataset.
+validate_execution_plan <- function(dt, findings, actions, id_var, ids,
+                                     explicit, f_rid, f_var, f_chk, f_id,
+                                     f_pos, row_of) {
+  if (anyNA(f_id) || any(!nzchar(f_id)) || anyDuplicated(f_id)) {
+    dcc_abort("`findings` must have unique, non-empty finding_id values.",
+              class = "dcc_execute_error")
+  }
+  if (!is.null(id_var) &&
+      (anyNA(ids) || any(!nzchar(ids)) || anyDuplicated(ids))) {
+    dcc_abort("Record ids in `id_var` '", id_var, "' must be present and ",
+              "unique.", class = "dcc_execute_error")
+  }
+  unknown <- setdiff(names(actions), unique(f_chk))
+  if (length(unknown)) {
+    dcc_abort("Action(s) reference unknown check_id: ",
+              paste(unknown, collapse = ", "), ".",
+              class = "dcc_execute_error")
+  }
+  allowed <- c("exclude", "set_na", "flag", "recode")
+  for (i in which(explicit)) {
+    act <- actions[[f_chk[i]]]
+    act_name <- if (is.list(act)) act$action %||% "" else act
+    if (!act_name %in% allowed) {
+      dcc_abort("Unknown action '", act_name, "' for check '", f_chk[i],
+                "'.", class = "dcc_execute_error")
+    }
+    group_level <- is.na(f_rid[i])
+    if (group_level) {
+      if (act_name != "flag") {
+        dcc_abort("Group-level finding for check '", f_chk[i], "' can only ",
+                  "be flagged, not '", act_name, "'.",
+                  class = "dcc_execute_error")
+      }
+      next
+    }
+    if (is.na(f_pos[i])) {
+      dcc_abort("Finding record_id '", f_rid[i], "' not found in data ",
+                "(check `id_var`).", class = "dcc_execute_error")
+    }
+    if (act_name %in% c("set_na", "recode")) {
+      v <- f_var[i]
+      if (is.na(v) || !v %in% names(dt)) {
+        dcc_abort("Finding for check '", f_chk[i], "' has no usable ",
+                  "`variable`; ", act_name, " needs a cell.",
+                  class = "dcc_execute_error")
+      }
+      if (act_name == "recode") {
+        map <- act$map
+        if (is.null(map) || is.null(names(map)) || any(!nzchar(names(map)))) {
+          dcc_abort("recode action for check '", f_chk[i], "' needs a ",
+                    "named `map`.", class = "dcc_execute_error")
+        }
+        old <- as.character(dt[[v]][row_of[[f_pos[i]]]])
+        missing_key <- setdiff(unique(old[!is.na(old)]), names(map))
+        if (length(missing_key)) {
+          dcc_abort("recode map for check '", f_chk[i], "' does not cover ",
+                    "observed value(s): ", paste(missing_key, collapse = ", "),
+                    ".", class = "dcc_execute_error")
+        }
+      }
+    }
+  }
+  invisible(TRUE)
+}
+
 empty_audit_log <- function() {
   data.table::data.table(
+    finding_id = character(),
     record_id = character(), variable = character(),
     old_value = character(), new_value = character(),
     action = character(), check_id = character(), method = character(),
@@ -220,10 +295,10 @@ empty_audit_log <- function() {
 #' Audit log of a dcc_result
 #'
 #' @param x A `dcc_result` from [dcc_execute()].
-#' @return The cell-level audit log as a `data.table`: `record_id`,
-#'   `variable`, `old_value`, `new_value`, `action`, `check_id`,
-#'   `method`, `timestamp`, `dcc_version`, `ruleset_hash`,
-#'   `keyfile_hash`.
+#' @return The cell-level audit log as a `data.table`: `finding_id`
+#'   (the exact source finding), `record_id`, `variable`, `old_value`,
+#'   `new_value`, `action`, `check_id`, `method`, `timestamp`,
+#'   `dcc_version`, `ruleset_hash`, `keyfile_hash`.
 #' @export
 dcc_audit_log <- function(x) {
   stopifnot(inherits(x, "dcc_result"))

@@ -7,6 +7,52 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-12
+
+Audit-correctness and format-reliability release. All changes are additive to
+the public `dcc_findings` and audit-log schemas; no valid public call changes
+shape.
+
+### Added
+
+- Add a deterministic `finding_id` to every finding (run + check + record +
+  variable + occurrence), assigned by `dcc_findings()`, `bind_findings()`,
+  `dcc_detect()`, and `dcc_detect_chunked()`. The detect run prefix is derived
+  from the rule and source-file hashes, so identical data and rules reproduce
+  identical identities.
+- Add a `finding_id` column to the audit log (its new first column), copied
+  exactly from the finding that produced each change.
+- Add `result$unhandled`: the `dcc_findings` subset with no explicit action.
+- Add a `status` column to `dcc_reconcile()` output (`changed`, `excluded`,
+  `flagged`, `unhandled`).
+- Add `dcc_detect_chunked(sep = NULL)` separator inference (tab for `.tsv`,
+  comma otherwise) and data.table-compatible first-chunk type locking.
+- Add `tests/testthat/test-format-matrix.R` certifying CSV, TSV, JSON, Excel,
+  SPSS, Stata, SAS, Parquet, and Feather input, plus Arrow multi-batch
+  Parquet/Feather parity in `test-chunked.R`. Add `writexl` to `Suggests` and
+  to the R CMD check dependency set.
+
+### Fixed
+
+- `dcc_execute()` now validates the complete plan before touching data:
+  unknown action IDs, unmapped recodes, missing or duplicated record IDs, and
+  cell-level actions on group-level findings raise `dcc_execute_error` instead
+  of silently degrading. A bad plan can no longer leave a half-applied dataset.
+- `dcc_reconcile()` joins audit rows to findings on the exact `finding_id`
+  instead of a loose `record_id + check_id` match, so a change can never be
+  attributed to the wrong finding; an orphan audit row raises
+  `dcc_reconcile_error`.
+- Chunked CSV/TSV runs no longer warn on exact chunk multiples, later
+  all-`NA` chunks, quoted delimiters, embedded newlines, or latin1 input.
+
+### Changed
+
+- Findings without an explicit action are returned unhandled rather than
+  auto-flagged; `dcc_execute(default =)` is retained for call compatibility but
+  no longer auto-dispositions.
+- `dcc_reconcile()` drops the `unreconciled_changes` attribute in favour of the
+  per-finding terminal `status`.
+
 ## [1.0.0] - 2026-07-12
 
 First stable, CRAN-targeted release. The public API (exported `dcc_*`

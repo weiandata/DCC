@@ -8,3 +8,4 @@ Thumbs.db
 
 # Local environment and secrets
 .env
+.codegraph/ # 别把索引缓存提交进去

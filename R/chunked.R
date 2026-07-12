@@ -43,8 +43,10 @@
 #' @param chunk_size Rows per chunk / record batch (default 100000).
 #' @param id_var Name of the record-id column, or `NULL` to use global
 #'   row numbers (consistent across chunks).
-#' @param sep Field separator for the `csv` backend (default `","`);
-#'   ignored by the `arrow` backend.
+#' @param sep Field separator for the `csv` backend. `NULL` (default)
+#'   infers the separator from the extension -- a tab for `.tsv`, a
+#'   comma otherwise; pass an explicit value to override. Ignored by the
+#'   `arrow` backend.
 #' @param backend One of `"auto"` (default), `"csv"`, or `"arrow"`.
 #' @param encoding Encoding of the `csv` backend input: `"auto"`
 #'   (default, auto-detected) or an explicit name such as `"UTF-8"` or
@@ -54,7 +56,7 @@
 #'   `n_chunks`, and `backend` attributes.
 #' @export
 dcc_detect_chunked <- function(path, rules, chunk_size = 100000L,
-                               id_var = NULL, sep = ",",
+                               id_var = NULL, sep = NULL,
                                backend = c("auto", "csv", "arrow"),
                                encoding = "auto") {
   if (!file.exists(path)) {
@@ -71,13 +73,31 @@ dcc_detect_chunked <- function(path, rules, chunk_size = 100000L,
   if (identical(backend, "auto")) {
     backend <- select_stream_backend(path)
   }
+  if (identical(backend, "csv")) {
+    sep <- infer_chunk_sep(path, sep)
+  }
 
   out <- switch(backend,
     csv = stream_detect_csv(path, rules, chunk_size, id_var, sep, encoding),
     arrow = stream_detect_arrow(path, rules, chunk_size, id_var)
   )
+  if (nrow(out)) {
+    run_id <- paste("detect", rules$hash, unname(tools::md5sum(path)),
+                    sep = "-")
+    out[, finding_id := new_finding_ids(run_id, check_id, record_id, variable)]
+  }
   data.table::setattr(out, "backend", backend)
   out
+}
+
+infer_chunk_sep <- function(path, sep) {
+  if (!is.null(sep)) return(sep)
+  if (tolower(tools::file_ext(path)) == "tsv") "\t" else ","
+}
+
+lock_chunk_classes <- function(dt) {
+  classes <- vapply(dt, function(col) class(col)[1L], character(1))
+  split(seq_along(classes), unname(classes))
 }
 
 # Choose a chunked backend from the file extension.
@@ -163,8 +183,7 @@ stream_detect_csv <- function(path, rules, chunk_size, id_var, sep,
     if (is.null(col_classes)) {
       # Lock column types from the first chunk so later chunks (e.g.
       # with an all-NA column) cannot drift to another type.
-      col_classes <- vapply(dt, function(col) class(col)[1L],
-                            character(1))
+      col_classes <- lock_chunk_classes(dt)
     }
     findings[[length(findings) + 1L]] <-
       detect_one_chunk(dt, rules, offset, id_var)

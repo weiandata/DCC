@@ -90,10 +90,9 @@ dcc_report <- function(x, path = NULL, audience = c("summary", "audit"),
     add("<h2>Findings-to-changes reconciliation</h2>")
     rec <- dcc_reconcile(x)
     add("<p>", sum(rec$handled), " of ", nrow(rec),
-        " finding(s) handled; unreconciled changes: ",
-        attr(rec, "unreconciled_changes"), ".</p>")
+        " finding(s) handled.</p>")
     add(html_table(rec[, list(n = .N),
-                       by = c("check_id", "action", "handled")]))
+                       by = c("check_id", "status")]))
     add("<h2>Cell-level change log</h2>")
     shown <- utils::head(log, max_rows)
     if (nrow(log) > nrow(shown)) {
@@ -134,44 +133,43 @@ html_table <- function(dt) {
 
 #' Reconcile findings against logged changes (closed loop)
 #'
-#' Verifies DCC's closed-loop guarantee from both directions: every
-#' finding should have at least one audit-log row (handled), and every
-#' audit-log row must trace back to a finding (no unexplained changes).
+#' Verifies DCC's closed-loop guarantee on the exact finding identity:
+#' every audit-log row must join back to a finding by `finding_id`, and
+#' every finding is assigned exactly one terminal `status`. There is no
+#' loose `record_id + check_id` matching, so a change can never be
+#' attributed to the wrong finding and an unhandled finding can never be
+#' reported as handled.
 #'
 #' @param x A `dcc_result` from [dcc_execute()].
 #' @return The findings table extended with `action` (the executed
-#'   action, `NA` if none) and `handled` (logical). The number of audit
-#'   rows that do not match any finding is attached as the
-#'   `unreconciled_changes` attribute (must be 0 in a healthy
-#'   pipeline).
+#'   action, `NA` if none), `status` (one of `"changed"`, `"excluded"`,
+#'   `"flagged"`, or `"unhandled"`), and `handled` (logical).
 #' @export
 dcc_reconcile <- function(x) {
   stopifnot(inherits(x, "dcc_result"))
   f <- data.table::copy(data.table::as.data.table(x$findings))
-  log <- x$audit
-  f[, `:=`(action = NA_character_, handled = FALSE)]
-  if (nrow(f) && nrow(log)) {
-    keyed <- log[, list(action = action[1L]),
-                 by = c("record_id", "check_id")]
-    for (i in seq_len(nrow(f))) {
-      hit <- keyed[
-        (is.na(record_id) & is.na(f$record_id[i]) |
-           (!is.na(record_id) & !is.na(f$record_id[i]) &
-              record_id == f$record_id[i])) &
-          check_id == f$check_id[i]]
-      if (nrow(hit)) {
-        data.table::set(f, i = i, j = "action", value = hit$action[1L])
-        data.table::set(f, i = i, j = "handled", value = TRUE)
-      }
-    }
-  }
-  unrec <- 0L
+  log <- data.table::as.data.table(x$audit)
+  f[, `:=`(action = NA_character_, status = "unhandled", handled = FALSE)]
   if (nrow(log)) {
-    fk <- paste(x$findings$record_id, x$findings$check_id, sep = "\r")
-    lk <- paste(log$record_id, log$check_id, sep = "\r")
-    unrec <- sum(!lk %in% fk)
+    if (any(!log$finding_id %in% f$finding_id)) {
+      dcc_abort("Audit log contains a finding_id absent from the findings ",
+                "table; the audit trail and findings disagree.",
+                class = "dcc_reconcile_error")
+    }
+    per_finding <- log[, list(actions = list(unique(action))),
+                       by = "finding_id"]
+    if (any(lengths(per_finding$actions) != 1L)) {
+      dcc_abort("A finding resolves to conflicting audit actions.",
+                class = "dcc_reconcile_error")
+    }
+    per_finding[, action := vapply(actions, function(a) a[[1L]],
+                                   character(1))]
+    f[per_finding, on = "finding_id", action := i.action]
+    f[action %in% c("set_na", "recode"),
+      `:=`(status = "changed", handled = TRUE)]
+    f[action == "exclude", `:=`(status = "excluded", handled = TRUE)]
+    f[action == "flag", `:=`(status = "flagged", handled = TRUE)]
   }
-  data.table::setattr(f, "unreconciled_changes", unrec)
   f[]
 }
 
