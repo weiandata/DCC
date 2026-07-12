@@ -1,7 +1,7 @@
 Package: DCC
 Type: Package
 Title: Data Cleaning Center for Survey and Assessment Data
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: c(
     person("WeianData Engineering", role = c("aut", "cre"),
            email = "engineering@weiandata.example"))

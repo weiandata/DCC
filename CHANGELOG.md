@@ -7,7 +7,32 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-12
+
+First release of the DCC package: the complete Detect-Execute-Report
+workflow with an adaptive larger-than-memory backend.
+
 ### Added
+
+- Add an adaptive backend to `dcc_detect_chunked()`: a `backend`
+  argument (`"auto"`/`"csv"`/`"arrow"`) selects between the delimited
+  (fread) path and a new Arrow path that streams Parquet/Feather files
+  as record batches. `"auto"` picks the backend from the file
+  extension; the Arrow path takes types from the file schema and is
+  encoding-agnostic. Findings are identical across backends and to
+  in-memory `dcc_detect()`, and the chosen backend is recorded as a
+  `backend` attribute. The `csv` backend gains an `encoding` override
+  for inputs where charset auto-detection misfires (e.g. pure-ASCII).
+- Add `dcc_detect_chunked()`: larger-than-memory detection for
+  delimited files. Record-local checks run chunk by chunk with results
+  identical to in-memory `dcc_detect()`; cross-record checks
+  (`score_anomaly`, median-relative response time) are rejected with
+  typed errors; column types are locked from the first chunk.
+- Add `benchmarks/benchmark.R` and the `R-benchmark` workflow: CI
+  regression gate timing read/detect/execute at 1e4 and 1e6 rows
+  (larger scales via `DCC_BENCH_ROWS`), with per-stage budgets and CSV
+  artifacts, plus informational `chunked_csv`/`chunked_arrow` streaming
+  stages.
 
 - Add `dcc_report()`: dual-layer self-contained HTML reports (no
   pandoc dependency) -- management summary (findings by quality
@@ -65,6 +90,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Add testthat suite including an encoding round-trip matrix and typed
   error checks.
 - Add R CMD check workflow for continuous integration.
+
+### Changed
+
+- `dcc_execute()` hot loop now uses vector indexing instead of per-row
+  `data.table` subsetting, keeping execution cheap when findings run
+  into the hundreds of thousands.
+- `response_time` rules distinguish an explicitly null
+  `min_median_ratio` (`~`, disables the median-relative cut) from an
+  absent key (keeps the 1/3 default).
 
 ## [1.0.0] - 2026-07-10
 

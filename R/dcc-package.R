@@ -4,10 +4,18 @@
 #' implementing the WeianData Detect-Execute-Report workflow. See
 #' `docs/design.md` in the repository for the full design document.
 #'
-#' @section v0.1 scope:
-#' * [dcc_read()] -- multi-format, multi-encoding input layer.
-#' * [dcc_data()] -- data container with provenance chain.
-#' * [dcc_l0_diagnose()] -- level-0 structural diagnostics (read report).
+#' @section Scope (through v0.5):
+#' * [dcc_read()] / [dcc_data()] / [dcc_l0_diagnose()] -- multi-format,
+#'   multi-encoding input layer, container with provenance, level-0
+#'   diagnostics.
+#' * [dcc_rules()] / [dcc_detect()] and the `detect_*` family -- the
+#'   declarative YAML rule engine and five response-quality detectors.
+#' * [dcc_execute()] / [dcc_score()] / [dcc_map_forms()] -- execution
+#'   with a cell-level audit log, answer-key scoring, form mapping.
+#' * [dcc_report()] / [dcc_trace()] / [dcc_rerun()] -- dual-layer
+#'   reports, cell lineage, manifest-based reproduction.
+#' * [dcc_detect_chunked()] -- larger-than-memory detection with an
+#'   adaptive CSV/Arrow backend.
 #'
 #' @keywords internal
 #' @import data.table

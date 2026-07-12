@@ -25,6 +25,7 @@ export(dcc_reconcile)
 export(dcc_trace)
 export(dcc_manifest)
 export(dcc_rerun)
+export(dcc_detect_chunked)
 
 S3method(print, dcc_data)
 S3method(print, dcc_read_report)
