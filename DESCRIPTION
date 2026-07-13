@@ -5,8 +5,8 @@ Version: 1.1.0
 Authors@R: c(
     person("Kunxiang", "Ma", role = c("aut", "cre"),
            email = "makunxiang@weiandata.com"),
-    person("WeianData Technology (Beijing) Co., Ltd.",
-           role = c("cph", "fnd")))
+    person("WEIAN DATA TECH (Beijing) Co., Ltd.",
+           role = c("cph", "fnd"), email = "contact@weiandata.com"))
 Description: Rule-driven, auditable cleaning of survey and assessment
     response data, implementing the WeianData Detect-Execute-Report
     workflow. Provides a multi-format, multi-encoding input layer
@@ -19,7 +19,8 @@ Description: Rule-driven, auditable cleaning of survey and assessment
     master item bank mapping, dual-layer 'HTML' reports with
     findings-to-changes reconciliation, cell-level lineage tracing, and
     manifest-based one-command reproduction.
-License: MIT + file LICENSE
+License: GPL (>= 2)
+Copyright: See file inst/COPYRIGHTS.
 Encoding: UTF-8
 Language: en
 Depends: R (>= 4.1)

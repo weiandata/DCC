@@ -3,6 +3,7 @@
 ^ENGINEERING_PLAN\.md$
 ^AI_USAGE\.md$
 ^LICENSE\.md$
+^LICENSE$
 ^\.codegraph$
 ^docs$
 ^examples$

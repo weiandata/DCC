@@ -4,7 +4,7 @@ Version: 0.1 (draft)
 
 Status: Draft — for internal review
 
-Owner: WeianData Engineering
+Owner: WEIAN DATA Engineering
 
 Date: 2026-07-11
 

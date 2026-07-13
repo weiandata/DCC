@@ -129,9 +129,9 @@ stable; breaking changes to either schema will be major releases.
 - Rewrite `README.md` as the DCC package README (overview, install,
   end-to-end example, workflow, documentation links) in place of the
   repository-template placeholder.
-- Set the license to `MIT`: add the `MIT + file LICENSE` declaration,
-  the two-line `LICENSE`, and the full-text `LICENSE.md`. Copyright is
-  held by WeianData Technology (Beijing) Co., Ltd.
+- Set the license to `GPL (>= 2)`, include the GPL version 2 text, and document
+  dependency copyright boundaries in `inst/COPYRIGHTS`. Copyright is held by
+  WEIAN DATA TECH (Beijing) Co., Ltd.
 - Record authorship and ownership in `DESCRIPTION` via `Authors@R`:
   Kunxiang Ma as author/maintainer, the company as copyright holder
   (`cph`) and funder (`fnd`).

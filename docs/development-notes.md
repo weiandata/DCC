@@ -32,17 +32,15 @@ at 1e4 rows pass happily through both quadratics.
 
 ### Licensing and ownership
 
-- **A permissive license does not transfer copyright.** DCC is MIT, but
-  the copyright stays with the funding company. Ownership is expressed
-  in the LICENSE copyright line and in `Authors@R` via the `cph`
-  (copyright holder) and `fnd` (funder) roles -- independent of which
-  OSI license is chosen. The maintainer (`cre`) is a person with a
-  reachable email, as CRAN requires; swap it for a company address
-  before an actual submission if preferred.
-- **MIT on CRAN uses two files.** `License: MIT + file LICENSE`, a
-  two-line `LICENSE` (`YEAR:` / `COPYRIGHT HOLDER:`) that R CMD check
-  parses, and the full text in `LICENSE.md`. Keep the company's Chinese
-  legal name out of the parsed `LICENSE`/`DESCRIPTION` (ASCII only) and
+- **GPL does not transfer copyright.** DCC uses GPL (>= 2), while copyright
+  remains with the funding company. Ownership is expressed in `Authors@R` via
+  the `cph` (copyright holder) and `fnd` (funder) roles. The human maintainer
+  (`cre`) uses the stable company-domain maintainer address.
+- **CRAN and repository metadata must agree.** `DESCRIPTION` declares
+  `License: GPL (>= 2)`, the package root contains the GPL version 2 text, and
+  `inst/COPYRIGHTS` records company ownership and external dependency
+  boundaries. Keep the company's Chinese
+  legal name out of the parsed `DESCRIPTION` fields (ASCII only) and
   put the bilingual notice in `LICENSE.md`, which is UTF-8.
 
 ### Documentation

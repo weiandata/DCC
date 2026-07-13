@@ -1,0 +1,42 @@
+DCC copyright and licensing notice
+==================================
+
+Copyright (C) 2026 WEIAN DATA TECH (Beijing) Co., Ltd.
+(惟安数据科技（北京）有限公司)
+Contact: contact@weiandata.com
+
+DCC source code, documentation, tests, and bundled synthetic data are
+copyrighted by WEIAN DATA TECH (Beijing) Co., Ltd. and distributed under the
+GNU General Public License version 2 or, at the recipient's option, any later
+version (GPL >= 2).
+
+External runtime dependencies
+-----------------------------
+
+The following packages are separately distributed; their source is not bundled
+in DCC and their copyright remains with their respective holders.
+
+Package: data.table
+Use: Core tabular data processing
+Upstream project: https://CRAN.R-project.org/package=data.table
+License: MPL-2.0 | file LICENSE
+
+Package: stringi
+Use: Encoding detection and Unicode string processing
+Upstream project: https://CRAN.R-project.org/package=stringi
+License: file LICENSE
+
+Optional format, reporting, and test features use readxl (MIT), writexl
+(BSD-2-Clause), haven (MIT), arrow (Apache License 2.0 or later), jsonlite
+(MIT), yaml (BSD-3-Clause), knitr (GPL), rmarkdown (GPL-3), and testthat (MIT),
+as recorded in their upstream package metadata. Their source is not bundled.
+
+These references do not imply endorsement, ownership transfer, or a change to
+upstream license terms.
+
+License
+-------
+
+The complete DCC package is distributed under the GNU General Public License
+version 2 or, at the recipient's option, any later version (GPL >= 2).
+Copyright in external dependencies remains with their respective holders.

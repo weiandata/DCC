@@ -84,9 +84,10 @@ breaking changes to either schema will be major releases.
   Detect -> Execute -> Report workflow.
 * Completed `\examples` coverage for every exported function
   (`dcc_detect_chunked()`, `dcc_manifest()`, `dcc_rerun()`).
-* Rewrote the README around the package, licensed the project under MIT
-  (copyright WeianData Technology (Beijing) Co., Ltd.), and recorded
-  authorship, copyright, and funding in `DESCRIPTION`.
+* Rewrote the README around the package, licensed the project under GPL (>= 2)
+  (copyright WEIAN DATA TECH (Beijing) Co., Ltd.), recorded authorship,
+  copyright, and funding in `DESCRIPTION`, and documented external dependency
+  copyright boundaries in `inst/COPYRIGHTS`.
 
 # DCC 0.5.0
 

@@ -3,7 +3,7 @@
 Rule-driven, auditable cleaning of survey and assessment response data,
 implementing the WeianData **Detect → Execute → Report** workflow.
 
-Status: Active · Owner: WeianData Engineering · License: MIT
+Status: Active · Owner: WEIAN DATA Engineering · License: GPL (>= 2)
 
 ## Overview
 
@@ -121,5 +121,7 @@ for private vulnerability reporting.
 
 ## License
 
-Released under the [MIT License](LICENSE.md).
-Copyright © 2026 WeianData Technology (Beijing) Co., Ltd. (惟数据科技(北京)有限公司).
+Released under the [GNU General Public License version 2 or later](LICENSE).
+Copyright © 2026 WEIAN DATA TECH (Beijing) Co., Ltd.
+(惟安数据科技（北京）有限公司). Dependency copyright boundaries are recorded
+in [inst/COPYRIGHTS](inst/COPYRIGHTS).
