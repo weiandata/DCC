@@ -116,7 +116,6 @@ dcc_read_config <- function(path) {
 #' @seealso [dcc_read_config()].
 #' @export
 dcc_write_config_template <- function(path) {
-  dcc_require("writexl", "write an Excel cleaning-plan template")
   settings <- data.frame(
     key = c("id_var", "items"),
     value = c("sid", "q1,q2,q3"),
