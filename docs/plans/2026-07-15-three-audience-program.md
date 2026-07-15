@@ -9,13 +9,13 @@ change set.
 
 ## Delivery Order
 
-| Phase | Outcome | Prerequisite | Plan |
-|---|---|---|---|
-| A | Correct, auditable cleaning core | Current package | [Core correctness](2026-07-15-phase-a-core-correctness.md) |
-| B | Canonical import and internal adapter registry | A | [Canonical import](2026-07-15-phase-b-canonical-import.md) |
-| C | Strict protected Excel plan and four-function staff workflow | A, B | [Strict Excel workflow](2026-07-15-phase-c-strict-excel-workflow.md) |
-| D | One report model rendered for three audiences | A, B, C | [Normalized reports](2026-07-15-phase-d-normalized-reports.md) |
-| E | Cross-platform acceptance and reproducible release | A-D | [Acceptance and release](2026-07-15-phase-e-acceptance-release.md) |
+| Phase | Status | Outcome | Prerequisite | Plan |
+|---|---|---|---|---|
+| A | Complete (2026-07-15) | Correct, auditable cleaning core | Current package | [Core correctness](2026-07-15-phase-a-core-correctness.md) |
+| B | Next | Canonical import and internal adapter registry | A | [Canonical import](2026-07-15-phase-b-canonical-import.md) |
+| C | Approved | Strict protected Excel plan and four-function staff workflow | A, B | [Strict Excel workflow](2026-07-15-phase-c-strict-excel-workflow.md) |
+| D | Approved | One report model rendered for three audiences | A, B, C | [Normalized reports](2026-07-15-phase-d-normalized-reports.md) |
+| E | Approved | Cross-platform acceptance and reproducible release | A-D | [Acceptance and release](2026-07-15-phase-e-acceptance-release.md) |
 
 Phases are intentionally sequential at their public-contract boundaries. Work
 inside a phase may be parallelized only when tasks do not edit the same files

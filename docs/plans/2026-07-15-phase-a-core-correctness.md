@@ -1,5 +1,9 @@
 # Phase A Core Correctness Implementation Plan
 
+**Status:** Complete (2026-07-15). All exit criteria passed on
+`codex/dcc-phase-a`; full tests and `R CMD check --no-manual` completed with
+`Status: OK`.
+
 > **Execution:** Complete the checked tasks in order, with the stated red/green
 > verification and review checkpoint before each commit.
 
