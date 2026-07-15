@@ -13,8 +13,8 @@
 #'
 #' A pluggable `scoring_fn` overrides the built-in scoring: it receives
 #' the response vector and the key row (list) and must return a numeric
-#' vector, which reserves room for weighted/rubric/polytomous scoring
-#' without API changes (design decision 2).
+#' vector with exactly one value per response, which reserves room for
+#' weighted/rubric/polytomous scoring without API changes (design decision 2).
 #'
 #' Omitted responses (`NA`) are scored per `omit_policy`: `"zero"`
 #' (default) or `"na"`. Structural missingness from multi-form designs
@@ -67,7 +67,12 @@ dcc_score <- function(x, answer_key, omit_policy = c("zero", "na"),
     krow <- as.list(key[i, ])
     resp <- dt[[krow$item]]
     s <- if (!is.null(scoring_fn)) {
-      as.numeric(scoring_fn(resp, krow))
+      raw_score <- scoring_fn(resp, krow)
+      if (!is.numeric(raw_score) || length(raw_score) != length(resp)) {
+        dcc_abort("`scoring_fn` must return a numeric vector of length ",
+                  length(resp), ".", class = "dcc_score_error")
+      }
+      as.numeric(raw_score)
     } else if (krow$type == "single") {
       score_single(resp, krow)
     } else {
@@ -82,9 +87,12 @@ dcc_score <- function(x, answer_key, omit_policy = c("zero", "na"),
     score_cols[i] <- col
     data.table::set(dt, j = col, value = s)
   }
-  data.table::set(dt, j = "total_score",
-                  value = rowSums(dt[, score_cols, with = FALSE],
-                                  na.rm = TRUE))
+  score_dt <- dt[, score_cols, with = FALSE]
+  total <- rowSums(score_dt, na.rm = TRUE)
+  if (omit_policy == "na") {
+    total[rowSums(!is.na(score_dt)) == 0L] <- NA_real_
+  }
+  data.table::set(dt, j = "total_score", value = total)
 
   base <- if (inherits(x, "dcc_data")) x else dcc_data(dt)
   dcc_data(

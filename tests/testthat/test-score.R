@@ -45,6 +45,13 @@ test_that("omit policy na keeps omitted items NA", {
   expect_identical(df$total_score[3], 0)
 })
 
+test_that("all structurally missing scores have an NA total", {
+  x <- data.frame(q1 = NA, q2 = NA)
+  key <- data.frame(item = c("q1", "q2"), key = c(1, 1))
+  out <- as.data.frame(dcc_score(x, key, omit_policy = "na"))
+  expect_true(is.na(out$total_score))
+})
+
 test_that("pluggable scoring_fn overrides built-ins", {
   half <- function(resp, krow) rep(0.5, length(resp))
   out <- dcc_score(score_df(), score_key(), scoring_fn = half)
@@ -59,6 +66,15 @@ test_that("pluggable scoring_fn overrides built-ins", {
               scoring_fn = half)
   )
   expect_identical(out_na$it1_score, c(0.5, 0.5, NA_real_))
+})
+
+test_that("custom scoring has an exact numeric contract", {
+  expect_error(dcc_score(score_df(), score_key(),
+                         scoring_fn = function(x, k) "bad"),
+               class = "dcc_score_error")
+  expect_error(dcc_score(score_df(), score_key(),
+                         scoring_fn = function(x, k) 1),
+               class = "dcc_score_error")
 })
 
 test_that("answer key from CSV records hash in provenance", {

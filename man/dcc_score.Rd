@@ -21,7 +21,8 @@ file's MD5 hash is recorded in the provenance chain).}
 as wrong).}
 
 \item{scoring_fn}{Optional \code{function(responses, key_row)}
-returning a numeric vector; replaces built-in scoring for every item.
+returning a numeric vector with exactly one value per response; replaces
+built-in scoring for every item.
 This is the extension point reserved for weighted/rubric/polytomous
 scoring (design decision 2).}
 }
@@ -36,6 +37,8 @@ items get full points on exact match. Multiple-select items (responses
 like \code{"AC"} or \code{"A,C"}) are all-or-nothing by default; with
 \code{partial = TRUE} the score is
 \code{points * max(0, (hits - false_alarms) / n_key)}.
+When \code{omit_policy = "na"}, a row with no observed item scores has an
+\code{NA} total rather than zero.
 }
 \examples{
 df <- data.frame(sid = c("S1", "S2"),
