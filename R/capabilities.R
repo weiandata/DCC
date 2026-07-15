@@ -114,6 +114,9 @@ dcc_capability_features <- function() {
     feat("protected_excel_template", "Stable", "1.2.0"),
     feat("staff_preflight", "Stable", "1.2.0"),
     feat("bilingual_workflow_help", "Stable", "1.2.0"),
+    feat("normalized_report_model", "Stable", "1.2.0"),
+    feat("three_audience_reports", "Stable", "1.2.0"),
+    feat("machine_report_contract", "Stable", "1.2.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(

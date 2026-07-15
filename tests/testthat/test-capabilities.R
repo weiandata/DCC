@@ -40,7 +40,9 @@ test_that("stable correctness capabilities match engine contracts", {
   expect_true(all(c("invalid_numeric", "declared_yaml_ids",
                     "terminal_dispositions", "atomic_run_output",
                     "strict_plan_contract", "protected_excel_template",
-                    "staff_preflight", "bilingual_workflow_help") %in%
+                    "staff_preflight", "bilingual_workflow_help",
+                    "normalized_report_model", "three_audience_reports",
+                    "machine_report_contract") %in%
                   stable))
 })
 
