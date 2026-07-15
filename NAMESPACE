@@ -46,6 +46,7 @@ export(dcc_apply_codebook)
 export(dcc_codebook_changes)
 export(dcc_dictionary)
 export(dcc_missing_states)
+export(dcc_import)
 
 S3method(print, dcc_data)
 S3method(print, dcc_validation)

@@ -61,9 +61,102 @@ planned_adapter <- function(name, extensions) {
   )
 }
 
+adapter_delimited <- function(name, extension, separator) {
+  reader <- function(path, options = list()) {
+    protected <- intersect(names(options), protected_delimited_options())
+    if (length(protected)) {
+      dcc_abort("Delimited import protected option(s) cannot be overridden: ",
+                paste(protected, collapse = ", "), ".",
+                class = "dcc_import_error")
+    }
+    encoding <- options$encoding %||% ""
+    if (!nzchar(encoding)) {
+      dcc_abort("Delimited imports require an explicit `encoding`.",
+                class = "dcc_import_error")
+    }
+    encoding <- normalize_encoding(encoding)
+    fread_args <- options[setdiff(names(options), "encoding")]
+    fread_args <- c(
+      list(
+        sep = separator,
+        colClasses = "character",
+        na.strings = NULL,
+        check.names = FALSE,
+        strip.white = FALSE,
+        data.table = FALSE,
+        showProgress = FALSE
+      ),
+      fread_args
+    )
+    data <- if (encoding %in% c("UTF-8", "latin1")) {
+      fread_args$file <- path
+      fread_args$encoding <- if (encoding == "latin1") "Latin-1" else "UTF-8"
+      do.call(data.table::fread, fread_args)
+    } else {
+      fread_args$input <- read_file_utf8(path, encoding)
+      do.call(data.table::fread, fread_args)
+    }
+    list(
+      data = as.data.frame(data, stringsAsFactors = FALSE),
+      metadata = list(encoding = encoding, separator = separator)
+    )
+  }
+  inspector <- function(path, options = list()) {
+    raw <- reader(path, options)
+    list(columns = names(raw$data), rows = nrow(raw$data),
+         metadata = raw$metadata)
+  }
+  validator <- function(path, spec) {
+    issues <- list()
+    if (!file.exists(path)) {
+      issues[[length(issues) + 1L]] <- val_issue(
+        "IMPORT_SOURCE_MISSING", "fail", "source",
+        fix = "Choose an existing source file."
+      )
+    }
+    encoding <- spec$options$encoding %||% ""
+    if (!nzchar(encoding)) {
+      issues[[length(issues) + 1L]] <- val_issue(
+        "IMPORT_ENCODING_REQUIRED", "fail", "encoding",
+        fix = "Declare the source text encoding."
+      )
+    }
+    protected <- intersect(names(spec$options), protected_delimited_options())
+    if (length(protected)) {
+      issues[[length(issues) + 1L]] <- val_issue(
+        "IMPORT_PROTECTED_OPTION", "fail", protected[1L],
+        fix = paste0("Remove protected option(s): ",
+                     paste(protected, collapse = ", "), ".")
+      )
+    }
+    new_validation(issues)
+  }
+  new_format_adapter(
+    name = name,
+    extensions = extension,
+    reader = reader,
+    inspector = inspector,
+    validator = validator,
+    status = "Experimental",
+    semantics = list(
+      values = "character-preserving",
+      encoding = "declared",
+      missing = "preserved-before-canonicalization",
+      cleaning = FALSE,
+      declared_structure = TRUE
+    )
+  )
+}
+
+protected_delimited_options <- function() {
+  c("input", "file", "text", "cmd", "sep", "colClasses", "na.strings",
+    "col.names", "check.names", "strip.white", "select", "drop",
+    "data.table", "showProgress")
+}
+
 dcc_format_registry <- function() {
   list(
-    csv = planned_adapter("csv", "csv"),
+    csv = adapter_delimited("csv", "csv", ","),
     tsv = planned_adapter("tsv", "tsv"),
     txt = planned_adapter("txt", "txt"),
     fwf = planned_adapter("fwf", "txt"),
