@@ -50,4 +50,3 @@ Execution writes cleaned data findings audit logs HTML reports a manifest and a 
 ## Statistical professionals and AI agents
 
 Professionals can use `dcc_read_plan()`, `dcc_validate_plan()`, `dcc_import()`, and the existing lower-level API. Agents should query `dcc_capabilities()` and `dcc_schema("plan")` first; use JSON or the strict workbook; check and preview before any explicitly authorized execution; and branch on stable codes classes JSON Pointers or Excel cell coordinates rather than parsing prose.
-

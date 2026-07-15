@@ -50,4 +50,3 @@ result <- dcc_run(
 ## 专业统计人员与 AI Agent
 
 专业人员可以用 `dcc_read_plan()`、`dcc_validate_plan()`、`dcc_import()` 和原有低层函数检查或扩展流程。Agent 应先查询 `dcc_capabilities()` 和 `dcc_schema("plan")`，使用 JSON 或严格 Excel 计划，先 `dcc_check()`/preview，再在明确授权后 execute；不要解析自然语言错误消息，应使用稳定代码、错误类和 JSON Pointer/Excel 单元格坐标。
-

@@ -1,7 +1,6 @@
 plan_source_info <- function(x) {
   attr(x, "dcc_plan_source", exact = TRUE)
 }
-
 json_pointer_escape <- function(x) {
   x <- gsub("~", "~0", x, fixed = TRUE)
   gsub("/", "~1", x, fixed = TRUE)
@@ -46,4 +45,3 @@ locate_plan_validation <- function(validation, plan) {
   }
   validation[]
 }
-

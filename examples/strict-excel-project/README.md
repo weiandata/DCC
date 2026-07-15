@@ -15,4 +15,3 @@ dcc_run("responses.csv", plan = "DCC-cleaning-plan.xlsx",
 ```
 
 After reviewing the diagnostics and preview use a new output directory and `mode = "execute"`. All data in this example are synthetic.
-

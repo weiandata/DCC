@@ -25,4 +25,3 @@ for (section in names(plan_table_contracts())) {
   }
 }
 openxlsx2::wb_save(wb, xlsx_path, overwrite = TRUE)
-

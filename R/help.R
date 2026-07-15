@@ -27,7 +27,6 @@ dcc_workflow_help_codes <- function() {
     "RULE_VAR_MISSING"
   ))
 }
-
 read_i18n <- function(language) {
   if (!language %in% c("zh-CN", "en")) {
     dcc_abort("`language` must be `zh-CN` or `en`.", class = "dcc_help_error")
@@ -72,4 +71,3 @@ dcc_help <- function(code = NULL, language = "zh-CN") {
   }
   hit
 }
-

@@ -46,4 +46,3 @@ resolve_run_inputs <- function(data, config, plan, mode) {
   }
   list(data = data, config = config, plan = NULL)
 }
-

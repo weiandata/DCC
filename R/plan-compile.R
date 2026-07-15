@@ -22,7 +22,6 @@ plan_source_option_names <- function(format) {
     character()
   )
 }
-
 plan_option_value <- function(name, value) {
   value <- as.character(value)
   if (name == "sheet" && grepl("^[0-9]+$", value)) return(as.integer(value))
@@ -136,4 +135,3 @@ plan_config <- function(plan) {
     items = if (length(items)) items else NULL
   )
 }
-
