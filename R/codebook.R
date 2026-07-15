@@ -129,7 +129,8 @@ dcc_apply_codebook <- function(x, codebook, dry_run = TRUE) {
     read_report = base$read_report,
     provenance = c(base$provenance, list(new_provenance_record(
       stage = "codebook",
-      details = list(n_changes = nrow(changes))
+      details = list(n_changes = nrow(changes)),
+      counts = list(changes = nrow(changes), rows = nrow(dt))
     )))
   )
 }

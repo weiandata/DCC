@@ -85,6 +85,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
                           f_rid, f_var, f_chk, f_id, f_pos, row_of)
 
   dt <- data.table::copy(dt0)
+  dispositions <- new_dispositions(findings)
 
   # Stamp constant fields once per run: recomputing the timestamp and
   # versions per change is both wasteful and (for timestamps) excluded
@@ -101,6 +102,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   ai <- 0L
   excluded_chunks <- vector("list", n_find)
   ei <- 0L
+  excluded_so_far <- rep.int(FALSE, nrow(dt))
   log_change <- function(finding_id, record_id, variable, old, new, action,
                          check_id, method) {
     ai <<- ai + 1L
@@ -126,39 +128,70 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     act <- actions[[f_chk[i]]]
     act_name <- if (is.list(act)) act$action %||% "" else act
     rows <- if (is.na(f_rid[i])) integer() else row_of[[f_pos[i]]]
-    switch(act_name,
-      exclude = {
-        ei <- ei + 1L
-        excluded_chunks[[ei]] <- rows
-        log_change(f_id[i], f_rid[i], NA_character_, NA, NA, "exclude",
-                   f_chk[i], "record excluded from cleaned dataset")
-      },
-      set_na = {
-        v <- f_var[i]
-        old <- dt[[v]][rows]
-        data.table::set(dt, i = rows, j = v, value = NA)
-        log_change(f_id[i], rep(f_rid[i], length(rows)), v, old, NA, "set_na",
-                   f_chk[i], "cell set to NA")
-      },
-      recode = {
-        v <- f_var[i]
-        map <- act$map
-        old <- dt[[v]][rows]
-        key <- as.character(old)
-        hitmap <- key %in% names(map)
-        if (any(hitmap)) {
-          new_vals <- old
-          new_raw <- unname(map[key[hitmap]])
-          new_vals[hitmap] <- methods::as(new_raw, class(dt[[v]])[1])
-          data.table::set(dt, i = rows, j = v, value = new_vals)
-          log_change(f_id[i], rep(f_rid[i], sum(hitmap)), v, old[hitmap],
-                     new_raw, "recode", f_chk[i],
-                     "cell recoded via action map")
+    dispositions$action[i] <- act_name
+    if (act_name %in% c("exclude", "set_na", "recode") && length(rows) &&
+        any(excluded_so_far[rows])) {
+      dispositions$status[i] <- "skipped"
+      dispositions$message[i] <- "record was already excluded by an earlier finding"
+      next
+    }
+    tryCatch(
+      switch(act_name,
+        exclude = {
+          ei <- ei + 1L
+          excluded_chunks[[ei]] <- rows
+          excluded_so_far[rows] <- TRUE
+          log_change(f_id[i], f_rid[i], NA_character_, NA, NA, "exclude",
+                     f_chk[i], "record excluded from cleaned dataset")
+          dispositions$status[i] <- "excluded"
+          dispositions$message[i] <- "record excluded from cleaned dataset"
+        },
+        set_na = {
+          v <- f_var[i]
+          old <- dt[[v]][rows]
+          data.table::set(dt, i = rows, j = v, value = NA)
+          log_change(f_id[i], rep(f_rid[i], length(rows)), v, old, NA,
+                     "set_na", f_chk[i], "cell set to NA")
+          dispositions$status[i] <- "changed"
+          dispositions$message[i] <- "cell set to NA"
+        },
+        recode = {
+          v <- f_var[i]
+          map <- act$map
+          old <- dt[[v]][rows]
+          key <- as.character(old)
+          hitmap <- key %in% names(map)
+          if (!any(hitmap)) {
+            dispositions$status[i] <- "skipped"
+            dispositions$message[i] <- "no recode map entry matched the current value"
+          } else {
+            new_vals <- old
+            new_raw <- unname(map[key[hitmap]])
+            new_vals[hitmap] <- methods::as(new_raw, class(dt[[v]])[1])
+            data.table::set(dt, i = rows, j = v, value = new_vals)
+            log_change(f_id[i], rep(f_rid[i], sum(hitmap)), v, old[hitmap],
+                       new_raw, "recode", f_chk[i],
+                       "cell recoded via action map")
+            dispositions$status[i] <- "changed"
+            dispositions$message[i] <- "cell recoded via action map"
+          }
+        },
+        flag = {
+          log_change(f_id[i], f_rid[i], f_var[i], NA, NA, "flag", f_chk[i],
+                     "reviewed and kept (no data change)")
+          dispositions$status[i] <- "flagged"
+          dispositions$message[i] <- "reviewed and kept"
         }
-      },
-      flag = {
-        log_change(f_id[i], f_rid[i], f_var[i], NA, NA, "flag", f_chk[i],
-                   "reviewed and kept (no data change)")
+      ),
+      error = function(e) {
+        dispositions$status[i] <- "failed"
+        dispositions$message[i] <- conditionMessage(e)
+        stop(errorCondition(
+          paste0("Action '", act_name, "' failed for finding '", f_id[i],
+                 "': ", conditionMessage(e)),
+          class = c("dcc_execute_error", "dcc_error"),
+          dispositions = data.table::copy(dispositions), parent = e
+        ))
       }
     )
   }
@@ -177,7 +210,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     empty_audit_log()
   }
 
-  unhandled <- findings[!explicit]
+  unhandled <- findings[dispositions$status == "unhandled"]
   data.table::setattr(unhandled, "class",
                       c("dcc_findings", class(data.table::data.table())))
 
@@ -194,7 +227,11 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
         n_excluded = length(excluded_rows),
         n_unhandled = nrow(unhandled),
         ruleset_hash = ruleset_hash %||% NA_character_
-      )
+      ),
+      hashes = list(ruleset = ruleset_hash %||% NA_character_),
+      counts = list(findings = nrow(findings), changes = nrow(audit_dt),
+                    excluded = length(excluded_rows),
+                    unhandled = nrow(unhandled))
     )))
   )
 
@@ -204,6 +241,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
       audit = audit_dt,
       n_excluded = length(excluded_rows),
       findings = findings,
+      dispositions = dispositions,
       unhandled = unhandled,
       actions = actions,
       id_var = id_var,

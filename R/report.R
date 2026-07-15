@@ -72,7 +72,8 @@ dcc_report <- function(x, path = NULL, audience = c("summary", "audit"),
 
   add("<h2>Provenance</h2>")
   prov <- dcc_provenance(x$data)
-  add(html_table(prov[, c("stage", "timestamp", "dcc_version"),
+  add(html_table(prov[, c("stage", "started_at", "ended_at", "outcome",
+                          "dcc_version"),
                       with = FALSE]))
 
   if (audience == "audit") {
@@ -141,35 +142,53 @@ html_table <- function(dt) {
 #' reported as handled.
 #'
 #' @param x A `dcc_result` from [dcc_execute()].
-#' @return The findings table extended with `action` (the executed
-#'   action, `NA` if none), `status` (one of `"changed"`, `"excluded"`,
-#'   `"flagged"`, or `"unhandled"`), and `handled` (logical).
+#' @return The findings table extended with the recorded disposition `action`,
+#'   `status`, `message`, and `handled` (logical).
 #' @export
 dcc_reconcile <- function(x) {
   stopifnot(inherits(x, "dcc_result"))
   f <- data.table::copy(data.table::as.data.table(x$findings))
   log <- data.table::as.data.table(x$audit)
-  f[, `:=`(action = NA_character_, status = "unhandled", handled = FALSE)]
+  d <- data.table::as.data.table(x$dispositions)
+  allowed <- c("changed", "excluded", "flagged", "skipped", "failed",
+               "unhandled")
+  if (anyNA(d$finding_id) || any(!nzchar(d$finding_id)) ||
+      anyDuplicated(d$finding_id) ||
+      !setequal(d$finding_id, f$finding_id) || any(!d$status %in% allowed)) {
+    dcc_abort("Disposition table does not contain one valid terminal row per ",
+              "finding.", class = "dcc_reconcile_error")
+  }
   if (nrow(log)) {
     if (any(!log$finding_id %in% f$finding_id)) {
       dcc_abort("Audit log contains a finding_id absent from the findings ",
                 "table; the audit trail and findings disagree.",
                 class = "dcc_reconcile_error")
     }
-    per_finding <- log[, list(actions = list(unique(action))),
-                       by = "finding_id"]
+    per_finding <- log[, list(actions = list(unique(action))), by = "finding_id"]
     if (any(lengths(per_finding$actions) != 1L)) {
       dcc_abort("A finding resolves to conflicting audit actions.",
                 class = "dcc_reconcile_error")
     }
-    per_finding[, action := vapply(actions, function(a) a[[1L]],
-                                   character(1))]
-    f[per_finding, on = "finding_id", action := i.action]
-    f[action %in% c("set_na", "recode"),
-      `:=`(status = "changed", handled = TRUE)]
-    f[action == "exclude", `:=`(status = "excluded", handled = TRUE)]
-    f[action == "flag", `:=`(status = "flagged", handled = TRUE)]
+    per_finding[, audit_action := vapply(actions, function(a) a[[1L]],
+                                         character(1))]
+    expected <- d$action[match(per_finding$finding_id, d$finding_id)]
+    if (any(per_finding$audit_action != expected)) {
+      dcc_abort("Audit actions disagree with terminal dispositions.",
+                class = "dcc_reconcile_error")
+    }
   }
+  audited <- unique(log$finding_id)
+  needs_audit <- d$status %in% c("changed", "excluded", "flagged")
+  if (any(needs_audit & !d$finding_id %in% audited) ||
+      any(!needs_audit & d$finding_id %in% audited)) {
+    dcc_abort("Audit evidence and terminal dispositions disagree.",
+              class = "dcc_reconcile_error")
+  }
+  idx <- match(f$finding_id, d$finding_id)
+  f[, `:=`(action = d$action[idx], status = d$status[idx],
+           message = d$message[idx],
+           handled = d$status[idx] %in%
+             c("changed", "excluded", "flagged", "skipped"))]
   f[]
 }
 

@@ -73,14 +73,14 @@ test_that("reconciliation uses exact finding IDs and exposes unhandled rows", {
                    c("unhandled", "unhandled"))
 })
 
-test_that("a lost audit row makes a handled finding unhandled", {
+test_that("a lost audit row is a reconciliation integrity error", {
   df <- fixture_responses()
   f <- dcc_findings("S001", variable = "q1", check_id = "C", evidence = "e")
   res <- dcc_execute(df, f, actions = list(C = "set_na"), id_var = "sid")
   expect_identical(dcc_reconcile(res)$status, "changed")
-  # simulate a dropped audit row: the finding can no longer reconcile
+  # simulate a dropped audit row: terminal disposition and evidence disagree
   res$audit <- res$audit[0L]
-  expect_identical(dcc_reconcile(res)$status, "unhandled")
+  expect_error(dcc_reconcile(res), class = "dcc_reconcile_error")
 })
 
 test_that("dcc_trace returns the cell history", {

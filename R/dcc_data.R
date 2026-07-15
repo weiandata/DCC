@@ -27,7 +27,8 @@ dcc_data <- function(data, meta = list(), read_report = NULL,
   if (is.null(provenance)) {
     provenance <- list(new_provenance_record(
       stage = "create",
-      details = list(n_rows = nrow(dt), n_cols = ncol(dt))
+      details = list(n_rows = nrow(dt), n_cols = ncol(dt)),
+      counts = list(rows = nrow(dt), columns = ncol(dt))
     ))
   }
 
@@ -42,34 +43,55 @@ dcc_data <- function(data, meta = list(), read_report = NULL,
   )
 }
 
-new_provenance_record <- function(stage, details = list()) {
+new_provenance_record <- function(stage, details = list(),
+                                  started_at = dcc_timestamp(),
+                                  ended_at = dcc_timestamp(),
+                                  outcome = "success", hashes = list(),
+                                  counts = list()) {
   list(
     stage = stage,
-    timestamp = dcc_timestamp(),
+    started_at = started_at,
+    ended_at = ended_at,
+    outcome = outcome,
     dcc_version = dcc_version_string(),
+    hashes = hashes,
+    counts = counts,
     details = details
   )
 }
 
-append_provenance <- function(x, stage, details = list()) {
+append_provenance <- function(x, stage, details = list(), hashes = list(),
+                              counts = list(), outcome = "success",
+                              started_at = dcc_timestamp(),
+                              ended_at = dcc_timestamp()) {
   stopifnot(inherits(x, "dcc_data"))
-  x$provenance <- c(x$provenance, list(new_provenance_record(stage, details)))
+  x$provenance <- c(x$provenance, list(new_provenance_record(
+    stage, details, started_at = started_at, ended_at = ended_at,
+    outcome = outcome, hashes = hashes, counts = counts
+  )))
   x
 }
 
 #' Provenance chain of a dcc_data object
 #'
 #' @param x A `dcc_data` object.
-#' @return A `data.table` with one row per provenance record: `stage`,
-#'   `timestamp`, `dcc_version`, and a list-column `details`.
+#' @return A `data.table` with one row per provenance record: `stage`, stage
+#'   boundaries, outcome, DCC version, and list-columns for hashes, counts, and
+#'   details.
 #' @export
 dcc_provenance <- function(x) {
   stopifnot(inherits(x, "dcc_data"))
   data.table::rbindlist(lapply(x$provenance, function(rec) {
+    started_at <- rec$started_at %||% rec$timestamp
+    ended_at <- rec$ended_at %||% started_at
     data.table::data.table(
       stage = rec$stage,
-      timestamp = rec$timestamp,
+      started_at = started_at,
+      ended_at = ended_at,
+      outcome = rec$outcome %||% "success",
       dcc_version = rec$dcc_version,
+      hashes = list(rec$hashes %||% list()),
+      counts = list(rec$counts %||% list()),
       details = list(rec$details)
     )
   }))

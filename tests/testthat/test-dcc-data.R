@@ -16,6 +16,18 @@ test_that("provenance chain is append-only", {
   expect_identical(length(x$provenance), 1L)
 })
 
+test_that("legacy timestamp provenance remains readable", {
+  legacy <- list(list(stage = "read", timestamp = "2026-01-01T00:00:00Z",
+                      dcc_version = "1.0.0", details = list(rows = 1L)))
+  x <- dcc_data(data.frame(id = 1L), provenance = legacy)
+  p <- dcc_provenance(x)
+  expect_identical(p$started_at, "2026-01-01T00:00:00Z")
+  expect_identical(p$ended_at, "2026-01-01T00:00:00Z")
+  expect_identical(p$outcome, "success")
+  expect_identical(p$hashes[[1L]], list())
+  expect_identical(p$counts[[1L]], list())
+})
+
 test_that("print methods run without error", {
   x <- dcc_data(fixture_df())
   expect_output(print(x), "<dcc_data>")

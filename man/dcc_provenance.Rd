@@ -10,13 +10,15 @@ dcc_provenance(x)
 }
 \value{
 A \code{data.table} with one row per provenance record: \code{stage},
-\code{timestamp}, \code{dcc_version}, and a list-column \code{details}.
+\code{started_at}, \code{ended_at}, \code{outcome}, \code{dcc_version},
+and list-columns \code{hashes}, \code{counts}, and \code{details}.
 }
 \description{
 Returns the append-only provenance chain recording every stage the
 object has passed through (read, detect, execute, ...). This chain is
 the backbone of DCC's auditable-reporting guarantee: any dataset version
 can be traced back to its source file and rule versions.
+Legacy records containing only \code{timestamp} remain readable.
 }
 \examples{
 x <- dcc_data(data.frame(id = 1:2))

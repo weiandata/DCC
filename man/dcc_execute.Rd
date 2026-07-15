@@ -33,8 +33,9 @@ Retained only for call compatibility.}
 A \code{dcc_result}: list with \code{data} (the new
 \code{\link{dcc_data}} version), \code{audit} (cell-level audit log
 whose first column is \code{finding_id}), \code{unhandled} (findings
-with no explicit action), and \code{n_excluded}. Accessors:
-\code{\link{dcc_audit_log}}, \code{\link{dcc_cleaned}}.
+with no explicit action), \code{dispositions} (one terminal row per finding),
+and \code{n_excluded}. Accessors: \code{\link{dcc_audit_log}},
+\code{\link{dcc_cleaned}}, \code{\link{dcc_dispositions}}.
 }
 \description{
 Applies declarative actions to detected findings under the closed-loop
@@ -45,7 +46,9 @@ exact \code{finding_id} that produced it. The whole plan is validated
 before any data changes -- unknown action IDs, unmapped recodes,
 missing or duplicated record ids, and group-level cell actions are
 errors. Findings without a mapped action are returned \code{unhandled}
-rather than silently flagged or dropped. The input is never modified.
+rather than silently flagged or dropped. A cell action made inapplicable by
+an earlier record exclusion is recorded as \code{skipped}. The input is never
+modified.
 }
 \examples{
 df <- data.frame(sid = c("S1", "S2"), score = c(50, 150))

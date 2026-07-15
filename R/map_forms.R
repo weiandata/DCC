@@ -120,7 +120,11 @@ dcc_map_forms <- function(x, form_item_map, form_var) {
         n_masters = length(masters),
         n_anchors = length(unique(map$master[map$is_anchor])),
         n_findings = nrow(found)
-      )
+      ),
+      hashes = list(form_map = map_hash),
+      counts = list(masters = length(masters),
+                    anchors = length(unique(map$master[map$is_anchor])),
+                    findings = nrow(found), rows = nrow(out))
     )))
   )
   data.table::setattr(result, "dcc_item_map", map)

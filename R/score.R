@@ -107,7 +107,9 @@ dcc_score <- function(x, answer_key, omit_policy = c("zero", "na"),
         keyfile_hash = key_hash,
         omit_policy = omit_policy,
         custom_scoring = !is.null(scoring_fn)
-      )
+      ),
+      hashes = list(keyfile = key_hash),
+      counts = list(items = nrow(key), rows = nrow(dt))
     )))
   )
 }

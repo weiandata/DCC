@@ -84,7 +84,10 @@ dcc_read <- function(path, format = "auto", encoding = "auto", ...) {
         n_rows = nrow(dt),
         n_cols = ncol(dt),
         l0_findings = nrow(report$findings)
-      )
+      ),
+      hashes = list(input = meta$file_hash),
+      counts = list(rows = nrow(dt), columns = ncol(dt),
+                    l0_findings = nrow(report$findings))
     ))
   )
   out
