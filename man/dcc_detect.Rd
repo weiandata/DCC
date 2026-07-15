@@ -23,6 +23,9 @@ appended.
 Evaluates every check in a rule set and returns the combined findings
 table. Detection is pure and read-only: the same data and the same rule
 set always produce the same findings, and the input is never modified.
+Range checks report non-missing values that cannot be converted to numeric
+with code \code{INVALID_NUMERIC}; numeric bounds violations use
+\code{OUT_OF_RANGE}.
 }
 \examples{
 df <- data.frame(sid = c("S1", "S2"), score = c(50, 150))

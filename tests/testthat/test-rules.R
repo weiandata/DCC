@@ -64,6 +64,18 @@ checks:
   expect_identical(unique(f$dimension), "validity")
 })
 
+test_that("range rules report invalid numeric source values", {
+  skip_if_not_installed("yaml")
+  rs <- dcc_rules(write_rules(paste(
+    "checks:", "  - id: R001", "    type: range",
+    "    variable: score", "    min: 0", "    max: 100", sep = "\n")))
+  x <- data.frame(sid = c("S1", "S2", "S3"),
+                  score = c("abc", "150", NA_character_))
+  expect_warning(f <- dcc_detect(x, rs, id_var = "sid"), NA)
+  expect_identical(f$record_id, c("S1", "S2"))
+  expect_identical(f$code, c("INVALID_NUMERIC", "OUT_OF_RANGE"))
+})
+
 test_that("expr checks evaluate in a restricted environment", {
   skip_if_not_installed("yaml")
   df <- fixture_responses()

@@ -232,18 +232,30 @@ eval_range_check <- function(x, ch, id_var, severity, dimension) {
     dcc_abort("Check '", ch$id, "': variable '", v %||% "<missing>",
               "' not found.", class = "dcc_rule_error")
   }
-  vals <- as.numeric(r$dt[[v]])
-  bad <- rep.int(FALSE, length(vals))
-  if (!is.null(ch$min)) bad <- bad | (!is.na(vals) & vals < ch$min)
-  if (!is.null(ch$max)) bad <- bad | (!is.na(vals) & vals > ch$max)
-  hit <- which(bad)
+  raw <- r$dt[[v]]
+  raw_missing <- is.na(raw)
+  vals <- suppressWarnings(as.numeric(as.character(raw)))
+  invalid <- !raw_missing & is.na(vals)
+  outside <- rep.int(FALSE, length(vals))
+  if (!is.null(ch$min)) {
+    outside <- outside | (!is.na(vals) & vals < ch$min)
+  }
+  if (!is.null(ch$max)) {
+    outside <- outside | (!is.na(vals) & vals > ch$max)
+  }
+  hit <- which(invalid | outside)
   dcc_findings(
     record_id = r$ids[hit], variable = v, check_id = as.character(ch$id),
-    evidence = sprintf("value %s outside range [%s, %s]",
-                       format(vals[hit]),
-                       format(ch$min %||% -Inf), format(ch$max %||% Inf)),
+    evidence = ifelse(
+      invalid[hit],
+      sprintf("value '%s' is not numeric", as.character(raw[hit])),
+      sprintf("value %s outside range [%s, %s]", format(vals[hit]),
+              format(ch$min %||% -Inf), format(ch$max %||% Inf))
+    ),
     severity = severity,
-    dimension = if (is.na(dimension)) "validity" else dimension
+    dimension = if (is.na(dimension)) "validity" else dimension,
+    code = ifelse(invalid[hit], "INVALID_NUMERIC", "OUT_OF_RANGE"),
+    detector_id = "range"
   )
 }
 
