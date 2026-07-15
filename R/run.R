@@ -188,8 +188,41 @@ dcc_run <- function(data, config, output_dir,
               "dcc_read_config().", class = "dcc_type_error")
   }
   id_var <- id_var %||% config$id_var
-  dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
-  wpath <- function(name) file.path(output_dir, name)
+  run_id <- new_run_id()
+  staging <- new_run_staging(output_dir, run_id)
+  published <- FALSE
+  on.exit({
+    if (!published && dir.exists(staging)) {
+      unlink(staging, recursive = TRUE, force = TRUE)
+    }
+  }, add = TRUE)
+
+  run <- tryCatch(
+    dcc_run_staged(data, config, staging, mode, id_var, run_id),
+    error = function(e) {
+      diagnostic <- tryCatch({
+        write_failed_run(staging, run_id, mode, e)
+        publish_run(staging, output_dir, "failed", run_id)
+      }, error = function(publish_error) NA_character_)
+      if (!is.na(diagnostic)) published <<- TRUE
+      stop(errorCondition(
+        paste0("DCC run failed: ", conditionMessage(e)),
+        class = c("dcc_run_error", "dcc_error"),
+        parent = e, diagnostic_dir = diagnostic
+      ))
+    }
+  )
+  status <- if (identical(mode, "preview")) "preview" else "success"
+  target <- publish_run(staging, output_dir, status, run_id)
+  published <- TRUE
+  run$files <- published_paths(run$files, staging, target)
+  run$run_dir <- target
+  run$status <- status
+  run
+}
+
+dcc_run_staged <- function(data, config, staging, mode, id_var, run_id) {
+  wpath <- function(name) file.path(staging, name)
   written <- character()
   mark <- function(p) written <<- c(written, p)
 
@@ -207,7 +240,7 @@ dcc_run <- function(data, config, output_dir,
                  paste0("data_match: ", rr$data_match),
                  paste0("audit_match: ", rr$audit_match)), summ)
     mark(summ)
-    return(new_dcc_run(mode, config, id_var, written, rr))
+    return(new_dcc_run(mode, config, id_var, written, rr, run_id))
   }
 
   x <- if (inherits(data, "dcc_data")) {
@@ -261,11 +294,8 @@ dcc_run <- function(data, config, output_dir,
     dcc_export_log(res, al, format = "csv")
     mark(al)
     mf <- wpath("manifest.yaml")
-    ok <- tryCatch({
-      dcc_manifest(res, path = mf)
-      TRUE
-    }, dcc_manifest_error = function(e) FALSE)
-    if (ok) mark(mf)
+    dcc_manifest(res, path = mf)
+    mark(mf)
   }
 
   summ <- wpath("run-summary.txt")
@@ -280,12 +310,13 @@ dcc_run <- function(data, config, output_dir,
   ), summ)
   mark(summ)
 
-  new_dcc_run(mode, config, id_var, written, res)
+  new_dcc_run(mode, config, id_var, written, res, run_id)
 }
 
-new_dcc_run <- function(mode, config, id_var, files, result) {
+new_dcc_run <- function(mode, config, id_var, files, result, run_id = NA_character_) {
   structure(list(mode = mode, config = config, id_var = id_var,
-                 files = files, result = result),
+                 files = files, result = result, run_id = run_id,
+                 run_dir = NA_character_, status = "writing"),
             class = "dcc_run")
 }
 

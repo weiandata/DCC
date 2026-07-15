@@ -39,8 +39,36 @@ test_that("execute writes cleaned data, audit log and manifest", {
   expect_true(file.exists(file.path(out, "cleaned-data.csv")))
   expect_true(file.exists(file.path(out, "audit-log.csv")))
   expect_true(file.exists(file.path(out, "manifest.yaml")))
+  expect_true(dcc_rerun(file.path(out, "manifest.yaml"))$reproduced)
   rec <- dcc_reconcile(run$result)
   expect_false(any(rec$status == "unhandled"))
+})
+
+test_that("data-frame execution cannot silently omit a manifest", {
+  skip_if_not_installed("yaml")
+  out <- tempfile("dcc-out")
+  expect_error(
+    dcc_run(data.frame(sid = "S1", score = 150), run_config(), out,
+            mode = "execute"),
+    class = "dcc_run_error"
+  )
+  expect_false(dir.exists(out))
+  failed <- Sys.glob(paste0(out, ".failed-*"))
+  expect_length(failed, 1L)
+  expect_true(file.exists(file.path(failed, "run.json")))
+  expect_true(file.exists(file.path(failed, "run-summary.txt")))
+})
+
+test_that("dcc_run refuses to overwrite an existing output directory", {
+  skip_if_not_installed("yaml")
+  out <- tempfile("dcc-out")
+  dir.create(out)
+  sentinel <- file.path(out, "keep.txt")
+  writeLines("keep", sentinel)
+  expect_error(dcc_run(write_run_csv(), run_config(), out),
+               class = "dcc_run_error")
+  expect_identical(readLines(sentinel), "keep")
+  expect_length(Sys.glob(paste0(out, ".staging-*")), 0L)
 })
 
 test_that("dcc_run refuses input that fails validation", {

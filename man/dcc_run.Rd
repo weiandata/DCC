@@ -28,7 +28,10 @@ A \code{dcc_run} object with the mode, config, and written file paths
 The survey-staff entry point: orchestrates the Detect -> Execute ->
 Report pipeline from a \code{\link{dcc_config}} and writes a fixed
 output layout. Preview is the default, so the safe path requires no
-extra care, and the raw input file is never modified in any mode.
+extra care, and the raw input file is never modified in any mode. Files are
+written to a same-parent staging directory and published atomically. Existing
+output directories are never overwritten; failed runs publish a diagnostic
+\code{.failed-<run_id>} directory and raise \code{dcc_run_error}.
 }
 \details{
 Modes: \code{"preview"} detects and reports only (no data change, no

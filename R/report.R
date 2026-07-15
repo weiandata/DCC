@@ -169,8 +169,10 @@ dcc_reconcile <- function(x) {
       dcc_abort("A finding resolves to conflicting audit actions.",
                 class = "dcc_reconcile_error")
     }
-    per_finding[, audit_action := vapply(actions, function(a) a[[1L]],
-                                         character(1))]
+    data.table::set(
+      per_finding, j = "audit_action",
+      value = vapply(per_finding$actions, function(a) a[[1L]], character(1))
+    )
     expected <- d$action[match(per_finding$finding_id, d$finding_id)]
     if (any(per_finding$audit_action != expected)) {
       dcc_abort("Audit actions disagree with terminal dispositions.",
