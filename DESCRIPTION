@@ -26,13 +26,15 @@ Language: en
 Depends: R (>= 4.1)
 Imports:
     data.table (>= 1.14.0),
+    openxlsx2 (>= 1.28),
+    readODS (>= 2.3.5),
+    readxl (>= 1.5.0),
     stringi (>= 1.7.0),
     methods,
     stats,
     tools,
     utils
 Suggests:
-    readxl,
     writexl,
     haven,
     arrow,
