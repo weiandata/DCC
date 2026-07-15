@@ -50,6 +50,7 @@ dcc_report_machine <- function(model, output_dir) {
     issues = model$validation
   )
   summary <- machine_summary_from_model(model)
+  summary$hashes <- model$hashes
   summary$artifacts <- I(summary$artifacts)
   summary$next_actions <- I(summary$next_actions)
   summary <- c(list(contract_version = "1.0", run_id = run_id), summary)

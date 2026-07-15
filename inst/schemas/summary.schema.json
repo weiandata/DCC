@@ -3,7 +3,7 @@
   "$id": "https://weiandata.com/dcc/schemas/summary-1.0.json",
   "title": "DCC machine summary",
   "type": "object",
-  "required": ["contract_version", "run_id", "status", "counts", "top_findings", "artifacts", "next_actions"],
+  "required": ["contract_version", "run_id", "status", "counts", "hashes", "top_findings", "artifacts", "next_actions"],
   "properties": {
     "contract_version": {"type": "string", "const": "1.0"},
     "run_id": {"type": "string"},
@@ -21,6 +21,10 @@
         "unhandled_total": {"type": "integer", "minimum": 0}
       },
       "additionalProperties": false
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": {"type": ["string", "null"]}
     },
     "top_findings": {"type": "array", "items": {"type": "object"}, "maxItems": 20},
     "artifacts": {"type": "array", "items": {"type": "string"}},

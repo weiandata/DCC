@@ -19,7 +19,8 @@ test_that("machine bundle has deterministic paths and versioned schemas", {
 
 test_that("machine JSON and JSONL artifacts validate without jsonvalidate", {
   out <- withr::local_tempdir()
-  dcc_report_machine(report_model_fixture(), out)
+  model <- report_model_fixture()
+  dcc_report_machine(model, out)
 
   expect_true(dcc_validate_json(file.path(out, "run.json"), "run"))
   expect_true(dcc_validate_json(file.path(out, "validation.json"),
@@ -35,6 +36,10 @@ test_that("machine JSON and JSONL artifacts validate without jsonvalidate", {
                                  "audit_record"))
   expect_true(dcc_validate_jsonl(file.path(out, "reconciliation.jsonl"),
                                  "reconciliation"))
+
+  summary <- jsonlite::read_json(file.path(out, "summary.json"),
+                                 simplifyVector = TRUE)
+  expect_identical(summary$hashes$cleaned_data, model$hashes$cleaned_data)
 })
 
 test_that("machine JSONL contains every complete model row", {
