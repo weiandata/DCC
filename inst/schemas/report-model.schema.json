@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://weiandata.com/dcc/schemas/report-model-1.0.json",
+  "title": "DCC normalized report model",
+  "type": "object",
+  "required": [
+    "contract", "project", "run", "input", "plan", "validation",
+    "findings", "dispositions", "changes", "exclusions",
+    "reconciliation", "summaries", "scoring", "mapping", "provenance",
+    "performance", "hashes", "outputs", "sensitivity"
+  ],
+  "properties": {
+    "contract": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "dcc-report"},
+        "version": {"const": "1.0"}
+      },
+      "additionalProperties": false
+    },
+    "project": {"type": "object"},
+    "run": {"type": "object"},
+    "input": {"type": "object"},
+    "plan": {"type": "object"},
+    "validation": {"type": "array"},
+    "findings": {"type": "array"},
+    "dispositions": {"type": "array"},
+    "changes": {"type": "array"},
+    "exclusions": {"type": "array"},
+    "reconciliation": {"type": "array"},
+    "summaries": {"type": "object"},
+    "scoring": {"type": "array"},
+    "mapping": {"type": "array"},
+    "provenance": {"type": "array"},
+    "performance": {"type": "object"},
+    "hashes": {"type": "object"},
+    "outputs": {"type": "array"},
+    "sensitivity": {"type": "object"}
+  },
+  "additionalProperties": false
+}
