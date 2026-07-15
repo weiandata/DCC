@@ -16,6 +16,8 @@
     "detector_id"
   ],
   "properties": {
+    "contract_version": { "type": "string", "const": "1.0" },
+    "run_id": { "type": "string" },
     "finding_id": { "type": "string" },
     "record_id": { "type": ["string", "null"] },
     "variable": { "type": ["string", "null"] },
@@ -24,7 +26,8 @@
     "severity": { "type": "string", "enum": ["info", "warn", "fail"] },
     "dimension": { "type": ["string", "null"] },
     "code": { "type": "string" },
-    "detector_id": { "type": "string" }
+    "detector_id": { "type": "string" },
+    "count": { "type": "integer", "minimum": 0 }
   },
   "additionalProperties": false
 }

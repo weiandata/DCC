@@ -9,7 +9,10 @@ dcc_schema(name, as = c("object", "path"))
 \item{name}{One of \code{"finding"}, \code{"disposition"},
 \code{"provenance"}, \code{"audit_log"}, \code{"rules"},
 \code{"actions"}, \code{"manifest"}, \code{"plan"}, or
-\code{"report-model"}.}
+\code{"report-model"}, plus the machine-report schemas \code{"run"},
+\code{"validation"}, \code{"summary"}, \code{"audit_record"},
+\code{"reconciliation"}, \code{"machine_provenance"}, and
+\code{"artifact_manifest"}.}
 
 \item{as}{\code{"object"} (default) returns the parsed schema (requires
 the \code{jsonlite} package); \code{"path"} returns the installed file

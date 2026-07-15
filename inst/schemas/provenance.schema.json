@@ -9,6 +9,8 @@
     "hashes", "counts", "details"
   ],
   "properties": {
+    "contract_version": { "type": "string", "const": "1.0" },
+    "run_id": { "type": "string" },
     "stage": { "type": "string" },
     "started_at": { "type": "string" },
     "ended_at": { "type": "string" },

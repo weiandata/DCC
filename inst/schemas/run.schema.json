@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://weiandata.com/dcc/schemas/run-1.0.json",
+  "title": "DCC machine run",
+  "type": "object",
+  "required": ["contract_version", "run_id", "status", "mode", "dcc_version", "generated_at"],
+  "properties": {
+    "contract_version": {"type": "string", "const": "1.0"},
+    "run_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["preview", "success", "partial_failure", "failed"]},
+    "mode": {"type": "string"},
+    "dcc_version": {"type": "string"},
+    "generated_at": {"type": "string", "pattern": "Z$"}
+  },
+  "additionalProperties": false
+}

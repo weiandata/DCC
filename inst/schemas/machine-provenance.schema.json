@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://weiandata.com/dcc/schemas/machine-provenance-1.0.json",
+  "title": "DCC machine provenance bundle",
+  "type": "object",
+  "required": ["contract_version", "run_id", "records"],
+  "properties": {
+    "contract_version": {"type": "string", "const": "1.0"},
+    "run_id": {"type": "string"},
+    "records": {"type": "array", "items": {
+      "type": "object",
+      "required": ["contract_version", "run_id", "stage", "started_at", "ended_at", "outcome", "dcc_version", "hashes", "counts", "details"],
+      "properties": {
+        "contract_version": {"type": "string", "const": "1.0"},
+        "run_id": {"type": "string"},
+        "stage": {"type": "string"},
+        "started_at": {"type": "string", "pattern": "Z$"},
+        "ended_at": {"type": "string", "pattern": "Z$"},
+        "outcome": {"type": "string", "enum": ["success", "partial_failure", "failed", "skipped"]},
+        "dcc_version": {"type": "string"},
+        "hashes": {"type": "object"},
+        "counts": {"type": "object"},
+        "details": {"type": "object"}
+      },
+      "additionalProperties": false
+    }}
+  },
+  "additionalProperties": false
+}

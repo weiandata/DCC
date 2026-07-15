@@ -8,7 +8,9 @@
 #'
 #' @param name One of `"finding"`, `"disposition"`, `"provenance"`,
 #'   `"audit_log"`, `"rules"`, `"actions"`, `"manifest"`, `"plan"`, or
-#'   `"report-model"`.
+#'   `"report-model"`, `"run"`, `"validation"`, `"summary"`,
+#'   `"audit_record"`, `"reconciliation"`, `"machine_provenance"`, or
+#'   `"artifact_manifest"`.
 #' @param as `"object"` (default) returns the parsed schema (requires
 #'   the `jsonlite` package); `"path"` returns the installed file path.
 #' @return The parsed schema (a list) or the schema file path.
@@ -23,7 +25,12 @@ dcc_schema <- function(name, as = c("object", "path")) {
   files <- c(finding = "finding", disposition = "disposition",
              provenance = "provenance", audit_log = "audit-log",
              rules = "rules", actions = "actions", manifest = "manifest",
-             plan = "plan", `report-model` = "report-model")
+             plan = "plan", `report-model` = "report-model",
+             run = "run", validation = "validation", summary = "summary",
+             audit_record = "audit-record",
+             reconciliation = "reconciliation",
+             machine_provenance = "machine-provenance",
+             artifact_manifest = "artifact-manifest")
   name <- match.arg(name, names(files))
   file <- system.file("schemas", paste0(files[[name]], ".schema.json"),
                       package = "DCC")
