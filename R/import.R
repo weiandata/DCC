@@ -105,6 +105,14 @@ canonicalize_import <- function(raw_data, raw_metadata, spec,
     states[imported_missing] <- "import_missing"
     source_values[imported_missing] <- values[imported_missing]
 
+    source_missing <- source_missing_for_column(
+      raw_metadata$missing, source_name, length(values)
+    )
+    if (nrow(source_missing)) {
+      states[source_missing$row] <- source_missing$state
+      source_values[source_missing$row] <- source_missing$source_value
+    }
+
     declared_missing <- missing_plan[missing_plan$variable == canonical_name, ]
     if (nrow(declared_missing)) {
       for (k in seq_len(nrow(declared_missing))) {
@@ -137,7 +145,7 @@ canonicalize_import <- function(raw_data, raw_metadata, spec,
   }
   data.table::setorderv(missing_states, c("row", "variable"))
 
-  dictionary <- data.table::copy(columns)
+  dictionary <- enrich_import_dictionary(columns, raw_metadata$variables)
   dictionary[, type := fifelse(type == "numeric", "double", type)]
   file_hash <- unname(tools::md5sum(spec$source))
   spec_hash <- hash_import_spec(spec)
@@ -172,6 +180,63 @@ canonicalize_import <- function(raw_data, raw_metadata, spec,
                      adapter_status = dcc_get_adapter(spec$format)$status)
     ))
   )
+}
+
+source_missing_for_column <- function(source_missing, source_name, n_rows) {
+  if (is.null(source_missing) || !nrow(source_missing)) {
+    return(data.table::data.table(row = integer(), state = character(),
+                                  source_value = character()))
+  }
+  required <- c("row", "variable", "state", "source_value")
+  if (!is.data.frame(source_missing) ||
+      length(setdiff(required, names(source_missing)))) {
+    dcc_abort("Adapter missing metadata has an invalid contract.",
+              class = "dcc_import_error")
+  }
+  out <- data.table::as.data.table(source_missing)
+  out <- out[as.character(variable) == source_name, required, with = FALSE]
+  if (nrow(out) && (anyNA(out$row) || any(out$row < 1L | out$row > n_rows) ||
+                    any(!out$state %in% missing_state_levels()))) {
+    dcc_abort("Adapter missing metadata contains invalid rows or states.",
+              class = "dcc_import_error")
+  }
+  out
+}
+
+enrich_import_dictionary <- function(columns, variables) {
+  dictionary <- data.table::copy(columns)
+  variables <- variables %||% list()
+  source_metadata <- function(source_name, field, default) {
+    item <- variables[[source_name]]
+    if (is.null(item) || is.null(item[[field]])) default else item[[field]]
+  }
+  source_labels <- vapply(
+    dictionary$source_name,
+    source_metadata,
+    field = "label",
+    default = NA_character_,
+    FUN.VALUE = character(1)
+  )
+  if (!"label" %in% names(dictionary)) {
+    dictionary[, label := source_labels]
+  } else {
+    fill <- is.na(dictionary$label) | !nzchar(as.character(dictionary$label))
+    dictionary[fill, label := source_labels[fill]]
+  }
+  if (!"value_labels" %in% names(dictionary)) {
+    dictionary[, value_labels := lapply(source_name, function(name) {
+      source_metadata(name, "labels", stats::setNames(numeric(), character()))
+    })]
+  }
+  if (!"source_class" %in% names(dictionary)) {
+    dictionary[, source_class := vapply(
+      source_name,
+      function(name) paste(source_metadata(name, "class", character()),
+                            collapse = "/"),
+      character(1)
+    )]
+  }
+  dictionary
 }
 
 validate_missing_plan <- function(missing, variables) {

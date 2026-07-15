@@ -170,12 +170,12 @@ dcc_format_registry <- function() {
     xlsx = adapter_readxl("xlsx"),
     xlsb = adapter_xlsb(),
     ods = adapter_ods(),
-    spss = planned_adapter("spss", c("sav", "zsav", "por")),
-    stata = planned_adapter("stata", "dta"),
-    sas = planned_adapter("sas", "sas7bdat"),
-    xpt = planned_adapter("xpt", "xpt"),
-    parquet = planned_adapter("parquet", "parquet"),
-    feather = planned_adapter("feather", c("feather", "arrow")),
+    spss = adapter_haven("spss", c("sav", "zsav", "por")),
+    stata = adapter_haven("stata", "dta"),
+    sas = adapter_haven("sas", "sas7bdat"),
+    xpt = adapter_haven("xpt", "xpt"),
+    parquet = adapter_arrow("parquet"),
+    feather = adapter_arrow("feather"),
     rds = adapter_rds()
   )
 }
