@@ -34,7 +34,9 @@ A \code{dcc_result}: list with \code{data} (the new
 \code{\link{dcc_data}} version), \code{audit} (cell-level audit log
 whose first column is \code{finding_id}), \code{unhandled} (findings
 with no explicit action), \code{dispositions} (one terminal row per finding),
-and \code{n_excluded}. Accessors: \code{\link{dcc_audit_log}},
+\code{report_profile} (aggregate pre-cleaning types, missingness, and complete
+frequency counts without raw rows), and \code{n_excluded}. Accessors:
+\code{\link{dcc_audit_log}},
 \code{\link{dcc_cleaned}}, \code{\link{dcc_dispositions}}.
 }
 \description{

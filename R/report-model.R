@@ -31,6 +31,9 @@ dcc_report_model <- function(result, run = NULL) {
   exclusions <- changes[changes$action == "exclude", , drop = FALSE]
   rows_after <- nrow(result$data$data)
   rows_before <- rows_after + as.integer(result$n_excluded)
+  before_profile <- result$report_profile %||%
+    build_report_profile(result$data$data)
+  after_profile <- build_report_profile(result$data$data)
 
   model <- list(
     contract = list(name = "dcc-report", version = "1.0"),
@@ -51,7 +54,16 @@ dcc_report_model <- function(result, run = NULL) {
       changes_total = as.integer(nrow(changes)),
       excluded_total = as.integer(nrow(exclusions)),
       handled_total = as.integer(sum(reconciliation$handled)),
-      unhandled_total = as.integer(sum(!reconciliation$handled))
+      unhandled_total = as.integer(sum(!reconciliation$handled)),
+      missingness = report_missingness(before_profile, after_profile),
+      distributions = rbind(
+        report_profile_stage(before_profile$distributions, "before"),
+        report_profile_stage(after_profile$distributions, "after")
+      ),
+      types = rbind(
+        report_profile_stage(before_profile$types, "before"),
+        report_profile_stage(after_profile$types, "after")
+      )
     ),
     scoring = report_scoring(result),
     mapping = report_mapping(result),
@@ -333,5 +345,75 @@ report_outputs <- function(run) {
   data.frame(
     name = basename(paths), path = paths,
     status = rep("success", length(paths)), stringsAsFactors = FALSE
+  )
+}
+
+build_report_profile <- function(data) {
+  data <- data.table::as.data.table(data)
+  missingness <- data.frame(
+    variable = names(data),
+    missing = vapply(data, function(x) sum(is.na(x)), integer(1)),
+    rows = rep.int(nrow(data), ncol(data)),
+    stringsAsFactors = FALSE
+  )
+  types <- data.frame(
+    variable = names(data),
+    class = vapply(data, function(x) paste(class(x), collapse = "/"),
+                   character(1)),
+    typeof = vapply(data, typeof, character(1)),
+    rows = rep.int(nrow(data), ncol(data)),
+    non_missing = vapply(data, function(x) sum(!is.na(x)), integer(1)),
+    unique_non_missing = vapply(
+      data, function(x) length(unique(x[!is.na(x)])), integer(1)
+    ),
+    stringsAsFactors = FALSE
+  )
+  distributions <- lapply(names(data), function(variable) {
+    values <- as.character(data[[variable]])
+    table <- data.table::data.table(
+      variable = rep.int(variable, length(values)),
+      value = values,
+      missing = is.na(data[[variable]])
+    )
+    if (!nrow(table)) {
+      table$count <- integer()
+      return(as.data.frame(table))
+    }
+    out <- table[, list(count = .N), by = c("variable", "value", "missing")]
+    as.data.frame(out[order(missing, value)], stringsAsFactors = FALSE)
+  })
+  distributions <- if (length(distributions)) {
+    as.data.frame(data.table::rbindlist(distributions, use.names = TRUE))
+  } else {
+    data.frame(
+      variable = character(), value = character(), missing = logical(),
+      count = integer(), stringsAsFactors = FALSE
+    )
+  }
+  list(
+    rows = as.integer(nrow(data)),
+    missingness = missingness,
+    distributions = distributions,
+    types = types
+  )
+}
+
+report_profile_stage <- function(table, stage) {
+  out <- as.data.frame(table, stringsAsFactors = FALSE)
+  data.frame(stage = rep.int(stage, nrow(out)), out,
+             stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+report_missingness <- function(before, after) {
+  variables <- union(before$missingness$variable, after$missingness$variable)
+  before_idx <- match(variables, before$missingness$variable)
+  after_idx <- match(variables, after$missingness$variable)
+  data.frame(
+    variable = variables,
+    before_missing = before$missingness$missing[before_idx],
+    before_rows = before$missingness$rows[before_idx],
+    after_missing = after$missingness$missing[after_idx],
+    after_rows = after$missingness$rows[after_idx],
+    stringsAsFactors = FALSE
   )
 }

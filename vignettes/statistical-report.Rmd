@@ -1,0 +1,37 @@
+---
+title: "Reproducible statistical reports with DCC"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Reproducible statistical reports with DCC}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`dcc_report_model()` is the single reporting source for staff, statistical,
+and machine outputs. A statistical bundle does not recalculate cleaning
+decisions: it writes the model's complete findings, audit, reconciliation,
+before/after missingness and distributions, types, scoring, mapping,
+parameters, hashes, and provenance.
+
+```{r workflow, eval=FALSE}
+run <- dcc_run(data_path, plan = plan_path, output_dir = "dcc-run",
+               mode = "execute")
+model <- dcc_report_model(run$result, run)
+dcc_report_statistical(model, "dcc-run/statistical",
+                       table_format = "parquet")
+```
+
+Use CSV when a plain-text exchange format is required. CSV files are UTF-8
+and RFC 4180-compatible. Parquet retains canonical column types. In both
+cases `artifact-manifest.json` records a SHA-256 digest for every artifact
+except the manifest itself.
+
+The distribution exports are complete rather than sampled and can therefore
+contain sensitive values. Store the statistical directory under the same
+access controls as the cleaned data and audit log. Staff reports remain
+redacted by default, while PDF is optional and is not part of the base report
+contract.

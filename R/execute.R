@@ -39,8 +39,9 @@
 #' @return A `dcc_result` object: list with `data` (the new
 #'   [dcc_data()] version), `audit` (the cell-level audit log, whose
 #'   first column is `finding_id`), `unhandled` (findings with no
-#'   explicit action), and `n_excluded`. Accessors: [dcc_audit_log()],
-#'   [dcc_cleaned()].
+#'   explicit action), `report_profile` (aggregate pre-cleaning types,
+#'   missingness, and complete frequency counts without raw rows), and
+#'   `n_excluded`. Accessors: [dcc_audit_log()], [dcc_cleaned()].
 #' @export
 dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
                         default = "flag", ruleset_hash = NULL) {
@@ -84,6 +85,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   validate_execution_plan(dt0, findings, actions, id_var, ids, explicit,
                           f_rid, f_var, f_chk, f_id, f_pos, row_of)
 
+  report_profile <- build_report_profile(dt0)
   dt <- data.table::copy(dt0)
   dispositions <- new_dispositions(findings)
 
@@ -241,6 +243,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
   structure(
     list(
       data = out_data,
+      report_profile = report_profile,
       audit = audit_dt,
       n_excluded = length(excluded_rows),
       findings = findings,
