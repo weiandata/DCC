@@ -19,6 +19,14 @@ for (section in c("project", "source")) {
 }
 for (section in names(plan_table_contracts())) {
   tab <- as.data.frame(plan[[section]], stringsAsFactors = FALSE)
+  if (section == "outputs") {
+    supplied <- tab
+    supplied$key[supplied$key == "include_audit_report"] <-
+      "include_statistical_report"
+    tab <- defaults$outputs
+    hit <- match(supplied$key, tab$key)
+    tab$value[hit[!is.na(hit)]] <- supplied$value[!is.na(hit)]
+  }
   if (nrow(tab)) {
     wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
                                  col_names = FALSE)

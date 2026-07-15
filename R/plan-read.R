@@ -111,7 +111,11 @@ read_plan_excel <- function(path) {
   source <- read_plan_key_values(
     sections$source, "source", defaults$source$key
   )
-  if (!identical(as.character(sections$outputs$key), defaults$outputs$key)) {
+  output_keys <- as.character(sections$outputs$key)
+  valid_output_keys <- any(vapply(
+    plan_output_key_profiles(), identical, logical(1), y = output_keys
+  ))
+  if (!valid_output_keys) {
     dcc_abort("Sheet `outputs` keys do not match strict template 1.0.",
               class = "dcc_plan_error")
   }

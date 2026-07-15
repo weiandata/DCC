@@ -40,3 +40,17 @@ test_that("dcc_template refuses accidental overwrite and bad languages", {
   expect_error(dcc_template(tempfile(fileext = ".xlsx"), language = "fr"),
                class = "dcc_template_error")
 })
+
+test_that("strict template exposes fixed three-audience report controls", {
+  path <- tempfile(fileext = ".xlsx")
+  dcc_template(path)
+  outputs <- openxlsx2::wb_to_df(path, sheet = "outputs", rows = 3:9,
+                                 col_names = FALSE)
+
+  expect_identical(
+    as.character(outputs[[1L]]),
+    c("report_language", "cleaned_format", "include_staff_report",
+      "include_statistical_report", "include_machine_report",
+      "statistical_table_format", "include_sensitive_examples")
+  )
+})

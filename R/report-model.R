@@ -342,6 +342,11 @@ report_performance <- function(result) {
 
 report_outputs <- function(run) {
   paths <- as.character(run$files %||% character())
+  root <- as.character(run$run_dir %||% NA_character_)
+  if (length(paths) && length(root) == 1L && !is.na(root) &&
+      dir.exists(root)) {
+    paths <- machine_relative_paths(paths, root)
+  }
   data.frame(
     name = basename(paths), path = paths,
     status = rep("success", length(paths)), stringsAsFactors = FALSE

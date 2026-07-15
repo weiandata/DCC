@@ -154,7 +154,10 @@ legacy_action_aliases <- function(rules) {
 #' (execute/verify), `findings.xlsx` (or `findings.csv` without the
 #' `writexl` package), `audit-log.csv` (execute/verify),
 #' `management-report.html`, `audit-report.html`, `manifest.yaml`
-#' (execute/verify), and `run-summary.txt`.
+#' (execute/verify), `run-summary.txt`, `run-manifest.json`, and selected
+#' `staff/`, `statistical/`, and `machine/` audience directories.
+#' Renderer failures publish a `.partial-<run_id>` directory with cleaning
+#' evidence and a terminal report status rather than claiming full success.
 #'
 #' @param data A data file path, a `dcc_data`, or a data.frame (or a
 #'   manifest path in `"rerun"` mode).
@@ -166,8 +169,8 @@ legacy_action_aliases <- function(rules) {
 #'   `"rerun"`.
 #' @param id_var Record-id column; defaults to the config's `id_var`.
 #' @param plan Optional strict `.xlsx`/`.json` plan path or `dcc_plan`.
-#' @return A `dcc_run` object with the mode, config, and written file
-#'   paths (via [dcc_run_files()]).
+#' @return A `dcc_run` object with mode, status, config, written paths (via
+#'   [dcc_run_files()]), normalized report model, and structured run manifest.
 #' @examples
 #' rf <- tempfile(fileext = ".yaml")
 #' writeLines(c("checks:", "  - id: R001", "    type: range",
@@ -199,7 +202,8 @@ dcc_run <- function(data, config = NULL, output_dir = "dcc-results",
   }, add = TRUE)
 
   run <- tryCatch(
-    dcc_run_staged(data, config, staging, mode, id_var, run_id),
+    dcc_run_staged(data, config, staging, mode, id_var, run_id,
+                   resolved$plan),
     error = function(e) {
       diagnostic <- tryCatch({
         write_failed_run(staging, run_id, mode, e)
@@ -213,17 +217,28 @@ dcc_run <- function(data, config = NULL, output_dir = "dcc-results",
       ))
     }
   )
-  status <- if (identical(mode, "preview")) "preview" else "success"
+  status <- if (run$status %in%
+                c("preview", "success", "partial_failure", "failed")) {
+    run$status
+  } else if (identical(mode, "preview")) {
+    "preview"
+  } else {
+    "success"
+  }
   target <- publish_run(staging, output_dir, status, run_id)
   published <- TRUE
   run$files <- published_paths(run$files, staging, target)
+  if (!is.null(run$manifest_path) && !is.na(run$manifest_path)) {
+    run$manifest_path <- published_paths(run$manifest_path, staging, target)
+  }
   run$run_dir <- target
   run$status <- status
   run$plan <- resolved$plan
   run
 }
 
-dcc_run_staged <- function(data, config, staging, mode, id_var, run_id) {
+dcc_run_staged <- function(data, config, staging, mode, id_var, run_id,
+                           plan = NULL) {
   wpath <- function(name) file.path(staging, name)
   written <- character()
   mark <- function(p) written <<- c(written, p)
@@ -300,9 +315,16 @@ dcc_run_staged <- function(data, config, staging, mode, id_var, run_id) {
     mark(mf)
   }
 
+  lifecycle <- render_audience_reports(
+    res, config, id_var, written, staging, mode, run_id, plan
+  )
+  for (path in lifecycle$files) mark(path)
+
   summ <- wpath("run-summary.txt")
   writeLines(c(
     "DCC run summary",
+    paste0("run_id: ", run_id),
+    paste0("status: ", lifecycle$status),
     paste0("mode: ", mode),
     paste0("findings: ", nrow(res$findings)),
     paste0("changes: ", nrow(dcc_audit_log(res))),
@@ -312,13 +334,29 @@ dcc_run_staged <- function(data, config, staging, mode, id_var, run_id) {
   ), summ)
   mark(summ)
 
-  new_dcc_run(mode, config, id_var, written, res, run_id)
+  manifest <- build_run_manifest(
+    lifecycle, mode, run_id, written, staging
+  )
+  manifest_path <- wpath("run-manifest.json")
+  write_run_manifest(manifest, manifest_path)
+  mark(manifest_path)
+
+  run <- new_dcc_run(mode, config, id_var, written, res, run_id)
+  run$status <- lifecycle$status
+  run$manifest <- manifest
+  run$manifest_path <- manifest_path
+  run$report_model <- lifecycle$model
+  run$plan <- plan
+  run$run_dir <- staging
+  run
 }
 
 new_dcc_run <- function(mode, config, id_var, files, result, run_id = NA_character_) {
   structure(list(mode = mode, config = config, id_var = id_var,
                  files = files, result = result, run_id = run_id,
-                 run_dir = NA_character_, status = "writing"),
+                 run_dir = NA_character_, status = "writing",
+                 manifest = NULL, manifest_path = NA_character_,
+                 report_model = NULL, plan = NULL),
             class = "dcc_run")
 }
 

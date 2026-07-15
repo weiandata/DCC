@@ -50,6 +50,8 @@ dcc_report_machine <- function(model, output_dir) {
     issues = model$validation
   )
   summary <- machine_summary_from_model(model)
+  summary$artifacts <- I(summary$artifacts)
+  summary$next_actions <- I(summary$next_actions)
   summary <- c(list(contract_version = "1.0", run_id = run_id), summary)
   findings <- machine_add_context(model$findings, run_id)
   audit <- machine_add_context(model$changes, run_id)

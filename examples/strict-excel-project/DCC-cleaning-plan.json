@@ -27,6 +27,9 @@
     {"key": "report_language", "value": "zh-CN"},
     {"key": "cleaned_format", "value": "csv"},
     {"key": "include_staff_report", "value": "TRUE"},
-    {"key": "include_audit_report", "value": "TRUE"}
+    {"key": "include_statistical_report", "value": "TRUE"},
+    {"key": "include_machine_report", "value": "TRUE"},
+    {"key": "statistical_table_format", "value": "parquet"},
+    {"key": "include_sensitive_examples", "value": "FALSE"}
   ]
 }

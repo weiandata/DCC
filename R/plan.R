@@ -79,7 +79,21 @@ plan_column_roles <- function() {
 
 plan_output_keys <- function() {
   c("report_language", "cleaned_format", "include_staff_report",
-    "include_audit_report")
+    "include_audit_report", "include_statistical_report",
+    "include_machine_report", "statistical_table_format",
+    "include_sensitive_examples")
+}
+
+plan_output_key_profiles <- function() {
+  list(
+    legacy = c("report_language", "cleaned_format", "include_staff_report",
+               "include_audit_report"),
+    current = c(
+      "report_language", "cleaned_format", "include_staff_report",
+      "include_statistical_report", "include_machine_report",
+      "statistical_table_format", "include_sensitive_examples"
+    )
+  )
 }
 
 plan_add_unknown_fields <- function(add, values, allowed, prefix) {
@@ -361,6 +375,24 @@ dcc_validate_plan <- function(x) {
   if (length(format_rows)) {
     add("PLAN_OUTPUT_FORMAT", "fail", "outputs.value", format_rows,
         fix = "Use `csv`, `xlsx`, or `parquet`.")
+  }
+  logical_rows <- which(
+    outputs$key %in% c(
+      "include_staff_report", "include_audit_report",
+      "include_statistical_report", "include_machine_report",
+      "include_sensitive_examples"
+    ) & !toupper(as.character(outputs$value)) %in% c("TRUE", "FALSE")
+  )
+  if (length(logical_rows)) {
+    add("PLAN_OUTPUT_LOGICAL", "fail", "outputs.value", logical_rows,
+        fix = "Use `TRUE` or `FALSE` for include settings.")
+  }
+  table_rows <- which(outputs$key == "statistical_table_format" &
+                        !tolower(as.character(outputs$value)) %in%
+                          c("csv", "parquet"))
+  if (length(table_rows)) {
+    add("PLAN_OUTPUT_TABLE_FORMAT", "fail", "outputs.value", table_rows,
+        fix = "Use `csv` or `parquet` for statistical tables.")
   }
 
   finish()

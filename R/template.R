@@ -56,9 +56,9 @@ plan_template_defaults <- function(language) {
       key = plan_source_fields(), value = "", stringsAsFactors = FALSE
     ),
     outputs = data.frame(
-      key = c("report_language", "cleaned_format", "include_staff_report",
-              "include_audit_report"),
-      value = c(language, "csv", "TRUE", "TRUE"),
+      key = plan_output_key_profiles()$current,
+      value = c(language, "csv", "TRUE", "TRUE", "TRUE", "parquet",
+                "FALSE"),
       stringsAsFactors = FALSE
     )
   )
@@ -197,7 +197,11 @@ build_plan_workbook <- function(language = "zh-CN") {
                                 language)
   wb <- add_template_validation(wb, "outputs", "B4",
                                 c("csv", "xlsx", "parquet"), language)
-  wb <- add_template_validation(wb, "outputs", "B5:B6",
+  wb <- add_template_validation(wb, "outputs", "B5:B7",
+                                c("TRUE", "FALSE"), language)
+  wb <- add_template_validation(wb, "outputs", "B8",
+                                c("parquet", "csv"), language)
+  wb <- add_template_validation(wb, "outputs", "B9",
                                 c("TRUE", "FALSE"), language)
   wb <- openxlsx2::wb_protect(wb, protect = TRUE, password = NULL,
                               lock_structure = TRUE)
