@@ -1,6 +1,9 @@
 new_run_id <- function() {
   stamp <- format(Sys.time(), "%Y%m%dT%H%M%OS3", tz = "UTC")
-  gsub("[^0-9A-Za-z]", "", paste0(stamp, "-", Sys.getpid()))
+  candidate <- basename(tempfile(
+    pattern = paste0("dcc-", stamp, "-", Sys.getpid(), "-")
+  ))
+  gsub("[^0-9A-Za-z]", "", candidate)
 }
 
 new_run_staging <- function(output_dir, run_id) {

@@ -146,8 +146,8 @@ legacy_action_aliases <- function(rules) {
 #' * `"execute"` -- apply the configured actions and write the cleaned
 #'   data, audit log, and manifest.
 #' * `"verify"` -- like `execute`, plus a reconciliation summary.
-#' * `"rerun"` -- reproduce a previous run from its `manifest.yaml`
-#'   (pass the manifest path as `data`, or keep it in `output_dir`).
+#' * `"rerun"` -- reproduce a previous run from its `manifest.yaml`;
+#'   pass that manifest path as `data` and use a new `output_dir`.
 #'
 #' Output layout (written under `output_dir`): `cleaned-data.csv`
 #' (execute/verify), `findings.xlsx` (or `findings.csv` without the
@@ -227,12 +227,12 @@ dcc_run_staged <- function(data, config, staging, mode, id_var, run_id) {
   mark <- function(p) written <<- c(written, p)
 
   if (mode == "rerun") {
-    manifest <- if (is.character(data) && length(data) == 1L &&
-                    grepl("\\.ya?ml$", data, ignore.case = TRUE)) {
-      data
-    } else {
-      wpath("manifest.yaml")
+    if (!is.character(data) || length(data) != 1L ||
+        !grepl("\\.ya?ml$", data, ignore.case = TRUE)) {
+      dcc_abort("`data` must be a manifest path in rerun mode.",
+                class = "dcc_run_error")
     }
+    manifest <- data
     rr <- dcc_rerun(manifest)
     summ <- wpath("run-summary.txt")
     writeLines(c("DCC run summary", "mode: rerun",

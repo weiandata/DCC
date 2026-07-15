@@ -24,6 +24,23 @@ test_that("a cell action after record exclusion is explicitly skipped", {
   expect_identical(nrow(dcc_audit_log(res)), 1L)
 })
 
+test_that("runtime action errors expose a failed terminal disposition", {
+  df <- fixture_responses()
+  df$when <- as.Date("2026-01-01") + seq_len(nrow(df)) - 1L
+  f <- dcc_findings("S001", variable = "when", check_id = "DATE",
+                    evidence = "date needs recoding")
+  err <- tryCatch(
+    dcc_execute(df, f,
+                actions = list(DATE = list(
+                  action = "recode", map = c("2026-01-01" = "not-a-date")
+                )), id_var = "sid"),
+    error = identity
+  )
+  expect_s3_class(err, "dcc_execute_error")
+  expect_identical(err$dispositions$status, "failed")
+  expect_match(err$dispositions$message, "coerc")
+})
+
 test_that("dcc_dispositions rejects non-results", {
   expect_error(dcc_dispositions(data.frame()), class = "dcc_type_error")
 })

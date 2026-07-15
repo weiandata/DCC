@@ -57,6 +57,17 @@ test_that("data-frame execution cannot silently omit a manifest", {
   expect_length(failed, 1L)
   expect_true(file.exists(file.path(failed, "run.json")))
   expect_true(file.exists(file.path(failed, "run-summary.txt")))
+  if (requireNamespace("jsonlite", quietly = TRUE)) {
+    diagnostic <- jsonlite::fromJSON(file.path(failed, "run.json"))
+    expect_identical(diagnostic$status, "failed")
+    expect_identical(diagnostic$mode, "execute")
+    expect_true(nzchar(diagnostic$message))
+  }
+})
+
+test_that("run IDs are unique for rapid calls in one process", {
+  ids <- vapply(seq_len(100L), function(i) new_run_id(), character(1))
+  expect_length(unique(ids), length(ids))
 })
 
 test_that("dcc_run refuses to overwrite an existing output directory", {
@@ -69,6 +80,25 @@ test_that("dcc_run refuses to overwrite an existing output directory", {
                class = "dcc_run_error")
   expect_identical(readLines(sentinel), "keep")
   expect_length(Sys.glob(paste0(out, ".staging-*")), 0L)
+})
+
+test_that("rerun takes an explicit manifest and writes a new run directory", {
+  skip_if_not_installed("yaml")
+  skip_if_not_installed("writexl")
+  source_out <- tempfile("dcc-source")
+  dcc_run(write_run_csv(), run_config(), source_out, mode = "execute")
+
+  rerun_out <- tempfile("dcc-rerun")
+  rerun <- dcc_run(file.path(source_out, "manifest.yaml"), run_config(),
+                   rerun_out, mode = "rerun")
+  expect_true(rerun$result$reproduced)
+  expect_true(file.exists(file.path(rerun_out, "run-summary.txt")))
+
+  bad_out <- tempfile("dcc-rerun-bad")
+  expect_error(
+    dcc_run(write_run_csv(), run_config(), bad_out, mode = "rerun"),
+    "manifest path", class = "dcc_run_error"
+  )
 })
 
 test_that("dcc_run refuses input that fails validation", {

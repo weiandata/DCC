@@ -1,6 +1,4 @@
-# DCC 1.1.0
-
-## Core-correctness contracts (unreleased)
+# DCC 1.2.0 (development)
 
 * Add stable finding `code` and `detector_id`; range checks now report
   `INVALID_NUMERIC` instead of silently coercing invalid values to missing.
@@ -16,6 +14,8 @@
   failed diagnostic directory and cannot be returned as success.
 * Capability contract 1.2 and new disposition/provenance schemas describe the
   additive machine contract.
+
+# DCC 1.1.0
 
 Additive-contracts release: machine-readable capabilities and formal schemas
 for AI callers, plus a one-command workflow and structured validators for

@@ -38,7 +38,8 @@ Modes: \code{"preview"} detects and reports only (no data change, no
 \code{cleaned-data.csv}); \code{"execute"} applies the configured
 actions and writes the cleaned data, audit log, and manifest;
 \code{"verify"} is like execute with a reconciliation summary;
-\code{"rerun"} reproduces a previous run from its \code{manifest.yaml}.
+\code{"rerun"} reproduces a previous run from its \code{manifest.yaml};
+pass the manifest path as \code{data} and use a new \code{output_dir}.
 
 Output layout under \code{output_dir}: \code{cleaned-data.csv}
 (execute/verify), \code{findings.xlsx} (or \code{findings.csv} without
