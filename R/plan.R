@@ -243,6 +243,11 @@ dcc_validate_plan <- function(x) {
         fix = paste0("Use one of: ", paste(plan_column_roles(), collapse = ", "),
                      "."))
   }
+  id_rows <- which(tolower(as.character(columns$role)) == "id")
+  if (length(id_rows) > 1L) {
+    add("PLAN_MULTIPLE_ID", "fail", "columns.role", id_rows,
+        fix = "Declare at most one column with role `id`.")
+  }
   required <- columns$required
   bad <- which(is.na(required) | !tolower(as.character(required)) %in%
                  c("true", "false"))
