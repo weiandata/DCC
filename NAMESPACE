@@ -44,6 +44,8 @@ export(dcc_read_config)
 export(dcc_write_config_template)
 export(dcc_apply_codebook)
 export(dcc_codebook_changes)
+export(dcc_dictionary)
+export(dcc_missing_states)
 
 S3method(print, dcc_data)
 S3method(print, dcc_validation)

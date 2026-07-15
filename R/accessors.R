@@ -77,3 +77,27 @@ dcc_mapping_findings <- function(x) {
   }
   f
 }
+
+#' Canonical variable dictionary
+#'
+#' @param x A [dcc_data()] object.
+#' @return A copy of the canonical variable dictionary.
+#' @export
+dcc_dictionary <- function(x) {
+  if (!inherits(x, "dcc_data")) {
+    dcc_abort("`x` must be dcc_data.", class = "dcc_type_error")
+  }
+  data.table::copy(x$dictionary %||% empty_dictionary())
+}
+
+#' Canonical cell-level missing states
+#'
+#' @param x A [dcc_data()] object.
+#' @return A copy of the cell-level missing-state table.
+#' @export
+dcc_missing_states <- function(x) {
+  if (!inherits(x, "dcc_data")) {
+    dcc_abort("`x` must be dcc_data.", class = "dcc_type_error")
+  }
+  data.table::copy(x$missing_states %||% empty_missing_states())
+}

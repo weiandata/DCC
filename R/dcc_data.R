@@ -11,18 +11,30 @@
 #' @param read_report A `dcc_read_report` object, or `NULL`.
 #' @param provenance List of provenance records; normally created
 #'   internally.
+#' @param dictionary Canonical variable dictionary with unique `name` values.
+#' @param missing_states Cell-level missing-state table using DCC's declared
+#'   missing-state vocabulary.
+#' @param import_spec The `dcc_import_spec` that produced the canonical data,
+#'   or `NULL` for data created directly in R.
 #'
 #' @return An object of class `dcc_data`: a list with elements `data`
 #'   (a `data.table`), `meta`, `read_report`, and `provenance`.
 #' @export
 dcc_data <- function(data, meta = list(), read_report = NULL,
-                     provenance = NULL) {
+                     provenance = NULL, dictionary = NULL,
+                     missing_states = NULL, import_spec = NULL) {
   if (!is.data.frame(data)) {
     dcc_abort("`data` must be a data.frame or data.table, got ",
               paste(class(data), collapse = "/"), ".",
               class = "dcc_type_error")
   }
   dt <- data.table::as.data.table(data)
+  dictionary <- normalize_dictionary(dictionary)
+  missing_states <- normalize_missing_states(missing_states)
+  if (!is.null(import_spec) && !inherits(import_spec, "dcc_import_spec")) {
+    dcc_abort("`import_spec` must be a dcc_import_spec or NULL.",
+              class = "dcc_import_error")
+  }
 
   if (is.null(provenance)) {
     provenance <- list(new_provenance_record(
@@ -37,7 +49,10 @@ dcc_data <- function(data, meta = list(), read_report = NULL,
       data = dt,
       meta = meta,
       read_report = read_report,
-      provenance = provenance
+      provenance = provenance,
+      dictionary = dictionary,
+      missing_states = missing_states,
+      import_spec = import_spec
     ),
     class = "dcc_data"
   )

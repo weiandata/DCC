@@ -3,7 +3,8 @@
 \alias{dcc_data}
 \title{The dcc_data container}
 \usage{
-dcc_data(data, meta = list(), read_report = NULL, provenance = NULL)
+dcc_data(data, meta = list(), read_report = NULL, provenance = NULL,
+  dictionary = NULL, missing_states = NULL, import_spec = NULL)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{data.table}.}
@@ -14,11 +15,20 @@ dcc_data(data, meta = list(), read_report = NULL, provenance = NULL)
 
 \item{provenance}{List of provenance records; normally created
 internally.}
+
+\item{dictionary}{Canonical variable dictionary with unique \code{name}
+values.}
+
+\item{missing_states}{Cell-level missing-state table using DCC's declared
+missing-state vocabulary.}
+
+\item{import_spec}{The \code{dcc_import_spec} that produced the canonical
+data, or \code{NULL} for data created directly in R.}
 }
 \value{
 An object of class \code{dcc_data}: a list with elements \code{data}
-(a \code{data.table}), \code{meta}, \code{read_report}, and
-\code{provenance}.
+(a \code{data.table}), \code{meta}, \code{read_report}, \code{provenance},
+\code{dictionary}, \code{missing_states}, and \code{import_spec}.
 }
 \description{
 A \code{dcc_data} object bundles the dataset with its metadata, the

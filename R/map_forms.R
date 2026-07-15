@@ -112,6 +112,9 @@ dcc_map_forms <- function(x, form_item_map, form_var) {
     out,
     meta = base$meta,
     read_report = base$read_report,
+    dictionary = base$dictionary,
+    missing_states = base$missing_states,
+    import_spec = base$import_spec,
     provenance = c(base$provenance, list(new_provenance_record(
       stage = "map_forms",
       details = list(

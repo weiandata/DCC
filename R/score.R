@@ -99,6 +99,9 @@ dcc_score <- function(x, answer_key, omit_policy = c("zero", "na"),
     dt,
     meta = base$meta,
     read_report = base$read_report,
+    dictionary = base$dictionary,
+    missing_states = base$missing_states,
+    import_spec = base$import_spec,
     provenance = c(base$provenance, list(new_provenance_record(
       stage = "score",
       details = list(
