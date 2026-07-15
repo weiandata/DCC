@@ -140,6 +140,7 @@ dcc_validate_plan <- function(x) {
     issues[[length(issues) + 1L]] <<-
       val_issue(code, severity, field, rows, fix)
   }
+  finish <- function() locate_plan_validation(new_validation(issues), x)
   if (!inherits(x, "dcc_plan") || !is.list(x)) {
     dcc_abort("`x` must be a dcc_plan.", class = "dcc_type_error")
   }
@@ -154,7 +155,7 @@ dcc_validate_plan <- function(x) {
     add("PLAN_MISSING_SECTION", "fail", section,
         fix = paste0("Restore the `", section, "` section."))
   }
-  if (length(absent_sections)) return(new_validation(issues))
+  if (length(absent_sections)) return(finish())
 
   if (!is.list(x$project) || is.null(names(x$project))) {
     add("PLAN_SECTION_TYPE", "fail", "project",
@@ -212,7 +213,7 @@ dcc_validate_plan <- function(x) {
   valid_tables <- vapply(names(plan_table_contracts()), function(section) {
     plan_check_table_contract(add, x[[section]], section)
   }, logical(1))
-  if (!all(valid_tables)) return(new_validation(issues))
+  if (!all(valid_tables)) return(finish())
 
   columns <- x$columns
   for (field in c("source_name", "name", "type", "role")) {
@@ -355,7 +356,7 @@ dcc_validate_plan <- function(x) {
         fix = "Use `csv`, `xlsx`, or `parquet`.")
   }
 
-  new_validation(issues)
+  finish()
 }
 
 #' @export
@@ -365,4 +366,3 @@ print.dcc_plan <- function(x, ...) {
               nrow(x$rules)))
   invisible(x)
 }
-

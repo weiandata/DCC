@@ -41,7 +41,7 @@ test_that("plan schema is published and exact", {
 
 test_that("serialized plans satisfy the published draft-07 schema", {
   skip_if_not_installed("jsonvalidate")
-  json <- jsonlite::toJSON(plan_fixture(), auto_unbox = TRUE,
+  json <- jsonlite::toJSON(unclass(plan_fixture()), auto_unbox = TRUE,
                            dataframe = "rows", null = "null")
   expect_true(jsonvalidate::json_validate(
     json, dcc_schema("plan", as = "path"), engine = "ajv"

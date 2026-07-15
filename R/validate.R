@@ -248,17 +248,22 @@ dcc_validation_errors <- function(x) {
 }
 
 # One-row validation issue as a data.table with a list-column of rows.
-val_issue <- function(code, severity, field, rows = integer(), fix = "") {
+val_issue <- function(code, severity, field, rows = integer(), fix = "",
+                      workbook = "", sheet = "", row = NA_integer_,
+                      column = "", cell = "") {
   data.table::data.table(
     code = code, severity = severity, field = field,
-    rows = list(rows), fix = fix
+    rows = list(rows), fix = fix, workbook = workbook, sheet = sheet,
+    row = as.integer(row), column = column, cell = cell
   )
 }
 
 empty_validation <- function() {
   out <- data.table::data.table(
     code = character(), severity = character(), field = character(),
-    rows = list(), fix = character()
+    rows = list(), fix = character(), workbook = character(),
+    sheet = character(), row = integer(), column = character(),
+    cell = character()
   )
   data.table::setattr(out, "class",
                       c("dcc_validation", class(data.table::data.table())))
@@ -284,7 +289,9 @@ print.dcc_validation <- function(x, ...) {
   cat(sprintf("<dcc_validation> %d issue(s)\n", nrow(x)))
   for (i in seq_len(nrow(x))) {
     rows <- x$rows[[i]]
-    loc <- if (length(rows)) {
+    loc <- if (nzchar(x$cell[i])) {
+      paste0(" ", x$sheet[i], "!", x$cell[i])
+    } else if (length(rows)) {
       paste0(" rows ", paste(utils::head(rows, 5L), collapse = ","),
              if (length(rows) > 5L) "..." else "")
     } else {

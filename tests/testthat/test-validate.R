@@ -16,7 +16,8 @@ test_that("dcc_validate_rules reports structured rule problems", {
   vr <- dcc_validate_rules(rules)
   expect_s3_class(vr, "dcc_validation")
   expect_identical(names(vr),
-                   c("code", "severity", "field", "rows", "fix"))
+                   c("code", "severity", "field", "rows", "fix", "workbook",
+                     "sheet", "row", "column", "cell"))
   expect_true("RULE_VAR_MISSING" %in% vr$code)
   expect_true(all(dcc_validation_errors(vr)$severity == "fail"))
 })

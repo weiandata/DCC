@@ -39,3 +39,34 @@ plan_fixture <- function(source = tempfile(fileext = ".csv")) {
   )
 }
 
+write_plan_workbook <- function(plan = plan_fixture(), path =
+                                  tempfile(fileext = ".xlsx")) {
+  dcc_template(path, language = plan$project$language)
+  wb <- openxlsx2::wb_load(path)
+  for (section in c("project", "source")) {
+    tab <- data.frame(
+      key = names(plan[[section]]),
+      value = vapply(plan[[section]], as.character, character(1)),
+      stringsAsFactors = FALSE
+    )
+    wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
+                                 col_names = FALSE)
+  }
+  for (section in names(plan_table_contracts())) {
+    tab <- as.data.frame(plan[[section]], stringsAsFactors = FALSE)
+    if (nrow(tab)) {
+      wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
+                                   col_names = FALSE)
+    }
+  }
+  openxlsx2::wb_save(wb, path, overwrite = TRUE)
+  path
+}
+
+write_plan_json <- function(plan = plan_fixture(), path =
+                              tempfile(fileext = ".json")) {
+  jsonlite::write_json(unclass(plan), path, auto_unbox = TRUE,
+                       dataframe = "rows",
+                       null = "null", na = "null", pretty = TRUE)
+  path
+}
