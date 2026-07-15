@@ -557,3 +557,13 @@ git add R/capabilities.R inst/schemas tests/testthat \
   ENGINEERING_PLAN.md README.md AI_USAGE.md NEWS.md CHANGELOG.md
 git commit -m "docs: align correctness contracts"
 ```
+
+## Phase A Exit Criteria
+
+- Every finding carries stable `code` and `detector_id` fields.
+- Invalid numeric input, declared YAML action IDs, NA totals, and custom scoring
+  have explicit tested semantics.
+- Every finding reaches one terminal disposition with complete provenance.
+- Run publication is atomic and manifest failures cannot report success.
+- Schemas, capabilities, examples, and release notes match the engine contract.
+- Full tests and `R CMD check` complete without errors or warnings.

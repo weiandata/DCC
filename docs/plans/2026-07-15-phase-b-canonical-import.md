@@ -498,3 +498,16 @@ git add R/dcc_read.R R/capabilities.R R/validate.R DESCRIPTION \
   tests/testthat/test-validate.R README.md NEWS.md
 git commit -m "feat(import): route input through certified adapters"
 ```
+
+## Phase B Exit Criteria
+
+- One registry owns every input format, extension, backend, limitation, and
+  capability level.
+- `dcc_import()` requires an explicit mapping and produces validated canonical
+  data with labels, missing states, source locations, and provenance intact.
+- Text encodings, compression, spreadsheets, statistical files, and columnar
+  formats pass their declared semantic tests without silent guessing.
+- Every Stable backend is in `Imports` and installs with DCC.
+- XLSB remains Experimental and fails explicitly for unsupported features.
+- Existing `dcc_read()` calls remain compatible through the registry.
+- Full tests and `R CMD check` complete without errors or warnings.

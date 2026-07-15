@@ -416,3 +416,14 @@ git add R/help.R inst/i18n tests/testthat/test-help.R docs \
   examples/strict-excel-project README.md NAMESPACE man/dcc_help.Rd
 git commit -m "docs(workflow): add bilingual staff guidance"
 ```
+
+## Phase C Exit Criteria
+
+- `dcc_template()` produces the exact protected, bilingual, versioned workbook.
+- Excel and JSON plans validate to the same strict contract with cell-addressed
+  and stable-coded errors.
+- `dcc_check()` performs non-mutating preflight and writes actionable diagnostics.
+- `dcc_run(data, plan = ...)` shares the Phase A/B engine and defaults to preview.
+- Existing positional and named `dcc_config` calls remain compatible.
+- Chinese and English help cover every public workflow error code.
+- Full tests and `R CMD check` complete without errors or warnings.
