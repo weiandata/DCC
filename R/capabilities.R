@@ -100,6 +100,7 @@ dcc_capability_features <- function() {
     feat("declared_yaml_ids", "Stable", "1.2.0"),
     feat("terminal_dispositions", "Stable", "1.2.0"),
     feat("atomic_run_output", "Stable", "1.2.0"),
+    feat("format_adapter_registry", "Experimental", "1.2.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(
