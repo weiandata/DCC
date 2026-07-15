@@ -128,7 +128,9 @@ detect_one_chunk <- function(dt, rules, offset, id_var) {
     eff_id <- id_var
   }
   bind_findings(
-    lapply(rules$checks, function(ch) eval_check(dt, ch, id_var = eff_id))
+    lapply(rules$checks, function(ch) {
+      eval_declared_check(dt, ch, id_var = eff_id)
+    })
   )
 }
 

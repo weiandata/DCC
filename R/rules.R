@@ -90,11 +90,7 @@ dcc_detect <- function(x, rules, id_var = NULL) {
     if (identical(ch$type %||% "", "skip_logic")) {
       return(empty_findings())
     }
-    out <- eval_check(x, ch, id_var = id_var, structural = structural)
-    if (nrow(out)) {
-      out[, check_id := as.character(ch$id)]
-    }
-    out
+    eval_declared_check(x, ch, id_var = id_var, structural = structural)
   })
   findings <- bind_findings(results)
   resolved <- resolve_data(x, id_var)
@@ -115,10 +111,22 @@ dcc_detect <- function(x, rules, id_var = NULL) {
       ruleset_hash = rules$hash,
       n_checks = length(rules$checks),
       n_findings = nrow(findings)
-    ))
+    ), hashes = list(ruleset = rules$hash, input = source_hash),
+    counts = list(checks = length(rules$checks), findings = nrow(findings)))
     data.table::setattr(findings, "dcc_data", x2)
   }
   findings
+}
+
+# Evaluate one YAML rule and apply its public declared id while preserving the
+# underlying implementation identity in detector_id. Both in-memory and
+# chunked entry points must cross this same boundary.
+eval_declared_check <- function(x, ch, id_var = NULL, structural = NULL) {
+  out <- eval_check(x, ch, id_var = id_var, structural = structural)
+  if (nrow(out)) {
+    out[, check_id := as.character(ch$id)]
+  }
+  out
 }
 
 # Build a structural-missingness map from skip_logic rules. Returns a

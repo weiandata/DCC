@@ -287,6 +287,7 @@ test_that("explicitly disabled median cut still works in memory", {
   fx <- chunk_fixture()
   f <- dcc_detect(dcc_read(fx$csv), fx$rules, id_var = "sid")
   # D003 has min_median_ratio disabled: only S003 (40s < 60s absolute)
-  rt <- f[f$check_id == "Q_RESPONSE_TIME", ]
+  rt <- f[f$check_id == "D003", ]
+  expect_identical(rt$detector_id, "Q_RESPONSE_TIME")
   expect_identical(rt$record_id, "S003")
 })
