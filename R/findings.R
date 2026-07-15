@@ -6,8 +6,9 @@
 #' `record_id` (respondent/row identifier, character), `variable`
 #' (affected variable, `NA` for record-level checks), `check_id` (stable
 #' identifier of the rule or detector), `evidence` (human-readable
-#' measured value), `severity` (`"info"`, `"warn"` or `"fail"`), and
-#' `dimension` (quality dimension of the check).
+#' measured value), `severity` (`"info"`, `"warn"` or `"fail"`),
+#' `dimension` (quality dimension of the check), `code` (stable machine
+#' finding code), and `detector_id` (identity of the detector implementation).
 #'
 #' @param record_id Character vector (or coercible) of record ids.
 #' @param variable Character vector of affected variables, or `NA`.
@@ -16,13 +17,18 @@
 #' @param severity One of `"info"`, `"warn"`, `"fail"` (recycled).
 #' @param dimension Quality dimension label (recycled).
 #' @param run_id One non-empty run identifier used to make finding IDs stable.
+#' @param code Stable machine-readable finding code (recycled). Defaults to
+#'   `check_id` for backward compatibility.
+#' @param detector_id Stable detector implementation identifier (recycled).
+#'   Defaults to `check_id` for direct legacy detector calls.
 #'
 #' @return A `dcc_findings` object (also a `data.table`).
 #' @export
 dcc_findings <- function(record_id = character(), variable = NA_character_,
                          check_id = character(), evidence = character(),
                          severity = "warn", dimension = NA_character_,
-                         run_id = "manual") {
+                         run_id = "manual", code = check_id,
+                         detector_id = check_id) {
   # Size on record_id/evidence: check_id and severity are usually
   # scalars, and a zero-hit detector must yield zero findings.
   n <- max(length(record_id), length(evidence))
@@ -50,7 +56,9 @@ dcc_findings <- function(record_id = character(), variable = NA_character_,
     check_id = check_id,
     evidence = rep_len(as.character(evidence), n),
     severity = rep_len(severity, n),
-    dimension = rep_len(as.character(dimension), n)
+    dimension = rep_len(as.character(dimension), n),
+    code = rep_len(as.character(code), n),
+    detector_id = rep_len(as.character(detector_id), n)
   )
   data.table::setattr(out, "class",
                       c("dcc_findings", class(data.table::data.table())))
@@ -61,7 +69,8 @@ empty_findings <- function() {
   out <- data.table::data.table(
     finding_id = character(), record_id = character(), variable = character(),
     check_id = character(), evidence = character(),
-    severity = character(), dimension = character()
+    severity = character(), dimension = character(), code = character(),
+    detector_id = character()
   )
   data.table::setattr(out, "class",
                       c("dcc_findings", class(data.table::data.table())))

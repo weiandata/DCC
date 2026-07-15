@@ -10,10 +10,21 @@ test_that("dcc_findings builds and validates", {
   expect_identical(nrow(f), 2L)
   expect_identical(names(f),
                    c("finding_id", "record_id", "variable", "check_id", "evidence",
-                     "severity", "dimension"))
+                     "severity", "dimension", "code", "detector_id"))
   expect_error(dcc_findings("S1", check_id = "C", evidence = "e",
                             severity = "catastrophic"),
                class = "dcc_type_error")
+})
+
+test_that("findings expose stable code and detector identity", {
+  f <- dcc_findings("S1", "q1", "R001", "bad",
+                    code = "OUT_OF_RANGE", detector_id = "range")
+  expect_identical(f$code, "OUT_OF_RANGE")
+  expect_identical(f$detector_id, "range")
+
+  legacy <- dcc_findings("S1", "q1", "Q_TRAP_ITEMS", "bad")
+  expect_identical(legacy$code, "Q_TRAP_ITEMS")
+  expect_identical(legacy$detector_id, "Q_TRAP_ITEMS")
 })
 
 test_that("empty findings and binding work", {
@@ -44,7 +55,8 @@ test_that("findings receive deterministic IDs with occurrence suffixes", {
                    "6:manual|2:R1|2:S1|8:<record>|0")
   expect_identical(names(dcc_findings()),
                    c("finding_id", "record_id", "variable", "check_id",
-                     "evidence", "severity", "dimension"))
+                     "evidence", "severity", "dimension", "code",
+                     "detector_id"))
 })
 
 test_that("binding regenerates collision-safe IDs within a run", {
