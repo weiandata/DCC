@@ -114,9 +114,22 @@ checks:
       trap1: 3
 '))
   f <- dcc_detect(df, rs, id_var = "sid")
-  expect_identical(f$record_id[f$check_id == "Q_STRAIGHTLINING"], "S003")
-  expect_setequal(f$record_id[f$check_id == "Q_TRAP_ITEMS"],
+  expect_identical(f$record_id[f$check_id == "D001"], "S003")
+  expect_identical(f$detector_id[f$check_id == "D001"],
+                   "Q_STRAIGHTLINING")
+  expect_setequal(f$record_id[f$check_id == "D002"],
                   c("S003", "S007"))
+  expect_true(all(f$detector_id[f$check_id == "D002"] == "Q_TRAP_ITEMS"))
+})
+
+test_that("YAML detector findings use declared IDs", {
+  skip_if_not_installed("yaml")
+  rs <- dcc_rules(write_rules(paste(
+    "checks:", "  - id: M001", "    type: missing_items",
+    "    items: [q1, q2]", "    max_prop: 0.4", sep = "\n")))
+  f <- dcc_detect(data.frame(sid = "S1", q1 = NA, q2 = 1), rs, "sid")
+  expect_identical(f$check_id, "M001")
+  expect_identical(f$detector_id, "Q_MISSING_ITEMS")
 })
 
 test_that("unknown check types are typed errors", {

@@ -62,7 +62,7 @@ attributes.
 ## A complete rule set and action map
 
 Rules are declarative YAML. Each check has an `id` (which becomes the public
-`check_id` for `range`/`set`/`expr`) and a `type`.
+`check_id` for every rule type) and a `type`.
 
 ```yaml
 checks:
@@ -94,9 +94,11 @@ actions <- list(
 )
 ```
 
-Detector findings carry their detector-native `check_id`
+Detector findings retain their implementation identity in `detector_id`
 (`Q_MISSING_ITEMS`, `Q_STRAIGHTLINING`, `Q_RESPONSE_TIME`, `Q_TRAP_ITEMS`,
-`Q_SCORE_OUTLIER`, `Q_GROUP_SCORE_SHIFT`); map actions to those IDs.
+`Q_SCORE_OUTLIER`, `Q_GROUP_SCORE_SHIFT`), but actions always map to the YAML
+rule's declared `check_id`. Detector-native action aliases from older releases
+emit a deprecation warning and are rejected when ambiguous.
 
 ## Minimal end-to-end example
 

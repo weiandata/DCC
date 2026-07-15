@@ -20,7 +20,7 @@ pipeline_fixture <- function() {
   findings <- dcc_detect(x, rules, id_var = "sid")
   result <- dcc_execute(x, findings,
                         actions = list(R001 = "set_na",
-                                       Q_TRAP_ITEMS = "exclude"),
+                                       D001 = "exclude"),
                         id_var = "sid")
   list(data_file = data_file, rules_file = rules_file, result = result)
 }

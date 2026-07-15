@@ -82,6 +82,26 @@ test_that("execution rejects invalid plans before it changes data", {
                class = "dcc_execute_error")
 })
 
+test_that("one unambiguous legacy detector action ID is normalized", {
+  f <- dcc_findings("S001", variable = "q1", check_id = "M1",
+                    evidence = "e", detector_id = "Q_MISSING_ITEMS")
+  expect_warning(
+    res <- dcc_execute(fixture_responses(), f,
+                       list(Q_MISSING_ITEMS = "flag"), "sid"),
+    "deprecated"
+  )
+  expect_identical(dcc_audit_log(res)$check_id, "M1")
+  expect_identical(names(res$actions), "M1")
+})
+
+test_that("ambiguous legacy detector action IDs are rejected", {
+  f <- dcc_findings(c("S001", "S002"), c("q1", "q1"), c("M1", "M2"),
+                    c("e1", "e2"), detector_id = "Q_MISSING_ITEMS")
+  expect_error(dcc_execute(fixture_responses(), f,
+                           list(Q_MISSING_ITEMS = "flag"), "sid"),
+               class = "dcc_execute_error")
+})
+
 test_that("closed loop: every audit row joins to a finding", {
   df <- fixture_responses()
   df$score[2] <- 150

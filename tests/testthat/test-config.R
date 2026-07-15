@@ -23,9 +23,9 @@ test_that("dcc_read_config round-trips the template workbook", {
   expect_identical(m001$type, "missing_items")
   expect_identical(m001$items, c("q1", "q2", "q3"))
 
-  # actions keyed by produced check_id (detector-native for M001)
+  # actions are keyed by the declared rule id for every rule type
   expect_identical(cfg$actions$R001, "set_na")
-  expect_identical(cfg$actions$Q_MISSING_ITEMS, "flag")
+  expect_identical(cfg$actions$M001, "flag")
 })
 
 test_that("dcc_read_config config drives a dcc_run", {

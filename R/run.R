@@ -67,13 +67,40 @@ dcc_validate_config <- function(config) {
   }
   vr <- dcc_validate_rules(config$rules)
   produced <- produced_check_ids(config$rules)
-  unknown <- setdiff(names(config$actions), produced)
-  extra <- if (length(unknown)) {
-    list(val_issue("CONFIG_UNKNOWN_ACTION", "fail",
-                   paste(unknown, collapse = ", "),
-                   fix = "Every action must target a check the rules produce."))
-  } else {
-    list()
+  aliases <- legacy_action_aliases(config$rules)
+  action_ids <- names(config$actions)
+  legacy <- setdiff(intersect(action_ids, names(aliases)), produced)
+  unknown <- setdiff(action_ids, c(produced, names(aliases)))
+  extra <- list()
+  if (length(unknown)) {
+    extra[[length(extra) + 1L]] <- val_issue(
+      "CONFIG_UNKNOWN_ACTION", "fail", paste(unknown, collapse = ", "),
+      fix = "Every action must target a declared rule id."
+    )
+  }
+  if (length(legacy)) {
+    targets <- vapply(legacy, function(old) {
+      ids <- aliases[[old]]
+      if (length(ids) == 1L) ids else NA_character_
+    }, character(1))
+    ambiguous <- legacy[is.na(targets) | targets %in% action_ids |
+                          duplicated(targets) | duplicated(targets, fromLast = TRUE)]
+    compatible <- setdiff(legacy, ambiguous)
+    if (length(ambiguous)) {
+      extra[[length(extra) + 1L]] <- val_issue(
+        "CONFIG_AMBIGUOUS_LEGACY_ACTION_ID", "fail",
+        paste(ambiguous, collapse = ", "),
+        fix = "Replace detector-native action names with declared rule ids."
+      )
+    }
+    if (length(compatible)) {
+      replacement <- vapply(compatible, function(old) aliases[[old]][1L], "")
+      extra[[length(extra) + 1L]] <- val_issue(
+        "CONFIG_LEGACY_ACTION_ID", "warn",
+        paste0(compatible, " -> ", replacement, collapse = ", "),
+        fix = "Use declared rule ids; detector-native aliases are deprecated."
+      )
+    }
   }
   combined <- data.table::rbindlist(c(list(vr), extra))
   data.table::setattr(combined, "class",
@@ -81,9 +108,14 @@ dcc_validate_config <- function(config) {
   combined[]
 }
 
-# The check_ids a rule set produces: the declared id for range/set/expr,
-# the detector-native id for detector rules.
+# The public check_ids a rule set produces are always the declared rule ids.
 produced_check_ids <- function(rules) {
+  checks <- Filter(function(ch) !identical(ch$type %||% "", "skip_logic"),
+                   rules$checks)
+  unique(vapply(checks, function(ch) as.character(ch$id), character(1)))
+}
+
+legacy_action_aliases <- function(rules) {
   detector_ids <- list(
     missing_items = "Q_MISSING_ITEMS",
     straightlining = "Q_STRAIGHTLINING",
@@ -91,16 +123,14 @@ produced_check_ids <- function(rules) {
     trap_items = "Q_TRAP_ITEMS",
     score_anomaly = c("Q_SCORE_OUTLIER", "Q_GROUP_SCORE_SHIFT")
   )
-  ids <- character()
+  aliases <- list()
   for (ch in rules$checks) {
-    type <- ch$type %||% ""
-    if (type %in% c("range", "set", "expr")) {
-      ids <- c(ids, as.character(ch$id))
-    } else if (type %in% names(detector_ids)) {
-      ids <- c(ids, detector_ids[[type]])
+    native <- detector_ids[[ch$type %||% ""]]
+    for (old in native %||% character()) {
+      aliases[[old]] <- unique(c(aliases[[old]], as.character(ch$id)))
     }
   }
-  unique(ids)
+  aliases
 }
 
 #' Run a cleaning workflow with one command
@@ -199,7 +229,8 @@ dcc_run <- function(data, config, output_dir,
   # Apply only the dispositions whose check actually fired: a config
   # legitimately declares actions for every rule, but a rule that found
   # nothing has no finding to act on (dcc_execute rejects unused IDs).
-  active <- config$actions[names(config$actions) %in% found$check_id]
+  active_ids <- unique(c(found$check_id, found$detector_id))
+  active <- config$actions[names(config$actions) %in% active_ids]
   actions <- if (mode == "preview") list() else active
   res <- dcc_execute(x, found, actions = actions, id_var = id_var)
 

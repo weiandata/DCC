@@ -60,3 +60,19 @@ test_that("dcc_validate_config flags an action with no matching check", {
   cfg <- dcc_config(dcc_rules(rf), actions = list(NOPE = "flag"))
   expect_true("CONFIG_UNKNOWN_ACTION" %in% dcc_validate_config(cfg)$code)
 })
+
+test_that("config validation distinguishes legacy aliases from unknown IDs", {
+  skip_if_not_installed("yaml")
+  rf <- tempfile(fileext = ".yaml")
+  writeLines(c("checks:", "  - id: M001", "    type: missing_items",
+               "    items: [q1, q2]", "    max_prop: 0.4"), rf)
+  cfg <- dcc_config(dcc_rules(rf),
+                    actions = list(Q_MISSING_ITEMS = "flag"))
+  validation <- dcc_validate_config(cfg)
+  expect_false("CONFIG_UNKNOWN_ACTION" %in% validation$code)
+  expect_true("CONFIG_LEGACY_ACTION_ID" %in% validation$code)
+  expect_identical(
+    validation$severity[validation$code == "CONFIG_LEGACY_ACTION_ID"],
+    "warn"
+  )
+})

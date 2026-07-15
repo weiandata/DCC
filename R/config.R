@@ -196,13 +196,7 @@ cfg_parse_map <- function(s) {
   out
 }
 
-# The check_id a rule produces: the declared id for range/set/expr, the
-# detector-native id for detector rules.
+# Every workbook action is keyed by its declared rule id.
 cfg_produced_id <- function(type, id) {
-  detector <- c(missing_items = "Q_MISSING_ITEMS",
-                straightlining = "Q_STRAIGHTLINING",
-                response_time = "Q_RESPONSE_TIME",
-                trap_items = "Q_TRAP_ITEMS",
-                score_anomaly = "Q_SCORE_OUTLIER")
-  if (type %in% names(detector)) unname(detector[[type]]) else id
+  id
 }

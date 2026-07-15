@@ -54,6 +54,7 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     dcc_abort("`actions` must be a named list mapping check_id to actions.",
               class = "dcc_execute_error")
   }
+  actions <- normalize_legacy_action_ids(findings, actions)
   if (is.null(ruleset_hash)) {
     src <- attr(findings, "dcc_data", exact = TRUE)
     if (!is.null(src)) {
@@ -211,6 +212,33 @@ dcc_execute <- function(x, findings, actions = list(), id_var = NULL,
     ),
     class = "dcc_result"
   )
+}
+
+# Translate a detector-native action name used by an earlier DCC release to
+# the declared YAML rule id. Direct detector calls keep check_id == detector_id
+# and therefore do not enter this compatibility path.
+normalize_legacy_action_ids <- function(findings, actions) {
+  if (!length(actions) || !"detector_id" %in% names(findings)) {
+    return(actions)
+  }
+  declared <- unique(as.character(findings$check_id))
+  detector <- unique(as.character(findings$detector_id))
+  legacy <- setdiff(intersect(names(actions), detector), declared)
+  for (old in legacy) {
+    ids <- unique(as.character(
+      findings$check_id[findings$detector_id == old]
+    ))
+    ids <- ids[!is.na(ids) & nzchar(ids)]
+    if (length(ids) != 1L || ids %in% names(actions)) {
+      dcc_abort("Legacy action ID '", old,
+                "' is ambiguous; use declared rule IDs.",
+                class = "dcc_execute_error")
+    }
+    warning("Action ID '", old, "' is deprecated; use '", ids, "'.",
+            call. = FALSE)
+    names(actions)[names(actions) == old] <- ids
+  }
+  actions
 }
 
 # Validate a complete execution request before any data change. Aborts

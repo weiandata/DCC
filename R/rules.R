@@ -90,7 +90,11 @@ dcc_detect <- function(x, rules, id_var = NULL) {
     if (identical(ch$type %||% "", "skip_logic")) {
       return(empty_findings())
     }
-    eval_check(x, ch, id_var = id_var, structural = structural)
+    out <- eval_check(x, ch, id_var = id_var, structural = structural)
+    if (nrow(out)) {
+      out[, check_id := as.character(ch$id)]
+    }
+    out
   })
   findings <- bind_findings(results)
   resolved <- resolve_data(x, id_var)
