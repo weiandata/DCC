@@ -75,7 +75,11 @@ adapter_delimited <- function(name, extension, separator) {
                 class = "dcc_import_error")
     }
     encoding <- normalize_encoding(encoding)
-    fread_args <- options[setdiff(names(options), "encoding")]
+    resolved <- resolve_compressed_source(path, options)
+    on.exit(cleanup_resolved_source(resolved), add = TRUE)
+    fread_args <- options[setdiff(names(options),
+                                  c("encoding", "member", "compression",
+                                    "max_uncompressed_bytes"))]
     fread_args <- c(
       list(
         sep = separator,
@@ -89,11 +93,11 @@ adapter_delimited <- function(name, extension, separator) {
       fread_args
     )
     data <- if (encoding %in% c("UTF-8", "latin1")) {
-      fread_args$file <- path
+      fread_args$file <- resolved
       fread_args$encoding <- if (encoding == "latin1") "Latin-1" else "UTF-8"
       do.call(data.table::fread, fread_args)
     } else {
-      fread_args$input <- read_file_utf8(path, encoding)
+      fread_args$input <- read_file_utf8(resolved, encoding)
       do.call(data.table::fread, fread_args)
     }
     list(
@@ -157,11 +161,11 @@ protected_delimited_options <- function() {
 dcc_format_registry <- function() {
   list(
     csv = adapter_delimited("csv", "csv", ","),
-    tsv = planned_adapter("tsv", "tsv"),
-    txt = planned_adapter("txt", "txt"),
-    fwf = planned_adapter("fwf", "txt"),
-    json = planned_adapter("json", "json"),
-    jsonl = planned_adapter("jsonl", c("jsonl", "ndjson")),
+    tsv = adapter_delimited("tsv", "tsv", "\t"),
+    txt = adapter_text(),
+    fwf = adapter_fwf(),
+    json = adapter_json(),
+    jsonl = adapter_json(lines = TRUE),
     xls = planned_adapter("xls", "xls"),
     xlsx = planned_adapter("xlsx", "xlsx"),
     xlsb = planned_adapter("xlsb", "xlsb"),
@@ -172,7 +176,7 @@ dcc_format_registry <- function() {
     xpt = planned_adapter("xpt", "xpt"),
     parquet = planned_adapter("parquet", "parquet"),
     feather = planned_adapter("feather", c("feather", "arrow")),
-    rds = planned_adapter("rds", "rds")
+    rds = adapter_rds()
   )
 }
 
