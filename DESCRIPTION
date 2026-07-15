@@ -16,12 +16,15 @@ Description: Rule-driven, auditable cleaning of survey and assessment
     items, straight-lining, response time, trap items, score
     anomalies), a declarative 'YAML' rule engine, an execution engine
     with a cell-level audit log, answer-key scoring, multi-form to
-    master item bank mapping, dual-layer 'HTML' reports with
-    findings-to-changes reconciliation, cell-level lineage tracing, and
+    master item bank mapping, a normalized report model rendered as bilingual
+    staff workbooks and 'HTML', complete statistical bundles, and versioned
+    machine 'JSON'/'JSONL' with findings-to-changes reconciliation,
+    cell-level lineage tracing, and
     manifest-based one-command reproduction. Includes a protected bilingual
     strict project workbook and matching 'JSON' contract with cell-addressed
     validation, non-mutating preflight, preview-first execution, and localized
-    staff guidance.
+    staff guidance. All formally supported input backends install with the
+    package; 'PDF' is optional rather than a fixed report output.
 License: GPL (>= 2)
 Copyright: See file inst/COPYRIGHTS.
 Encoding: UTF-8
@@ -45,7 +48,8 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/weiandata/DCC

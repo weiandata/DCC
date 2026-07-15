@@ -12,8 +12,12 @@
 #'   declarative YAML rule engine and five response-quality detectors.
 #' * [dcc_execute()] / [dcc_score()] / [dcc_map_forms()] -- execution
 #'   with a cell-level audit log, answer-key scoring, form mapping.
-#' * [dcc_report()] / [dcc_trace()] / [dcc_rerun()] -- dual-layer
-#'   reports, cell lineage, manifest-based reproduction.
+#' * [dcc_report_model()] / [dcc_report_staff()] /
+#'   [dcc_report_statistical()] / [dcc_report_machine()] -- one validated
+#'   report model rendered for staff, statisticians, and AI agents;
+#'   [dcc_report()] remains the compatibility report.
+#' * [dcc_trace()] / [dcc_rerun()] -- cell lineage and manifest-based
+#'   reproduction.
 #' * [dcc_detect_chunked()] -- larger-than-memory detection with an
 #'   adaptive CSV/Arrow backend.
 #' * [dcc_capabilities()] / [dcc_schema()] -- machine-readable capability
@@ -38,7 +42,7 @@ utils::globalVariables(c(".", ".N", ".SD", "name", "n_missing",
                          "is_anchor", "record_id", "check_id", "action",
                          "handled", "dimension", "severity",
                          "finding_id", "variable", "actions", "i.action",
-                         "status"))
+                         "status", "count", "detector_id", "value"))
 
 dcc_version_string <- function() {
   as.character(utils::packageVersion("DCC"))

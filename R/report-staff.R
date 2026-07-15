@@ -153,16 +153,17 @@ staff_report_tables <- function(model, language, include_examples) {
       rep(labels$output_description, nrow(outputs))
     } else character()
   }
-  list(
-    `运行概览` = overview,
-    `导入检查` = validation,
-    `阻断错误` = blocking,
-    `问题汇总` = issues,
-    `需要复核` = review,
-    `已应用更改` = changes,
-    `排除记录` = exclusions,
-    `输出文件说明` = outputs
+  tables <- list(
+    overview, validation, blocking, issues, review, changes, exclusions,
+    outputs
   )
+  names(tables) <- c(
+    "\u8fd0\u884c\u6982\u89c8", "\u5bfc\u5165\u68c0\u67e5",
+    "\u963b\u65ad\u9519\u8bef", "\u95ee\u9898\u6c47\u603b",
+    "\u9700\u8981\u590d\u6838", "\u5df2\u5e94\u7528\u66f4\u6539",
+    "\u6392\u9664\u8bb0\u5f55", "\u8f93\u51fa\u6587\u4ef6\u8bf4\u660e"
+  )
+  tables
 }
 
 staff_redact_table <- function(x, include_examples) {
@@ -181,37 +182,37 @@ staff_redact_table <- function(x, include_examples) {
 
 staff_labels <- function(language, include_examples = FALSE) {
   zh <- c(
-    "运行编号 / Run ID", "运行状态 / Status", "输入行数 / Input rows",
-    "输出行数 / Output rows", "问题总数 / Findings",
-    "更改记录数 / Changes", "排除记录数 / Exclusions",
-    "已处理问题 / Handled", "未处理问题 / Unhandled",
-    "是否显示原始示例 / Raw examples included",
-    "清洗数据哈希 / Cleaned-data hash", "审计日志哈希 / Audit-log hash"
+    "\u8fd0\u884c\u7f16\u53f7 / Run ID", "\u8fd0\u884c\u72b6\u6001 / Status", "\u8f93\u5165\u884c\u6570 / Input rows",
+    "\u8f93\u51fa\u884c\u6570 / Output rows", "\u95ee\u9898\u603b\u6570 / Findings",
+    "\u66f4\u6539\u8bb0\u5f55\u6570 / Changes", "\u6392\u9664\u8bb0\u5f55\u6570 / Exclusions",
+    "\u5df2\u5904\u7406\u95ee\u9898 / Handled", "\u672a\u5904\u7406\u95ee\u9898 / Unhandled",
+    "\u662f\u5426\u663e\u793a\u539f\u59cb\u793a\u4f8b / Raw examples included",
+    "\u6e05\u6d17\u6570\u636e\u54c8\u5e0c / Cleaned-data hash", "\u5ba1\u8ba1\u65e5\u5fd7\u54c8\u5e0c / Audit-log hash"
   )
   en <- c(
-    "Run ID / 运行编号", "Status / 运行状态", "Input rows / 输入行数",
-    "Output rows / 输出行数", "Findings / 问题总数",
-    "Changes / 更改记录数", "Exclusions / 排除记录数",
-    "Handled / 已处理问题", "Unhandled / 未处理问题",
-    "Raw examples included / 是否显示原始示例",
-    "Cleaned-data hash / 清洗数据哈希", "Audit-log hash / 审计日志哈希"
+    "Run ID / \u8fd0\u884c\u7f16\u53f7", "Status / \u8fd0\u884c\u72b6\u6001", "Input rows / \u8f93\u5165\u884c\u6570",
+    "Output rows / \u8f93\u51fa\u884c\u6570", "Findings / \u95ee\u9898\u603b\u6570",
+    "Changes / \u66f4\u6539\u8bb0\u5f55\u6570", "Exclusions / \u6392\u9664\u8bb0\u5f55\u6570",
+    "Handled / \u5df2\u5904\u7406\u95ee\u9898", "Unhandled / \u672a\u5904\u7406\u95ee\u9898",
+    "Raw examples included / \u662f\u5426\u663e\u793a\u539f\u59cb\u793a\u4f8b",
+    "Cleaned-data hash / \u6e05\u6d17\u6570\u636e\u54c8\u5e0c", "Audit-log hash / \u5ba1\u8ba1\u65e5\u5fd7\u54c8\u5e0c"
   )
   list(
     title = if (language == "zh-CN") {
-      "DCC 工作人员结果报告 / Staff results report"
+      "DCC \u5de5\u4f5c\u4eba\u5458\u7ed3\u679c\u62a5\u544a / Staff results report"
     } else {
-      "DCC Staff Results Report / 工作人员结果报告"
+      "DCC Staff Results Report / \u5de5\u4f5c\u4eba\u5458\u7ed3\u679c\u62a5\u544a"
     },
     overview = if (language == "zh-CN") zh else en,
     output_description = if (language == "zh-CN") {
-      "本次运行生成的文件 / File produced by this run"
+      "\u672c\u6b21\u8fd0\u884c\u751f\u6210\u7684\u6587\u4ef6 / File produced by this run"
     } else {
-      "File produced by this run / 本次运行生成的文件"
+      "File produced by this run / \u672c\u6b21\u8fd0\u884c\u751f\u6210\u7684\u6587\u4ef6"
     },
     redaction = if (!include_examples) {
-      "原始示例已隐藏；只有明确启用 include_examples 才会显示。 / Raw examples are hidden unless include_examples is enabled."
+      "\u539f\u59cb\u793a\u4f8b\u5df2\u9690\u85cf\uff1b\u53ea\u6709\u660e\u786e\u542f\u7528 include_examples \u624d\u4f1a\u663e\u793a\u3002 / Raw examples are hidden unless include_examples is enabled."
     } else {
-      "已明确启用原始示例；本报告可能包含敏感值。 / Raw examples were explicitly enabled; this report may contain sensitive values."
+      "\u5df2\u660e\u786e\u542f\u7528\u539f\u59cb\u793a\u4f8b\uff1b\u672c\u62a5\u544a\u53ef\u80fd\u5305\u542b\u654f\u611f\u503c\u3002 / Raw examples were explicitly enabled; this report may contain sensitive values."
     }
   )
 }
@@ -226,7 +227,7 @@ write_staff_workbook <- function(tables, path) {
   for (sheet in names(tables)) {
     table <- as.data.frame(tables[[sheet]], stringsAsFactors = FALSE)
     machine_names <- names(table)
-    if (!identical(sheet, "运行概览")) {
+    if (!identical(sheet, "\u8fd0\u884c\u6982\u89c8")) {
       names(table) <- staff_header_labels(machine_names)
     }
     wb <- openxlsx2::wb_add_worksheet(wb, sheet, grid_lines = FALSE, zoom = 90)
@@ -275,35 +276,35 @@ write_staff_workbook <- function(tables, path) {
 
 staff_header_labels <- function(names) {
   labels <- c(
-    record_id = "记录编号 / Record ID",
-    variable = "变量 / Variable",
-    check_id = "规则编号 / Rule ID",
-    evidence = "示例 / Example",
-    severity = "严重程度 / Severity",
-    dimension = "质量维度 / Dimension",
-    count = "数量 / Count",
-    action = "处理动作 / Action",
-    status = "状态 / Status",
-    message = "说明 / Message",
-    handled = "已处理 / Handled",
-    old_value = "原值 / Old value",
-    new_value = "新值 / New value",
-    method = "处理方法 / Method",
-    timestamp = "时间 / Timestamp",
-    dcc_version = "DCC 版本 / DCC version",
-    ruleset_hash = "规则哈希 / Ruleset hash",
-    keyfile_hash = "密钥文件哈希 / Key-file hash",
-    field = "字段 / Field",
-    rows = "行 / Rows",
-    fix = "修复建议 / Suggested fix",
-    workbook = "工作簿 / Workbook",
-    sheet = "工作表 / Sheet",
-    row = "行号 / Row",
-    column = "列 / Column",
-    cell = "单元格 / Cell",
-    name = "文件名 / File name",
-    path = "路径 / Path",
-    description = "文件说明 / Description"
+    record_id = "\u8bb0\u5f55\u7f16\u53f7 / Record ID",
+    variable = "\u53d8\u91cf / Variable",
+    check_id = "\u89c4\u5219\u7f16\u53f7 / Rule ID",
+    evidence = "\u793a\u4f8b / Example",
+    severity = "\u4e25\u91cd\u7a0b\u5ea6 / Severity",
+    dimension = "\u8d28\u91cf\u7ef4\u5ea6 / Dimension",
+    count = "\u6570\u91cf / Count",
+    action = "\u5904\u7406\u52a8\u4f5c / Action",
+    status = "\u72b6\u6001 / Status",
+    message = "\u8bf4\u660e / Message",
+    handled = "\u5df2\u5904\u7406 / Handled",
+    old_value = "\u539f\u503c / Old value",
+    new_value = "\u65b0\u503c / New value",
+    method = "\u5904\u7406\u65b9\u6cd5 / Method",
+    timestamp = "\u65f6\u95f4 / Timestamp",
+    dcc_version = "DCC \u7248\u672c / DCC version",
+    ruleset_hash = "\u89c4\u5219\u54c8\u5e0c / Ruleset hash",
+    keyfile_hash = "\u5bc6\u94a5\u6587\u4ef6\u54c8\u5e0c / Key-file hash",
+    field = "\u5b57\u6bb5 / Field",
+    rows = "\u884c / Rows",
+    fix = "\u4fee\u590d\u5efa\u8bae / Suggested fix",
+    workbook = "\u5de5\u4f5c\u7c3f / Workbook",
+    sheet = "\u5de5\u4f5c\u8868 / Sheet",
+    row = "\u884c\u53f7 / Row",
+    column = "\u5217 / Column",
+    cell = "\u5355\u5143\u683c / Cell",
+    name = "\u6587\u4ef6\u540d / File name",
+    path = "\u8def\u5f84 / Path",
+    description = "\u6587\u4ef6\u8bf4\u660e / Description"
   )
   out <- unname(labels[names])
   out[is.na(out)] <- names[is.na(out)]
@@ -316,8 +317,8 @@ write_staff_html <- function(model, tables, path, language, include_examples,
   css_path <- system.file("templates", "report-staff.css", package = "DCC")
   css <- if (nzchar(css_path)) paste(readLines(css_path, warn = FALSE),
                                     collapse = "\n") else ""
-  review <- utils::head(tables[["需要复核"]], 20L)
-  issues <- utils::head(tables[["问题汇总"]], 20L)
+  review <- utils::head(tables[["\u9700\u8981\u590d\u6838"]], 20L)
+  issues <- utils::head(tables[["\u95ee\u9898\u6c47\u603b"]], 20L)
   html <- c(
     "<!doctype html><html><head><meta charset='utf-8'>",
     paste0("<title>", html_escape(labels$title), "</title><style>", css,
@@ -328,16 +329,16 @@ write_staff_html <- function(model, tables, path, language, include_examples,
            " &nbsp; <code>status</code>: ", html_escape(model$run$status),
            " &nbsp; <code>examples_included</code>: ",
            tolower(as.character(include_examples)), "</p>"),
-    "<h2>运行概览 / Run overview</h2>",
-    html_table(tables[["运行概览"]][
+    "<h2>\u8fd0\u884c\u6982\u89c8 / Run overview</h2>",
+    html_table(tables[["\u8fd0\u884c\u6982\u89c8"]][
       , c("label", "display_value"), drop = FALSE
     ]),
-    "<h2>问题汇总 / Findings summary</h2>",
-    if (nrow(issues)) html_table(issues) else "<p>无 / None</p>",
-    "<h2>需要复核 / Needs review</h2>",
-    if (nrow(review)) html_table(review) else "<p>无 / None</p>",
+    "<h2>\u95ee\u9898\u6c47\u603b / Findings summary</h2>",
+    if (nrow(issues)) html_table(issues) else "<p>\u65e0 / None</p>",
+    "<h2>\u9700\u8981\u590d\u6838 / Needs review</h2>",
+    if (nrow(review)) html_table(review) else "<p>\u65e0 / None</p>",
     if (workbook) {
-      "<p><a href='staff-results.xlsx'>完整表格 / Full workbook</a></p>"
+      "<p><a href='staff-results.xlsx'>\u5b8c\u6574\u8868\u683c / Full workbook</a></p>"
     } else "",
     "</body></html>"
   )
@@ -347,8 +348,8 @@ write_staff_html <- function(model, tables, path, language, include_examples,
 
 write_staff_summary <- function(model, path, language, include_examples) {
   title <- if (language == "zh-CN") {
-    "DCC 运行摘要 / Run summary"
-  } else "DCC Run Summary / 运行摘要"
+    "DCC \u8fd0\u884c\u6458\u8981 / Run summary"
+  } else "DCC Run Summary / \u8fd0\u884c\u6458\u8981"
   writeLines(c(
     title,
     paste0("run_id: ", model$run$run_id),
