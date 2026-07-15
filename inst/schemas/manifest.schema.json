@@ -5,6 +5,7 @@
   "description": "A dcc_manifest() object.",
   "type": "object",
   "required": [
+    "contract_version",
     "dcc_version",
     "created",
     "input",
@@ -15,6 +16,7 @@
     "output"
   ],
   "properties": {
+    "contract_version": { "type": "string", "const": "1.2" },
     "dcc_version": { "type": "string" },
     "created": { "type": "string" },
     "input": {
@@ -47,5 +49,6 @@
         "n_excluded": { "type": "integer" }
       }
     }
-  }
+  },
+  "additionalProperties": false
 }

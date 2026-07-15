@@ -6,6 +6,7 @@ test_that("dcc_capabilities exposes the documented contract", {
       "rule_types", "action_types", "formats", "unsupported")
   )
   expect_type(caps$contract_version, "character")
+  expect_identical(caps$contract_version, "1.2")
   expect_identical(caps$package_version,
                    as.character(utils::packageVersion("DCC")))
 
@@ -22,6 +23,14 @@ test_that("dcc_capabilities exposes the documented contract", {
   expect_identical(sort(caps$formats$format),
                    sort(c("csv", "tsv", "excel", "spss", "stata", "sas",
                           "parquet", "feather", "json")))
+})
+
+test_that("stable correctness capabilities match engine contracts", {
+  caps <- dcc_capabilities()
+  stable <- caps$features$name[caps$features$status == "Stable"]
+  expect_true(all(c("invalid_numeric", "declared_yaml_ids",
+                    "terminal_dispositions", "atomic_run_output") %in%
+                  stable))
 })
 
 test_that("advertised action types match the execute validator", {

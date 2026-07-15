@@ -1,5 +1,22 @@
 # DCC 1.1.0
 
+## Core-correctness contracts (unreleased)
+
+* Add stable finding `code` and `detector_id`; range checks now report
+  `INVALID_NUMERIC` instead of silently coercing invalid values to missing.
+* YAML rules use declared IDs publicly while preserving direct detector IDs;
+  unambiguous legacy action aliases warn for one transition release.
+* Add `dcc_dispositions()` with one terminal state per finding and make
+  reconciliation verify those states against audit evidence.
+* Add start/end/outcome/hash/count provenance and preserve legacy timestamp
+  records.
+* Preserve `NA` totals for entirely missing scored rows and validate custom
+  scoring return type and length.
+* Publish `dcc_run()` outputs atomically; manifest and other failures create a
+  failed diagnostic directory and cannot be returned as success.
+* Capability contract 1.2 and new disposition/provenance schemas describe the
+  additive machine contract.
+
 Additive-contracts release: machine-readable capabilities and formal schemas
 for AI callers, plus a one-command workflow and structured validators for
 survey staff. Every change is additive; no 1.0.x call changes shape.

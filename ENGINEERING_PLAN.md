@@ -2,6 +2,11 @@
 
 Status: Approved engineering baseline
 
+Implementation note (2026-07-15): Phase 1 core-correctness contracts are
+implemented under capability contract 1.2: stable finding codes and detector
+identity, declared YAML rule IDs, explicit terminal dispositions, complete
+stage provenance, strict scoring semantics, and atomic run publication.
+
 Purpose: Guide all subsequent DCC remediation, development, review, and release
 work until the acceptance gates in this plan are met.
 

@@ -28,7 +28,7 @@
 #' @export
 dcc_capabilities <- function() {
   list(
-    contract_version = "1.1",
+    contract_version = "1.2",
     package_version = dcc_version_string(),
     features = dcc_capability_features(),
     rule_types = dcc_rule_types(),
@@ -96,6 +96,10 @@ dcc_capability_features <- function() {
     feat("apply_codebook", "Stable", "1.1.0"),
     feat("skip_logic", "Stable", "1.1.0"),
     feat("excel_config", "Stable", "1.1.0"),
+    feat("invalid_numeric", "Stable", "1.2.0"),
+    feat("declared_yaml_ids", "Stable", "1.2.0"),
+    feat("terminal_dispositions", "Stable", "1.2.0"),
+    feat("atomic_run_output", "Stable", "1.2.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(

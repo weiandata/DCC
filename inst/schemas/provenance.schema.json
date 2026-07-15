@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/weiandata/DCC/schemas/provenance.schema.json",
+  "title": "DCC provenance record",
+  "description": "One stage record in a dcc_data provenance chain.",
+  "type": "object",
+  "required": [
+    "stage", "started_at", "ended_at", "outcome", "dcc_version",
+    "hashes", "counts", "details"
+  ],
+  "properties": {
+    "stage": { "type": "string" },
+    "started_at": { "type": "string" },
+    "ended_at": { "type": "string" },
+    "outcome": {
+      "type": "string",
+      "enum": ["success", "partial_failure", "failed", "skipped"]
+    },
+    "dcc_version": { "type": "string" },
+    "hashes": { "type": "object" },
+    "counts": { "type": "object" },
+    "details": { "type": "object" }
+  },
+  "additionalProperties": false
+}

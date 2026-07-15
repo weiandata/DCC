@@ -23,6 +23,8 @@ dcc_schema("actions")       # JSON Schema for the action map
 dcc_schema("finding")       # JSON Schema for one findings row
 dcc_schema("audit_log")     # JSON Schema for one audit-log row
 dcc_schema("manifest")      # JSON Schema for a reproducibility manifest
+dcc_schema("disposition")   # terminal state for every finding
+dcc_schema("provenance")    # stage boundaries, outcome, hashes, counts
 ```
 
 ## The safe flow
@@ -47,7 +49,8 @@ Input and detection: `dcc_read()`, `dcc_rules()`, `dcc_detect()`,
 `dcc_detect_chunked()`, `dcc_l0_diagnose()`.
 
 Execution and audit: `dcc_execute()`, `dcc_audit_log()`, `dcc_cleaned()`,
-`dcc_reconcile()`, `dcc_trace()`, `dcc_export_log()`, `dcc_unhandled()`.
+`dcc_reconcile()`, `dcc_trace()`, `dcc_export_log()`, `dcc_unhandled()`,
+`dcc_dispositions()`.
 
 Scoring and mapping: `dcc_score()`, `dcc_map_forms()`, `dcc_item_map()`,
 `dcc_mapping_findings()`.
@@ -135,6 +138,7 @@ any such error as a configuration bug to fix, not to retry.
 ## Success checks
 
 - `dcc_reconcile(res)$status` has no `unhandled` rows you did not intend.
+- `dcc_dispositions(res)` contains exactly one terminal row per finding.
 - An audit row whose `finding_id` is absent from the findings raises
   `dcc_reconcile_error`; a clean run never triggers it.
 - `dcc_rerun(manifest)$reproduced` is `TRUE`.
@@ -159,4 +163,6 @@ All DCC errors carry a structured class (for example `dcc_execute_error`,
 `dcc_reconcile_error`, `dcc_type_error`, `dcc_io_error`). Branch on the class
 rather than parsing the message. On a failed complex task, correct the
 configuration or stop; never report a run as successful when reconciliation or
-the manifest check did not pass.
+the manifest check did not pass. A failed `dcc_run()` raises `dcc_run_error`
+and publishes machine-readable diagnostics under `.failed-<run_id>`; it never
+returns a successful run without a manifest.

@@ -29,6 +29,7 @@ test_that("manifest captures sources, hashes and actions", {
   p <- pipeline_fixture()
   m <- dcc_manifest(p$result)
   expect_s3_class(m, "dcc_manifest")
+  expect_identical(m$contract_version, "1.2")
   expect_identical(m$input$file_hash,
                    unname(tools::md5sum(p$data_file)))
   expect_identical(m$ruleset$hash,

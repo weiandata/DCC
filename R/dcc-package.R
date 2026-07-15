@@ -18,6 +18,7 @@
 #'   adaptive CSV/Arrow backend.
 #' * [dcc_capabilities()] / [dcc_schema()] -- machine-readable capability
 #'   document and published JSON Schemas; [dcc_unhandled()],
+#'   [dcc_dispositions()],
 #'   [dcc_item_map()], [dcc_mapping_findings()] -- public result
 #'   accessors.
 #'

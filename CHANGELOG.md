@@ -7,6 +7,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- Capability contract 1.2, finding codes and detector identity, terminal
+  dispositions, complete stage provenance, and disposition/provenance schemas.
+
+### Fixed
+
+- Invalid numerics are no longer silently dropped; YAML and chunked detection
+  use declared rule IDs; all-missing score totals remain missing; custom scores
+  are length/type checked; run output is atomically published and manifest
+  failures are fatal.
+
 ## [1.1.0] - 2026-07-12
 
 Additive-contracts release (Phases 3, 4, and 5 of the engineering plan):

@@ -37,6 +37,7 @@ dcc_manifest <- function(x, path = NULL) {
   }
   manifest <- structure(
     list(
+      contract_version = "1.2",
       dcc_version = dcc_version_string(),
       created = dcc_timestamp(),
       input = list(

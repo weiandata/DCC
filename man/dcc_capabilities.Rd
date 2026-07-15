@@ -22,6 +22,8 @@ operations DCC deliberately does not support. General-purpose callers
 Experimental, or Planned before building a pipeline. The \code{status}
 of each feature reflects the implemented state of the installed
 package, not a roadmap.
+Contract version 1.2 identifies invalid-numeric detection, declared YAML IDs,
+terminal dispositions, and atomic run publication as Stable capabilities.
 }
 \examples{
 caps <- dcc_capabilities()
