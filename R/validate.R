@@ -146,9 +146,11 @@ dcc_validate_data <- function(data, rules = NULL, id_var = NULL) {
 #' Convenience wrapper: runs [dcc_validate_rules()] and
 #' [dcc_validate_data()] and merges their reports.
 #'
-#' @param data A `dcc_data` or data.frame.
-#' @param rules A `dcc_ruleset` from [dcc_rules()].
+#' @param data Optional `dcc_data` or data.frame.
+#' @param rules Optional `dcc_ruleset` from [dcc_rules()].
 #' @param id_var Optional record-id column.
+#' @param formats `NULL`, `"all"`, or registered format names whose installed
+#'   backends and platform limitations should be checked.
 #' @return A combined `dcc_validation` object.
 #' @examples
 #' rf <- tempfile(fileext = ".yaml")
@@ -159,14 +161,75 @@ dcc_validate_data <- function(data, rules = NULL, id_var = NULL) {
 #'   dcc_doctor(df, dcc_rules(rf), id_var = "sid")
 #' }
 #' @export
-dcc_doctor <- function(data, rules, id_var = NULL) {
-  combined <- data.table::rbindlist(list(
-    dcc_validate_rules(rules),
+dcc_doctor <- function(data = NULL, rules = NULL, id_var = NULL,
+                       formats = NULL) {
+  reports <- list()
+  if (!is.null(rules)) reports[[length(reports) + 1L]] <-
+    dcc_validate_rules(rules)
+  if (!is.null(data)) reports[[length(reports) + 1L]] <-
     dcc_validate_data(data, rules, id_var)
-  ))
+  if (!is.null(formats)) reports[[length(reports) + 1L]] <-
+    validate_format_backends(formats)
+  if (!length(reports)) return(empty_validation())
+  combined <- data.table::rbindlist(reports, use.names = TRUE)
   data.table::setattr(combined, "class",
                       c("dcc_validation", class(data.table::data.table())))
   combined[]
+}
+
+validate_format_backends <- function(formats) {
+  registry <- dcc_format_registry()
+  if (!is.character(formats) || !length(formats) || anyNA(formats)) {
+    dcc_abort("`formats` must be 'all' or registered format names.",
+              class = "dcc_format_error")
+  }
+  formats <- tolower(formats)
+  if (identical(formats, "all")) {
+    formats <- names(registry)
+  } else {
+    formats <- unique(unlist(lapply(formats, function(format) {
+      if (format == "excel") c("xls", "xlsx") else format
+    }), use.names = FALSE))
+  }
+  unknown <- setdiff(formats, names(registry))
+  if (length(unknown)) {
+    dcc_abort("Unsupported format: ", paste(unknown, collapse = ", "),
+              class = "dcc_format_error")
+  }
+
+  issues <- list()
+  add <- function(code, severity, field, fix) {
+    issues[[length(issues) + 1L]] <<-
+      val_issue(code, severity, field, fix = fix)
+  }
+  for (format in formats) {
+    adapter <- registry[[format]]
+    backend <- adapter$semantics$backend %||% NA_character_
+    minimum <- adapter$semantics$minimum_version %||% NA_character_
+    if (!is.na(backend) && !backend %in% c("base", "utils")) {
+      available <- tryCatch(requireNamespace(backend, quietly = TRUE),
+                            error = function(e) FALSE)
+      if (!available) {
+        add("FORMAT_BACKEND_MISSING", "fail", format,
+            paste0("Install backend package '", backend, "'."))
+      } else if (!is.na(minimum) &&
+                 utils::packageVersion(backend) <
+                   base::package_version(minimum)) {
+        add("FORMAT_BACKEND_OLD", "fail", format,
+            paste0("Upgrade '", backend, "' to at least ", minimum, "."))
+      }
+    }
+    limitations <- adapter$semantics$limitations %||% character()
+    if (length(limitations)) {
+      add("FORMAT_LIMITATION", "warn", format,
+          paste(limitations, collapse = "; "))
+    }
+    if (format == "xlsb" && .Platform$endian != "little") {
+      add("FORMAT_PLATFORM_UNSUPPORTED", "fail", format,
+          "XLSB requires a little-endian platform.")
+    }
+  }
+  new_validation(issues)
 }
 
 #' The failing issues of a validation report

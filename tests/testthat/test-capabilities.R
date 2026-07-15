@@ -20,9 +20,18 @@ test_that("dcc_capabilities exposes the documented contract", {
   expect_true(all(c("range", "set", "expr", "missing_items",
                     "straightlining", "response_time", "trap_items",
                     "score_anomaly") %in% caps$rule_types))
-  expect_identical(sort(caps$formats$format),
-                   sort(c("csv", "tsv", "excel", "spss", "stata", "sas",
-                          "parquet", "feather", "json")))
+  expect_setequal(caps$formats$format, names(dcc_format_registry()))
+  expect_true(all(c("status", "extensions", "backend", "semantics",
+                    "limitations") %in% names(caps$formats)))
+})
+
+test_that("reader and capabilities share the format registry", {
+  registry <- dcc_format_registry()
+  capabilities <- dcc_capabilities()$formats
+  expect_setequal(capabilities$format, names(registry))
+  expected_status <- vapply(registry, `[[`, character(1), "status")
+  expect_identical(capabilities$status,
+                   unname(expected_status[capabilities$format]))
 })
 
 test_that("stable correctness capabilities match engine contracts", {

@@ -18,7 +18,6 @@
 #' @seealso [dcc_write_config_template()], [dcc_config()], [dcc_run()].
 #' @export
 dcc_read_config <- function(path) {
-  dcc_require("readxl", "read Excel cleaning-plan configuration")
   if (!file.exists(path)) {
     dcc_abort("Config file not found: ", path, class = "dcc_io_error")
   }

@@ -44,7 +44,8 @@ adapter_haven <- function(name, extensions) {
   }
   new_format_adapter(
     name, extensions, reader, inspector, validator, "Experimental",
-    list(labels = "preserved", tagged_missing = "preserved",
+    list(backend = "haven", minimum_version = "2.5.5",
+         labels = "preserved", tagged_missing = "preserved",
          user_missing = "preserved", values = "source scalar codes",
          cleaning = FALSE, declared_structure = TRUE)
   )

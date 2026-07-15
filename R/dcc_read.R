@@ -1,171 +1,142 @@
 #' Read a data file into a dcc_data object
 #'
-#' The DCC input layer. Reads delimited text (CSV/TSV), Excel, SPSS,
-#' Stata, SAS, Parquet, Feather, and rectangular JSON files into a
-#' [dcc_data()] container. Text encodings are auto-detected
-#' ([dcc_detect_encoding()]) with explicit override; UTF-8, GB18030/GBK,
-#' BIG5, and latin1 are first-class. On read, level-0 structural
-#' diagnostics ([dcc_l0_diagnose()]) run automatically and the resulting
-#' read report is attached to the returned object. Reading never silently
-#' coerces: type decisions are recorded in the read report.
+#' Compatibility entry point over DCC's registered format adapters. New strict
+#' workflows should use dcc_import() with a declared import specification;
+#' this function retains automatic text-encoding detection and type inference
+#' for existing calls. The raw file is never modified.
 #'
 #' @param path Path to the input file.
-#' @param format One of `"auto"` (default; inferred from the file
-#'   extension), `"csv"`, `"tsv"`, `"excel"`, `"spss"`, `"stata"`,
-#'   `"sas"`, `"parquet"`, `"feather"`, `"json"`.
-#' @param encoding `"auto"` (default) or an explicit source encoding for
-#'   text formats (e.g. `"UTF-8"`, `"GB18030"`, `"BIG5"`, `"latin1"`).
-#'   Ignored for binary formats, which define their own encoding.
-#' @param ... Additional arguments passed to the underlying reader
-#'   (`data.table::fread`, `readxl::read_excel`, `haven::read_sav`, ...).
-#' @return A [dcc_data()] object with `meta`, a `read_report`, and a
-#'   provenance chain whose first record is the read operation.
+#' @param format auto, a registered format name, or the legacy excel alias.
+#' @param encoding auto or an explicit source encoding for text formats.
+#' @param ... Compatibility reader options. Protected options remain rejected.
+#' @return A dcc_data object with canonical metadata and read provenance.
 #' @export
 dcc_read <- function(path, format = "auto", encoding = "auto", ...) {
   if (!is.character(path) || length(path) != 1L) {
-    dcc_abort("`path` must be a single file path.", class = "dcc_type_error")
+    dcc_abort("path must be a single file path.", class = "dcc_type_error")
   }
   if (!file.exists(path)) {
     dcc_abort("File not found: ", path, class = "dcc_io_error")
   }
-
-  format <- match.arg(format, c("auto", dcc_read_formats()))
-  if (format == "auto") {
-    format <- infer_format(path)
+  if (!is.character(format) || length(format) != 1L || is.na(format) ||
+      !format %in% c("auto", dcc_read_formats())) {
+    dcc_abort("Unsupported format: ", paste(format, collapse = ", "),
+              class = "dcc_format_error")
   }
 
-  enc_info <- list(encoding = NA_character_, confidence = NA_real_)
-  is_text <- format %in% c("csv", "tsv", "json")
-  if (is_text) {
+  requested_format <- format
+  if (format == "auto") format <- infer_format(path)
+  if (format == "excel") {
+    extension <- tolower(tools::file_ext(path))
+    if (!extension %in% c("xls", "xlsx")) {
+      dcc_abort("Legacy format excel requires an .xls or .xlsx source.",
+                class = "dcc_format_error")
+    }
+    format <- extension
+  }
+  adapter <- dcc_get_adapter(format)
+  options <- list(...)
+  text_formats <- c("csv", "tsv", "txt", "fwf", "json", "jsonl")
+  if (format %in% text_formats) {
     if (identical(encoding, "auto")) {
-      enc_info <- dcc_detect_encoding(path)
+      options$encoding <- dcc_detect_encoding(path)$encoding
     } else {
-      enc_info <- list(encoding = normalize_encoding(encoding),
-                       confidence = NA_real_)
+      options$encoding <- normalize_encoding(encoding)
     }
   }
+  if (format %in% c("xls", "xlsx", "xlsb", "ods")) {
+    options$.compatibility <- TRUE
+  }
 
-  dt <- switch(format,
-    csv     = read_delim_dcc(path, sep = ",", enc_info$encoding, ...),
-    tsv     = read_delim_dcc(path, sep = "\t", enc_info$encoding, ...),
-    excel   = read_excel_dcc(path, ...),
-    spss    = read_haven_dcc(path, "sav", ...),
-    stata   = read_haven_dcc(path, "dta", ...),
-    sas     = read_haven_dcc(path, "sas7bdat", ...),
-    parquet = read_arrow_dcc(path, "parquet", ...),
-    feather = read_arrow_dcc(path, "feather", ...),
-    json    = read_json_dcc(path, enc_info$encoding, ...)
-  )
-
-  meta <- list(
-    source = normalizePath(path),
-    format = format,
-    encoding = if (is_text) enc_info$encoding else "native",
-    encoding_confidence = enc_info$confidence,
-    file_hash = unname(tools::md5sum(path)),
-    file_size = file.size(path),
-    read_time = dcc_timestamp(),
-    dcc_version = dcc_version_string()
-  )
-
-  report <- dcc_l0_diagnose(dt, meta)
-
-  out <- dcc_data(
-    data = dt,
-    meta = meta,
-    read_report = report,
-    provenance = list(new_provenance_record(
-      stage = "read",
-      details = list(
-        source = meta$source,
-        format = format,
-        encoding = meta$encoding,
-        file_hash = meta$file_hash,
-        n_rows = nrow(dt),
-        n_cols = ncol(dt),
-        l0_findings = nrow(report$findings)
-      ),
-      hashes = list(input = meta$file_hash),
-      counts = list(rows = nrow(dt), columns = ncol(dt),
-                    l0_findings = nrow(report$findings))
+  result <- tryCatch({
+    raw <- adapter$reader(path, options)
+    validate_adapter_result(raw, format)
+    columns <- compatibility_columns(raw$data, raw$metadata)
+    spec <- new_import_spec(path, format, options = options,
+                            columns = columns)
+    dcc_import(path, spec)
+  }, error = function(e) {
+    if (inherits(e, "dcc_io_error") || inherits(e, "dcc_type_error")) stop(e)
+    stop(errorCondition(
+      paste0("Could not read ", format, " source: ", conditionMessage(e)),
+      class = c("dcc_format_error", "dcc_error"), parent = e
     ))
+  })
+
+  legacy_format <- if (format %in% c("xls", "xlsx")) "excel" else format
+  result$meta$adapter_format <- format
+  result$meta$format <- legacy_format
+  record <- result$provenance[[1L]]
+  record$stage <- "read"
+  record$details <- list(
+    source = result$meta$source,
+    format = legacy_format,
+    adapter_format = format,
+    encoding = result$meta$encoding,
+    file_hash = result$meta$file_hash,
+    n_rows = nrow(result$data),
+    n_cols = ncol(result$data),
+    l0_findings = nrow(result$read_report$findings),
+    compatibility = TRUE,
+    requested_format = requested_format
   )
-  out
+  result$provenance[[1L]] <- record
+  result
 }
 
 infer_format <- function(path) {
-  ext <- tolower(tools::file_ext(path))
-  fmt <- switch(ext,
-    csv = "csv",
-    tsv = "tsv",
-    txt = "tsv",
-    xlsx = "excel",
-    xls = "excel",
-    sav = "spss",
-    zsav = "spss",
-    dta = "stata",
-    sas7bdat = "sas",
-    parquet = "parquet",
-    feather = "feather",
-    arrow = "feather",
-    json = "json",
-    NULL
-  )
-  if (is.null(fmt)) {
-    dcc_abort("Cannot infer format from extension '.", ext,
-              "'; pass `format` explicitly.", class = "dcc_format_error")
-  }
-  fmt
-}
-
-read_delim_dcc <- function(path, sep, encoding, ...) {
-  if (encoding %in% c("UTF-8", "latin1")) {
-    fread_enc <- if (encoding == "latin1") "Latin-1" else "UTF-8"
-    dt <- data.table::fread(path, sep = sep, encoding = fread_enc,
-                            na.strings = c("", "NA"), ...)
-  } else {
-    # fread only supports UTF-8/Latin-1 natively; convert via stringi.
-    txt <- read_file_utf8(path, encoding)
-    dt <- data.table::fread(text = txt, sep = sep,
-                            na.strings = c("", "NA"), ...)
-  }
-  dt
-}
-
-read_excel_dcc <- function(path, ...) {
-  dcc_require("readxl", "read Excel files")
-  data.table::as.data.table(readxl::read_excel(path, ...))
-}
-
-read_haven_dcc <- function(path, kind, ...) {
-  dcc_require("haven", "read SPSS/Stata/SAS files")
-  x <- switch(kind,
-    sav = haven::read_sav(path, ...),
-    dta = haven::read_dta(path, ...),
-    sas7bdat = haven::read_sas(path, ...)
-  )
-  # Keep haven_labelled columns intact: labels and user-defined missings
-  # are survey metadata that detection rules consume later.
-  data.table::as.data.table(x)
-}
-
-read_arrow_dcc <- function(path, kind, ...) {
-  dcc_require("arrow", "read Parquet/Feather files")
-  x <- switch(kind,
-    parquet = arrow::read_parquet(path, ...),
-    feather = arrow::read_feather(path, ...)
-  )
-  data.table::as.data.table(x)
-}
-
-read_json_dcc <- function(path, encoding, ...) {
-  dcc_require("jsonlite", "read JSON files")
-  txt <- read_file_utf8(path, encoding)
-  x <- jsonlite::fromJSON(txt, ...)
-  if (!is.data.frame(x)) {
-    dcc_abort("JSON input must be rectangular (an array of records); ",
-              "got ", paste(class(x), collapse = "/"), ".",
+  extension <- tolower(tools::file_ext(path))
+  registry <- dcc_format_registry()
+  matches <- names(registry)[vapply(
+    registry,
+    function(adapter) extension %in% adapter$extensions,
+    logical(1)
+  )]
+  if (length(matches) != 1L) {
+    detail <- if (length(matches)) {
+      paste0("extension is ambiguous (", paste(matches, collapse = ", "), ")")
+    } else {
+      "extension is not registered"
+    }
+    dcc_abort("Cannot infer format from extension .", extension, ": ",
+              detail, "; pass format explicitly.",
               class = "dcc_format_error")
   }
-  data.table::as.data.table(x)
+  matches
+}
+
+compatibility_columns <- function(data, metadata = list()) {
+  data <- as.data.frame(data, check.names = FALSE, stringsAsFactors = FALSE)
+  source_classes <- metadata$source_column_classes %||%
+    metadata$column_classes
+  if (is.null(source_classes) && length(metadata$variables %||% list())) {
+    source_classes <- lapply(metadata$variables, `[[`, "class")
+  }
+  types <- vapply(names(data), function(name) {
+    compatibility_column_type(data[[name]], source_classes[[name]] %||% NULL)
+  }, character(1))
+  data.frame(
+    source_name = names(data),
+    name = names(data),
+    type = types,
+    role = rep.int("other", ncol(data)),
+    stringsAsFactors = FALSE
+  )
+}
+
+compatibility_column_type <- function(column, source_class = NULL) {
+  if (any(source_class %in% c("Date"))) return("date")
+  if (any(source_class %in% c("POSIXct", "POSIXlt"))) return("datetime")
+  if (any(source_class %in% c("integer"))) return("integer")
+  if (any(source_class %in% c("numeric", "double", "haven_labelled",
+                              "haven_labelled_spss"))) return("double")
+  if (any(source_class %in% c("logical"))) return("logical")
+  if (inherits(column, "Date")) return("date")
+  if (inherits(column, "POSIXt")) return("datetime")
+  converted <- utils::type.convert(column, as.is = TRUE,
+                                   na.strings = c("", "NA"))
+  if (is.integer(converted)) return("integer")
+  if (is.numeric(converted)) return("double")
+  if (is.logical(converted)) return("logical")
+  "character"
 }

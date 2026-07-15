@@ -19,7 +19,8 @@
 #'     (`"Stable"`/`"Experimental"`/`"Planned"`), and `since`.
 #'   * `rule_types` -- the supported declarative rule/detector types.
 #'   * `action_types` -- the supported execution action names.
-#'   * `formats` -- a data.frame of `format` and its `reader`.
+#'   * `formats` -- a data.frame of format status, extensions, backend,
+#'     semantics, and limitations.
 #'   * `unsupported` -- operations DCC does not perform.
 #' @examples
 #' caps <- dcc_capabilities()
@@ -54,23 +55,30 @@ dcc_rule_types <- function() {
     "response_time", "trap_items", "score_anomaly")
 }
 
-# The input formats dcc_read() understands (excluding "auto"). dcc_read()
-# builds its match.arg set from this vector.
+# The input formats dcc_read() understands (excluding "auto"). `excel` is a
+# compatibility alias resolved to xls or xlsx by extension; machine callers
+# should use the registry names.
 dcc_read_formats <- function() {
-  c("csv", "tsv", "excel", "spss", "stata", "sas", "parquet",
-    "feather", "json")
+  c(names(dcc_format_registry()), "excel")
 }
 
 dcc_read_formats_table <- function() {
-  data.frame(
-    format = dcc_read_formats(),
-    reader = c("data.table::fread", "data.table::fread",
-               "readxl::read_excel", "haven::read_sav",
-               "haven::read_dta", "haven::read_sas",
-               "arrow::read_parquet", "arrow::read_feather",
-               "jsonlite::fromJSON"),
+  registry <- dcc_format_registry()
+  formats <- names(registry)
+  out <- data.frame(
+    format = formats,
+    status = unname(vapply(registry, `[[`, character(1), "status")),
+    backend = vapply(registry, function(adapter) {
+      adapter$semantics$backend %||% NA_character_
+    }, character(1)),
     stringsAsFactors = FALSE
   )
+  out$extensions <- I(lapply(registry, `[[`, "extensions"))
+  out$semantics <- I(lapply(registry, `[[`, "semantics"))
+  out$limitations <- I(lapply(registry, function(adapter) {
+    adapter$semantics$limitations %||% character()
+  }))
+  out
 }
 
 dcc_capability_features <- function() {
@@ -100,7 +108,8 @@ dcc_capability_features <- function() {
     feat("declared_yaml_ids", "Stable", "1.2.0"),
     feat("terminal_dispositions", "Stable", "1.2.0"),
     feat("atomic_run_output", "Stable", "1.2.0"),
-    feat("format_adapter_registry", "Experimental", "1.2.0"),
+    feat("format_adapter_registry", "Stable", "1.2.0"),
+    feat("canonical_import", "Experimental", "1.2.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(

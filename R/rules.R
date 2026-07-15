@@ -20,7 +20,6 @@
 #'   source file and its MD5 hash attached for the audit trail).
 #' @export
 dcc_rules <- function(path) {
-  dcc_require("yaml", "read YAML rule files")
   if (!file.exists(path)) {
     dcc_abort("Rule file not found: ", path, class = "dcc_io_error")
   }

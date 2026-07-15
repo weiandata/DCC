@@ -28,7 +28,8 @@ adapter_text <- function() {
   }
   new_format_adapter(
     "txt", "txt", reader, inspector, validator, "Experimental",
-    list(values = "character-preserving", delimiter = "declared",
+    list(backend = "data.table", minimum_version = "1.14.0",
+         values = "character-preserving", delimiter = "declared",
          encoding = "declared", cleaning = FALSE,
          declared_structure = TRUE)
   )
@@ -99,7 +100,8 @@ adapter_fwf <- function() {
   }
   new_format_adapter(
     "fwf", "txt", reader, inspector, validator, "Experimental",
-    list(values = "character-preserving", widths = "declared",
+    list(backend = "utils", minimum_version = NA_character_,
+         values = "character-preserving", widths = "declared",
          encoding = "declared", cleaning = FALSE,
          declared_structure = TRUE)
   )
@@ -153,7 +155,8 @@ adapter_json <- function(lines = FALSE) {
   }
   new_format_adapter(
     name, extensions, reader, inspector, validator, "Experimental",
-    list(values = "JSON scalar to character", encoding = "declared",
+    list(backend = "jsonlite", minimum_version = NA_character_,
+         values = "JSON scalar to character", encoding = "declared",
          nested_values = "rejected", cleaning = FALSE,
          declared_structure = TRUE)
   )
@@ -205,7 +208,8 @@ adapter_rds <- function() {
   }
   new_format_adapter(
     "rds", "rds", reader, inspector, validator, "Experimental",
-    list(values = "native R scalars", trust = "trusted sources only",
+    list(backend = "base", minimum_version = NA_character_,
+         values = "native R scalars", trust = "trusted sources only",
          cleaning = FALSE, declared_structure = TRUE)
   )
 }

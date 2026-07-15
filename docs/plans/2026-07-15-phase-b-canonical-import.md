@@ -1,5 +1,9 @@
 # Phase B Canonical Import Platform Implementation Plan
 
+**Status:** Complete (2026-07-15). All exit criteria passed on
+`codex/dcc-phase-b`; full tests and `R CMD check --no-manual` completed with
+`Status: OK`.
+
 > **Execution:** Complete the checked tasks in order, with the stated red/green
 > verification and review checkpoint before each commit.
 

@@ -32,6 +32,5 @@ dcc_schema <- function(name, as = c("object", "path")) {
   if (identical(as, "path")) {
     return(file)
   }
-  dcc_require("jsonlite", "read JSON Schemas")
   jsonlite::fromJSON(file, simplifyVector = TRUE)
 }

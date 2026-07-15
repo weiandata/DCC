@@ -14,6 +14,16 @@
   failed diagnostic directory and cannot be returned as success.
 * Capability contract 1.2 and new disposition/provenance schemas describe the
   additive machine contract.
+* Add a single format-adapter registry and strict `dcc_import()` canonical
+  layer with dictionaries, explicit missing states, import-plan hashes, and
+  source-aware conversion errors.
+* Add declared text/FWF/JSONL/RDS input, bounded gzip and safe explicit-member
+  ZIP input, XLS/XLSX/ODS and limited Experimental XLSB, SPSS/Stata/SAS/XPT,
+  and Parquet/Feather adapters. All formal input backends are now installed
+  with DCC.
+* `dcc_capabilities()$formats` now reports registry status, extensions,
+  backend, semantics, and limitations; `dcc_doctor(formats = "all")` checks
+  backend versions and platform constraints.
 
 # DCC 1.1.0
 

@@ -3,21 +3,24 @@
 \alias{dcc_doctor}
 \title{Run every validator over a dataset and rule set}
 \usage{
-dcc_doctor(data, rules, id_var = NULL)
+dcc_doctor(data = NULL, rules = NULL, id_var = NULL, formats = NULL)
 }
 \arguments{
-\item{data}{A \code{dcc_data} or data.frame.}
+\item{data}{Optional \code{dcc_data} or data.frame.}
 
-\item{rules}{A \code{dcc_ruleset} from \code{\link{dcc_rules}}.}
+\item{rules}{Optional \code{dcc_ruleset} from \code{\link{dcc_rules}}.}
 
 \item{id_var}{Optional record-id column.}
+
+\item{formats}{\code{NULL}, \code{"all"}, or registered format names whose
+installed backends and platform limitations should be checked.}
 }
 \value{
 A combined \code{dcc_validation} object.
 }
 \description{
-Convenience wrapper: runs \code{\link{dcc_validate_rules}} and
-\code{\link{dcc_validate_data}} and merges their reports.
+Runs the requested rule, data, and registered-format backend checks and merges
+their structured reports without changing data or files.
 }
 \examples{
 rf <- tempfile(fileext = ".yaml")

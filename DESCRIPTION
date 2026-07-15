@@ -28,6 +28,7 @@ Imports:
     arrow,
     data.table (>= 1.14.0),
     haven (>= 2.5.5),
+    jsonlite,
     openxlsx2 (>= 1.28),
     readODS (>= 2.3.5),
     readxl (>= 1.5.0),
@@ -35,11 +36,10 @@ Imports:
     methods,
     stats,
     tools,
-    utils
-Suggests:
+    utils,
     writexl,
-    jsonlite,
-    yaml,
+    yaml
+Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)

@@ -62,7 +62,6 @@ dcc_manifest <- function(x, path = NULL) {
     class = "dcc_manifest"
   )
   if (!is.null(path)) {
-    dcc_require("yaml", "write manifest files")
     yaml::write_yaml(unclass(manifest), path)
   }
   invisible(manifest)
@@ -86,7 +85,6 @@ dcc_rerun <- function(manifest) {
   if (inherits(manifest, "dcc_result")) {
     manifest <- dcc_manifest(manifest)
   } else if (is.character(manifest) && length(manifest) == 1L) {
-    dcc_require("yaml", "read manifest files")
     if (!file.exists(manifest)) {
       dcc_abort("Manifest file not found: ", manifest,
                 class = "dcc_io_error")

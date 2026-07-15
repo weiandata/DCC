@@ -7,6 +7,12 @@ implemented under capability contract 1.2: stable finding codes and detector
 identity, declared YAML rule IDs, explicit terminal dispositions, complete
 stage provenance, strict scoring semantics, and atomic run publication.
 
+Implementation note (2026-07-15): Phase 2 canonical import is implemented on
+the Phase B branch: one adapter registry owns formal input formats and backend
+limitations; strict imports retain dictionaries, missing states, labels,
+source/spec hashes, and provenance. Cross-platform Stable certification remains
+part of Phase E, so newly added adapters report Experimental until that gate.
+
 Purpose: Guide all subsequent DCC remediation, development, review, and release
 work until the acceptance gates in this plan are met.
 

@@ -54,6 +54,8 @@ planned_adapter <- function(name, extensions) {
     validator = unavailable,
     status = "Planned",
     semantics = list(
+      backend = NA_character_,
+      minimum_version = NA_character_,
       values = "character-preserving",
       cleaning = FALSE,
       declared_structure = TRUE
@@ -143,6 +145,8 @@ adapter_delimited <- function(name, extension, separator) {
     validator = validator,
     status = "Experimental",
     semantics = list(
+      backend = "data.table",
+      minimum_version = "1.14.0",
       values = "character-preserving",
       encoding = "declared",
       missing = "preserved-before-canonicalization",

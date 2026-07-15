@@ -207,7 +207,6 @@ stream_detect_csv <- function(path, rules, chunk_size, id_var, sep,
 # come from the file schema (stable across batches), so no column-class
 # locking is needed and the fread encoding restriction does not apply.
 stream_detect_arrow <- function(path, rules, chunk_size, id_var) {
-  dcc_require("arrow", "run chunked detection on Parquet/Feather files")
   ext <- tolower(tools::file_ext(path))
   fmt <- if (ext %in% c("feather", "arrow")) "arrow" else "parquet"
   ds <- arrow::open_dataset(path, format = fmt)

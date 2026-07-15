@@ -14,7 +14,7 @@ building anything. Do not assume a capability that `dcc_capabilities()` marks
 caps <- dcc_capabilities()
 caps$action_types           # exclude, set_na, flag, recode
 caps$rule_types             # range, set, expr, and the five detectors
-caps$formats$format         # csv, tsv, excel, spss, stata, sas, parquet, feather, json
+caps$formats                # status, extensions, backend, semantics, limitations
 caps$features               # name, status (Stable/Experimental/Planned), since
 caps$unsupported            # impute, deductive_correct, irtc, ...
 
@@ -45,7 +45,8 @@ successful without `dcc_reconcile()`.
 
 ## Approved public functions
 
-Input and detection: `dcc_read()`, `dcc_rules()`, `dcc_detect()`,
+Input and detection: `dcc_read()`, `dcc_import()`, `dcc_dictionary()`,
+`dcc_missing_states()`, `dcc_rules()`, `dcc_detect()`,
 `dcc_detect_chunked()`, `dcc_l0_diagnose()`.
 
 Execution and audit: `dcc_execute()`, `dcc_audit_log()`, `dcc_cleaned()`,
@@ -61,6 +62,11 @@ Contracts: `dcc_capabilities()`, `dcc_schema()`.
 
 Read results only through these accessors; do not read hidden object
 attributes.
+
+For strict imports, never infer columns, types, missing codes, text encoding,
+worksheet, range, fixed widths, delimiter, ZIP member, or multi-select layout.
+Use the validated import specification from the DCC plan. Check the selected
+format's status and limitations before reading; XLSB remains Experimental.
 
 ## A complete rule set and action map
 

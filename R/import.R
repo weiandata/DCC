@@ -79,9 +79,13 @@ canonicalize_import <- function(raw_data, raw_metadata, spec,
   }
 
   columns <- data.table::copy(spec$columns)
-  if (!"role" %in% names(columns)) columns[, role := "other"]
-  columns[, type := tolower(as.character(type))]
-  columns[, role := as.character(role)]
+  if (!"role" %in% names(columns)) {
+    data.table::set(columns, j = "role", value = "other")
+  }
+  data.table::set(columns, j = "type",
+                  value = tolower(as.character(columns$type)))
+  data.table::set(columns, j = "role",
+                  value = as.character(columns$role))
   allowed_types <- c("character", "integer", "double", "numeric",
                      "logical", "date", "datetime")
   invalid_types <- setdiff(unique(columns$type), allowed_types)
@@ -146,7 +150,9 @@ canonicalize_import <- function(raw_data, raw_metadata, spec,
   data.table::setorderv(missing_states, c("row", "variable"))
 
   dictionary <- enrich_import_dictionary(columns, raw_metadata$variables)
-  dictionary[, type := fifelse(type == "numeric", "double", type)]
+  data.table::set(dictionary, j = "type",
+                  value = ifelse(dictionary$type == "numeric", "double",
+                                 dictionary$type))
   file_hash <- unname(tools::md5sum(spec$source))
   spec_hash <- hash_import_spec(spec)
   meta <- list(
@@ -218,23 +224,26 @@ enrich_import_dictionary <- function(columns, variables) {
     FUN.VALUE = character(1)
   )
   if (!"label" %in% names(dictionary)) {
-    dictionary[, label := source_labels]
+    data.table::set(dictionary, j = "label", value = source_labels)
   } else {
     fill <- is.na(dictionary$label) | !nzchar(as.character(dictionary$label))
-    dictionary[fill, label := source_labels[fill]]
+    data.table::set(dictionary, i = which(fill), j = "label",
+                    value = source_labels[fill])
   }
   if (!"value_labels" %in% names(dictionary)) {
-    dictionary[, value_labels := lapply(source_name, function(name) {
+    value_labels <- lapply(dictionary$source_name, function(name) {
       source_metadata(name, "labels", stats::setNames(numeric(), character()))
-    })]
+    })
+    data.table::set(dictionary, j = "value_labels", value = value_labels)
   }
   if (!"source_class" %in% names(dictionary)) {
-    dictionary[, source_class := vapply(
-      source_name,
+    source_class <- vapply(
+      dictionary$source_name,
       function(name) paste(source_metadata(name, "class", character()),
                             collapse = "/"),
       character(1)
-    )]
+    )
+    data.table::set(dictionary, j = "source_class", value = source_class)
   }
   dictionary
 }
@@ -253,9 +262,12 @@ validate_missing_plan <- function(missing, variables) {
               class = "dcc_import_error")
   }
   missing <- data.table::copy(missing)
-  missing[, variable := as.character(variable)]
-  missing[, source_value := as.character(source_value)]
-  missing[, state := as.character(state)]
+  data.table::set(missing, j = "variable",
+                  value = as.character(missing$variable))
+  data.table::set(missing, j = "source_value",
+                  value = as.character(missing$source_value))
+  data.table::set(missing, j = "state",
+                  value = as.character(missing$state))
   unknown_variables <- setdiff(unique(missing$variable), variables)
   if (length(unknown_variables)) {
     dcc_abort("Missing-code plan references unknown variable(s): ",

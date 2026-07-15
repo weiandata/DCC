@@ -24,9 +24,11 @@ item-bank alignment, and self-contained HTML reports.
 remotes::install_github("weiandata/DCC")
 ```
 
-Only `data.table` and `stringi` are hard dependencies. Format- and
-feature-specific packages (`readxl`, `haven`, `arrow`, `jsonlite`, `yaml`) are
-suggested and loaded on demand.
+All formally supported input backends are installed with DCC: delimited and
+fixed-width text, JSON/JSONL, XLS/XLSX/XLSB/ODS, SPSS/Stata/SAS/XPT,
+Parquet/Feather, and RDS. `dcc_capabilities()$formats` reports each backend's
+installed status and limitations; opening a file alone does not make a format
+Stable.
 
 ## Quick start
 
@@ -68,8 +70,13 @@ See `vignette("dcc-pipeline", package = "DCC")` for the full walkthrough.
 
 ## The workflow
 
-**Detect.** `dcc_read()` loads CSV/TSV, Excel, SPSS/Stata/SAS, Parquet/Feather,
-and rectangular JSON with encoding auto-detection. `dcc_detect()` evaluates a
+**Detect.** `dcc_read()` remains the compatibility reader with encoding and
+type inference. Strict workflows use `dcc_import()` with declared source
+columns, canonical names, types, roles, missing codes, worksheet/range, and
+encoding. The canonical result exposes `dcc_dictionary()` and
+`dcc_missing_states()`. The registry covers CSV/TSV/TXT/FWF, JSON/JSONL,
+XLS/XLSX/XLSB/ODS, SPSS/Stata/SAS/XPT, Parquet/Feather, and RDS, including
+bounded gzip and explicit-member ZIP input. `dcc_detect()` evaluates a
 versioned `dcc_rules()` set: range/set/expression checks plus five
 response-quality detectors — missing items, straight-lining, response time,
 trap items, and score anomalies — producing a structured `dcc_findings` object.
@@ -99,7 +106,9 @@ identical to the in-memory path.
 
 **Contracts.** `dcc_capabilities()` returns a versioned, machine-readable list
 of every Stable, Experimental, and Planned feature, rule type, action type, and
-input format. `dcc_schema()` returns published JSON Schemas for findings, audit
+input format, including extensions, backend, semantics, and limitations.
+`dcc_doctor(formats = "all")` checks installed backend versions and platform
+constraints. `dcc_schema()` returns published JSON Schemas for findings, audit
 logs, dispositions, provenance, rule files, action maps, and manifests, so programmatic and AI callers
 work against a stable contract.
 

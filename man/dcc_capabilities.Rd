@@ -11,7 +11,8 @@ version), \code{package_version} (the installed DCC version),
 \code{features} (a data.frame of \code{name}, \code{status} --
 \code{"Stable"}/\code{"Experimental"}/\code{"Planned"} -- and
 \code{since}), \code{rule_types}, \code{action_types}, \code{formats}
-(a data.frame of \code{format} and its \code{reader}), and
+(a data.frame of \code{format}, \code{status}, \code{extensions},
+\code{backend}, \code{semantics}, and \code{limitations}), and
 \code{unsupported} (operations DCC does not perform).
 }
 \description{

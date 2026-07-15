@@ -67,3 +67,15 @@ test_that("dcc_doctor merges reports and changes nothing", {
   expect_identical(nrow(dcc_validation_errors(rep)), 0L)
   expect_output(print(rep), "no issues")
 })
+
+test_that("dcc_doctor reports registered backend health", {
+  report <- dcc_doctor(formats = c("csv", "xlsx"))
+  expect_s3_class(report, "dcc_validation")
+  expect_identical(nrow(dcc_validation_errors(report)), 0L)
+
+  all_formats <- dcc_doctor(formats = "all")
+  expect_true("FORMAT_LIMITATION" %in% all_formats$code)
+  expect_true(any(all_formats$field == "xlsb"))
+  expect_error(dcc_doctor(formats = "telepathy"),
+               class = "dcc_format_error")
+})

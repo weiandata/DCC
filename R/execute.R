@@ -399,7 +399,6 @@ dcc_export_log <- function(x, path, format = c("parquet", "csv")) {
   format <- match.arg(format)
   log <- dcc_audit_log(x)
   if (format == "parquet") {
-    dcc_require("arrow", "write Parquet audit logs")
     arrow::write_parquet(log, path)
   } else {
     data.table::fwrite(log, path)

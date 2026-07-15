@@ -50,6 +50,19 @@ test_that("dcc_read errors are typed and informative", {
   expect_error(dcc_read(c("a.csv", "b.csv")), class = "dcc_type_error")
 })
 
+test_that("dcc_read uses registry extension inference and legacy Excel alias", {
+  expect_identical(infer_format("survey.xlsx"), "xlsx")
+  expect_identical(infer_format("survey.sav"), "spss")
+  expect_error(infer_format("ambiguous.txt"), class = "dcc_format_error")
+
+  skip_if_not_installed("writexl")
+  workbook <- tempfile(fileext = ".xlsx")
+  writexl::write_xlsx(data.frame(sid = "S1", q1 = 1L), workbook)
+  x <- dcc_read(workbook, format = "excel")
+  expect_identical(x$meta$format, "excel")
+  expect_identical(x$data$q1, 1)
+})
+
 test_that("read provenance records the operation", {
   f <- tempfile(fileext = ".csv")
   write_fixture_csv(f, "UTF-8")

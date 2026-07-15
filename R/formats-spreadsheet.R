@@ -1,13 +1,15 @@
 spreadsheet_structure <- function(options) {
-  sheet <- options$sheet
+  compatibility <- isTRUE(options$.compatibility)
+  sheet <- options$sheet %||% if (compatibility) 1L else NULL
   range <- options$range
   if ((!is.character(sheet) && !is.numeric(sheet)) || length(sheet) != 1L ||
       is.na(sheet)) {
     dcc_abort("Spreadsheet import requires one declared `sheet`.",
               class = "dcc_import_error")
   }
-  if (!is.character(range) || length(range) != 1L || is.na(range) ||
-      !nzchar(range)) {
+  if (!compatibility &&
+      (!is.character(range) || length(range) != 1L || is.na(range) ||
+       !nzchar(range))) {
     dcc_abort("Spreadsheet import requires one declared `range`.",
               class = "dcc_import_error")
   }
@@ -16,6 +18,7 @@ spreadsheet_structure <- function(options) {
 
 spreadsheet_validator <- function(path, spec) {
   issues <- list()
+  compatibility <- isTRUE(spec$options$.compatibility)
   if (!file.exists(path)) {
     issues[[length(issues) + 1L]] <- val_issue(
       "IMPORT_SOURCE_MISSING", "fail", "source",
@@ -23,7 +26,7 @@ spreadsheet_validator <- function(path, spec) {
     )
   }
   sheet <- spec$options$sheet
-  if (((!is.character(sheet) && !is.numeric(sheet)) ||
+  if (!compatibility && ((!is.character(sheet) && !is.numeric(sheet)) ||
        length(sheet) != 1L || is.na(sheet))) {
     issues[[length(issues) + 1L]] <- val_issue(
       "IMPORT_SHEET_REQUIRED", "fail", "sheet",
@@ -31,15 +34,16 @@ spreadsheet_validator <- function(path, spec) {
     )
   }
   range <- spec$options$range
-  if (!is.character(range) || length(range) != 1L || is.na(range) ||
-      !nzchar(range)) {
+  if (!compatibility &&
+      (!is.character(range) || length(range) != 1L || is.na(range) ||
+       !nzchar(range))) {
     issues[[length(issues) + 1L]] <- val_issue(
       "IMPORT_RANGE_REQUIRED", "fail", "range",
       fix = "Declare one exact worksheet range."
     )
   }
   allowed <- c("sheet", "range", "member", "compression",
-               "max_uncompressed_bytes")
+               "max_uncompressed_bytes", ".compatibility")
   unknown <- setdiff(names(spec$options), allowed)
   if (length(unknown)) {
     issues[[length(issues) + 1L]] <- val_issue(
@@ -110,7 +114,8 @@ adapter_readxl <- function(format) {
   new_format_adapter(
     format, format, reader, inspector, spreadsheet_validator,
     "Experimental",
-    list(values = "cell display values as character", sheet = "declared",
+    list(backend = "readxl", minimum_version = "1.5.0",
+         values = "cell display values as character", sheet = "declared",
          range = "declared", formulas = "cached values", cleaning = FALSE,
          declared_structure = TRUE)
   )
@@ -169,7 +174,8 @@ adapter_ods <- function() {
   new_format_adapter(
     "ods", "ods", reader, inspector, spreadsheet_validator,
     "Experimental",
-    list(values = "cell values as character", sheet = "declared",
+    list(backend = "readODS", minimum_version = "2.3.5",
+         values = "cell values as character", sheet = "declared",
          range = "declared", formulas = "stored values", cleaning = FALSE,
          declared_structure = TRUE)
   )
@@ -225,7 +231,8 @@ adapter_xlsb <- function() {
   new_format_adapter(
     "xlsb", "xlsb", reader, inspector, spreadsheet_validator,
     "Experimental",
-    list(values = "limited binary workbook parser", sheet = "declared",
+    list(backend = "openxlsx2", minimum_version = "1.28",
+         values = "limited binary workbook parser", sheet = "declared",
          range = "declared", limitations = limitations, cleaning = FALSE,
          declared_structure = TRUE)
   )

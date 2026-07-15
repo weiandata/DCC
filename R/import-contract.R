@@ -40,7 +40,8 @@ normalize_dictionary <- function(dictionary) {
               paste(missing, collapse = ", "), ".",
               class = "dcc_import_error")
   }
-  dictionary[, name := as.character(name)]
+  data.table::set(dictionary, j = "name",
+                  value = as.character(dictionary$name))
   if (anyNA(dictionary$name) || any(!nzchar(dictionary$name)) ||
       anyDuplicated(dictionary$name)) {
     dcc_abort("`dictionary$name` must contain unique non-empty names.",
@@ -65,7 +66,8 @@ normalize_missing_states <- function(missing_states) {
               paste(missing, collapse = ", "), ".",
               class = "dcc_import_error")
   }
-  missing_states[, state := as.character(state)]
+  data.table::set(missing_states, j = "state",
+                  value = as.character(missing_states$state))
   invalid <- setdiff(unique(missing_states$state), missing_state_levels())
   if (length(invalid)) {
     dcc_abort("Unknown missing state(s): ", paste(invalid, collapse = ", "),

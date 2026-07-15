@@ -58,7 +58,8 @@ adapter_arrow <- function(name) {
   }
   new_format_adapter(
     name, extensions, reader, inspector, validator, "Experimental",
-    list(schema = "preserved", values = "native Arrow scalars",
+    list(backend = "arrow", minimum_version = NA_character_,
+         schema = "preserved", values = "native Arrow scalars",
          nested_values = "rejected", cleaning = FALSE,
          declared_structure = TRUE)
   )

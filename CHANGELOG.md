@@ -11,6 +11,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Capability contract 1.2, finding codes and detector identity, terminal
   dispositions, complete stage provenance, and disposition/provenance schemas.
+- A canonical import contract with variable dictionaries, cell-level missing
+  states, strict type conversion, source/import-spec hashes, and public
+  `dcc_import()`, `dcc_dictionary()`, and `dcc_missing_states()` interfaces.
+- One adapter registry for text, structured text, spreadsheets, statistical
+  files, columnar files, RDS, and bounded compressed sources; capabilities and
+  backend health diagnostics use this registry as their source of truth.
 
 ### Fixed
 
