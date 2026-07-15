@@ -304,7 +304,7 @@ dcc_validate_plan <- function(x) {
     add("PLAN_RULE_SEVERITY", "fail", "rules.severity", bad,
         fix = "Use `info`, `warn`, or `fail`.")
   }
-  needs_variable <- rules$type %in% c("range", "set", "expr")
+  needs_variable <- rules$type %in% c("range", "set")
   bad <- which(needs_variable &
                  (!as.character(rules$variable) %in% declared))
   if (length(bad)) {

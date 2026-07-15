@@ -30,6 +30,15 @@ test_that("plan validation checks enumerations and cross-sheet references", {
                   validation$code))
 })
 
+test_that("expression rules do not require a separate variable", {
+  p <- plan_fixture()
+  p$rules$type <- "expr"
+  p$rules$variable <- ""
+  p$rules$parameters <- '{"expr":"score > 100"}'
+  validation <- dcc_validate_plan(p)
+  expect_false("PLAN_RULE_VARIABLE" %in% validation$code)
+})
+
 test_that("plan schema is published and exact", {
   path <- dcc_schema("plan", as = "path")
   expect_true(file.exists(path))
