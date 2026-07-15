@@ -26,6 +26,9 @@ dcc_schema("manifest")      # JSON Schema for a reproducibility manifest
 dcc_schema("disposition")   # terminal state for every finding
 dcc_schema("provenance")    # stage boundaries, outcome, hashes, counts
 dcc_schema("plan")          # strict Excel/JSON project contract
+dcc_schema("report-model")  # normalized source shared by all renderers
+dcc_schema("summary")       # bounded machine summary
+dcc_schema("artifact_manifest")
 ```
 
 ## The safe flow
@@ -60,7 +63,10 @@ Execution and audit: `dcc_execute()`, `dcc_audit_log()`, `dcc_cleaned()`,
 Scoring and mapping: `dcc_score()`, `dcc_map_forms()`, `dcc_item_map()`,
 `dcc_mapping_findings()`.
 
-Reporting and reproduction: `dcc_report()`, `dcc_manifest()`, `dcc_rerun()`.
+Reporting and reproduction: `dcc_report_model()`, `dcc_report_staff()`,
+`dcc_report_statistical()`, `dcc_report_machine()`, `dcc_result_summary()`,
+`dcc_validate_json()`, `dcc_validate_jsonl()`, `dcc_report()`,
+`dcc_manifest()`, `dcc_rerun()`.
 
 Contracts: `dcc_capabilities()`, `dcc_schema()`.
 
@@ -78,6 +84,24 @@ Excel validation reports workbook coordinates; JSON validation reports a JSON
 Pointer in `field`. Never add unknown fields or silently repair a rejected
 strict plan. Use `dcc_check()` and preview before any explicitly authorized
 execute call.
+
+## Machine report contract
+
+For unattended processing, prefer `dcc_run()` with
+`include_machine_report = TRUE` in the strict plan, then read only the
+published `machine/` directory. Validate `run.json`, `validation.json`,
+`summary.json`, `provenance.json`, and `manifest.json` with
+`dcc_validate_json()`; validate each JSONL artifact with
+`dcc_validate_jsonl()`. Treat paths as deterministic relative paths and action
+codes in `next_actions` as codes, not prose. `summary.json` contains the same
+run ID, totals, and cleaned/audit hashes used by the staff and statistical
+reports. The machine bundle is complete and may contain sensitive row-level
+data; do not expose it as a staff report.
+
+Use `dcc_result_summary(result, "compact")` for a bounded in-memory response:
+it contains at most 20 deterministically ordered findings and excludes raw
+evidence. Request `"full"` only when the caller is authorized for complete
+reconciliation and provenance.
 
 ## A complete rule set and action map
 

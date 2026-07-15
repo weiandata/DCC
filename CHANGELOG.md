@@ -21,6 +21,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   template, cell-addressed validation, safe staff preflight, plan-based
   one-command runs, bilingual help, and synthetic examples for staff,
   statistical programmers, and AI agents.
+- A normalized, validated report model with three renderers: a bilingual
+  redacted staff workbook/HTML/text bundle, a complete statistical bundle with
+  SHA-256 artifact manifest, and deterministic machine JSON/JSONL with
+  versioned schemas and bounded AI summaries.
+- Atomic audience-report publication with selected/skipped/failed lifecycle
+  states and common run IDs, totals, reconciliation, and hashes.
 
 ### Fixed
 

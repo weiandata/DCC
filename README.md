@@ -15,7 +15,8 @@ run can be reproduced from a manifest.
 
 It is built for survey and educational-assessment data: multi-format and
 multi-encoding input, response-quality detectors, answer-key scoring, multi-form
-item-bank alignment, and self-contained HTML reports.
+item-bank alignment, and one normalized report model rendered for survey staff,
+statistical programmers, and AI agents.
 
 ## Installation
 
@@ -40,7 +41,7 @@ library(DCC)
 dcc_template("DCC-cleaning-plan.xlsx")
 dcc_check("responses.csv", "DCC-cleaning-plan.xlsx", "dcc-check")
 dcc_run("responses.csv", plan = "DCC-cleaning-plan.xlsx",
-        output_dir = "dcc-preview")                 # safe default
+        output_dir = "dcc-preview")                 # safe preview default
 dcc_help("PLAN_COLUMN_TYPE")                        # plain-language fix
 ```
 
@@ -85,7 +86,12 @@ dcc_cleaned(res)      # the corrected data
 dcc_audit_log(res)    # one row per change, with old/new value and rule
 
 # 3. Report, trace, reproduce
-dcc_report(res, tempfile(fileext = ".html"))  # dual-layer HTML report
+model <- dcc_report_model(res)
+dcc_report_staff(model, file.path(tempdir(), "staff"))
+dcc_report_statistical(model, file.path(tempdir(), "statistical"),
+                       table_format = "csv")
+dcc_report_machine(model, file.path(tempdir(), "machine"))
+dcc_report(res, tempfile(fileext = ".html"))  # compatible legacy report
 dcc_trace(res, "S2", "score")                 # full history of one cell
 dcc_rerun(dcc_manifest(res))$reproduced       # TRUE: byte-identical rerun
 ```
@@ -117,11 +123,16 @@ every change is written to a cell-level audit log that carries the exact
 timestamp, and rule/key hashes. `dcc_score()` and `dcc_map_forms()` handle
 answer-key scoring and multi-form item-bank alignment.
 
-**Report.** `dcc_report()` produces a self-contained, dependency-free HTML
-report with a management summary and an audit layer that reconciles findings
-against changes on the exact `finding_id`, assigning each finding one terminal
-status and verifies it against the audit log. `dcc_trace()` gives cell-level lineage; `dcc_manifest()` / `dcc_rerun()`
-provide one-command, hash-verified reproduction.
+**Report.** `dcc_report_model()` creates the single validated source of truth
+for a run. `dcc_report_staff()` writes a bilingual, redacted-by-default Excel,
+HTML, and text result; `dcc_report_statistical()` writes complete analytical
+tables, methods, provenance, and artifact hashes; `dcc_report_machine()` writes
+versioned JSON/JSONL plus its schemas. `dcc_run()` can publish all three
+atomically under `staff/`, `statistical/`, and `machine/`. They share one run
+ID, counts, reconciliation, and hashes. PDF is optional and is not part of the
+base output contract. The original `dcc_report()` remains available for
+compatibility. `dcc_trace()` gives cell-level lineage; `dcc_manifest()` /
+`dcc_rerun()` provide one-command, hash-verified reproduction.
 
 **Scale.** Core work runs on `data.table` for million-row in-memory workloads.
 `dcc_detect_chunked()` streams larger-than-memory files with an adaptive backend
@@ -143,6 +154,7 @@ manifests, so programmatic and AI callers work against a stable contract.
   general-purpose AI callers
 - [Strict Excel quick start (中文)](docs/quick-start-zh-CN.md) /
   [English](docs/quick-start-en.md)
+- [Reports for three audiences](docs/guides/reports-for-three-audiences.md)
 - [Remediation engineering plan](ENGINEERING_PLAN.md) — approved baseline for
   subsequent development and release acceptance
 - [Design document](docs/design.md)

@@ -18,6 +18,12 @@ the protected bilingual workbook and JSON share one versioned contract;
 validation reports Excel cells or JSON Pointers; `dcc_check()` is non-mutating;
 and `dcc_run(plan =)` remains preview-first and reuses the existing engine.
 
+Implementation note (2026-07-15): Phase 4 normalized reporting is implemented:
+one validated immutable model drives a redacted bilingual staff bundle, a
+complete reproducible statistical bundle, and a versioned JSON/JSONL machine
+bundle. Selected renderers publish atomically with visible partial-failure
+evidence. PDF remains optional and outside the base output contract.
+
 Purpose: Guide all subsequent DCC remediation, development, review, and release
 work until the acceptance gates in this plan are met.
 
@@ -52,7 +58,7 @@ trial to a trustworthy, accessible product with these properties:
 - CSV/TSV, Excel, SPSS, Stata, SAS, JSON, Parquet, and Feather input.
 - Chunked detection.
 - Scoring and multi-form mapping.
-- Management and audit reports.
+- Staff, statistical, and machine reports from one normalized model.
 - A simplified workflow for survey staff.
 - Machine-readable contracts for AI systems.
 - Essential Chinese and English documentation.

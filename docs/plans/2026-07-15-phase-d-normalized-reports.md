@@ -12,8 +12,15 @@ versioned, immutable model. Three renderers consume only that model: a concise
 staff workbook/HTML report, a reproducible statistical bundle, and a stable
 JSON/JSONL machine contract. Renderers never recompute cleaning statistics.
 
-**Tech Stack:** R >= 4.1, data.table, jsonlite, jsonvalidate, openxlsx2,
-base R HTML generation, Arrow for Parquet, testthat.
+**Tech Stack:** R >= 4.1, data.table, jsonlite, internal structural and semantic
+schema validation, openxlsx2, base R HTML generation, Arrow for Parquet,
+testthat.
+
+**Completed:** 2026-07-15 on `codex/dcc-phase-d`. The implementation avoids an
+additional `jsonvalidate` dependency, validates the supported Schema subset
+internally, and passed the Phase D artifact audit plus the package quality gate
+with 776 passing test expectations, 0 failures, 0 warnings, and the expected
+development-version NOTE from `R CMD check --as-cran`.
 
 ## Global Constraints
 
@@ -43,7 +50,7 @@ base R HTML generation, Arrow for Parquet, testthat.
 - Produces: `dcc_validate_report_model(x)` and
   `dcc_schema("report-model")`.
 
-- [ ] **Step 1: Write report-model contract tests**
+- [x] **Step 1: Write report-model contract tests**
 
 ```r
 test_that("report model has stable sections and reconciled counts", {
@@ -70,11 +77,11 @@ test_that("report model rejects inconsistent totals", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="report-model", reporter="summary")'`
 
-- [ ] **Step 3: Implement a pure model constructor**
+- [x] **Step 3: Implement a pure model constructor**
 
 ```r
 dcc_report_model <- function(result, run = NULL) {
@@ -111,15 +118,15 @@ dcc_report_model <- function(result, run = NULL) {
 The helpers copy existing run/result values and may aggregate only once here.
 They must not mutate `result` or read a renderer-specific option.
 
-- [ ] **Step 4: Add schema and semantic reconciliation validation**
+- [x] **Step 4: Add schema and semantic reconciliation validation**
 
 Validate types and required fields with JSON Schema, then check row balance,
 finding totals, action totals, hash shape, unique finding identifiers, and
 non-negative timings in R. Emit stable codes rather than prose-only failures.
 
-- [ ] **Step 5: Document and export the interface**
+- [x] **Step 5: Document and export the interface**
 
-- [ ] **Step 6: Confirm green and commit**
+- [x] **Step 6: Confirm green and commit**
 
 Run: `Rscript -e 'devtools::test(filter="report-model", reporter="summary")'`
 
@@ -140,7 +147,7 @@ Commit: `git commit -m "feat: add normalized report model"`
 - Produces: `dcc_report_staff(model, output_dir, formats = c("xlsx", "html"),
   language = c("zh-CN", "en"), include_examples = FALSE)`.
 
-- [ ] **Step 1: Write renderer tests**
+- [x] **Step 1: Write renderer tests**
 
 ```r
 test_that("staff reports preserve normalized totals", {
@@ -164,11 +171,11 @@ test_that("staff report redacts examples by default", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="report-staff", reporter="summary")'`
 
-- [ ] **Step 3: Implement the workbook renderer**
+- [x] **Step 3: Implement the workbook renderer**
 
 Create exact sheets `运行概览`, `导入检查`, `阻断错误`, `问题汇总`,
 `需要复核`, `已应用更改`, `排除记录`, and `输出文件说明`. Freeze headers,
@@ -177,18 +184,18 @@ columns, and show human-readable Chinese/English labels. Write a concise,
 localized `run-summary.txt` beside the workbook and HTML report.
 Use Excel row limits as hard preflight errors; never write a truncated sheet.
 
-- [ ] **Step 4: Implement dependency-free HTML generation**
+- [x] **Step 4: Implement dependency-free HTML generation**
 
 Use escaped strings and the packaged CSS; do not introduce an HTML templating
 dependency. Embed only compact summaries and link to full tabular artifacts.
 
-- [ ] **Step 5: Implement redaction and disclosure controls**
+- [x] **Step 5: Implement redaction and disclosure controls**
 
 Default to counts and row identifiers with masked examples. Require
 `include_examples = TRUE` for raw examples and record this choice in the
 report metadata.
 
-- [ ] **Step 6: Confirm green and commit**
+- [x] **Step 6: Confirm green and commit**
 
 Run: `Rscript -e 'devtools::test(filter="report-staff", reporter="summary")'`
 
@@ -209,7 +216,7 @@ Commit: `git commit -m "feat: add staff report renderer"`
 - Produces: `dcc_report_statistical(model, output_dir,
   table_format = c("parquet", "csv"), html = TRUE)`.
 
-- [ ] **Step 1: Write completeness and reproducibility tests**
+- [x] **Step 1: Write completeness and reproducibility tests**
 
 ```r
 test_that("statistical bundle contains full tables and metadata", {
@@ -224,11 +231,11 @@ test_that("statistical bundle contains full tables and metadata", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="report-statistical", reporter="summary")'`
 
-- [ ] **Step 3: Write complete analytical tables**
+- [x] **Step 3: Write complete analytical tables**
 
 Export findings, audit log, reconciliation, provenance, before/after
 missingness, distributions, types, scoring, mapping, and parameter tables
@@ -236,18 +243,18 @@ without sampling. CSV output must use UTF-8 and RFC 4180-compatible quoting.
 Parquet output must preserve canonical types and metadata supported by the
 adapter.
 
-- [ ] **Step 4: Write the statistical HTML narrative**
+- [x] **Step 4: Write the statistical HTML narrative**
 
 Include methods, denominators, missing-value semantics, applied rules, before
 and after reconciliation, uncertainty/caveats, timings, hashes, and package/R
 versions. Link each summary claim to a full table.
 
-- [ ] **Step 5: Record artifact hashes**
+- [x] **Step 5: Record artifact hashes**
 
 After files close, compute SHA-256 for each artifact and write
 `artifact-manifest.json`. Do not include the manifest's own hash in itself.
 
-- [ ] **Step 6: Confirm green and commit**
+- [x] **Step 6: Confirm green and commit**
 
 Run: `Rscript -e 'devtools::test(filter="report-statistical", reporter="summary")'`
 
@@ -276,7 +283,7 @@ Commit: `git commit -m "feat: add statistical report bundle"`
 - Produces: `dcc_report_machine(model, output_dir)`.
 - Produces: `dcc_result_summary(result, detail = c("compact", "full"))`.
 
-- [ ] **Step 1: Write schema and determinism tests**
+- [x] **Step 1: Write schema and determinism tests**
 
 ```r
 test_that("machine bundle validates and has deterministic names", {
@@ -299,23 +306,23 @@ test_that("compact AI summary is bounded and action oriented", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="report-machine", reporter="summary")'`
 
-- [ ] **Step 3: Implement stable JSON and JSONL serialization**
+- [x] **Step 3: Implement stable JSON and JSONL serialization**
 
 Use UTF-8, ISO 8601 UTC timestamps, explicit `null`, stable snake_case fields,
 and one complete object per JSONL line. Large integers and missing-state
 semantics must follow Phase B's canonical contract.
 
-- [ ] **Step 4: Implement bounded AI summaries**
+- [x] **Step 4: Implement bounded AI summaries**
 
 Return structured R objects, not prose blobs. Sort findings deterministically
 by severity, detector ID, variable, and row identifier; include artifact paths
 and machine-action codes.
 
-- [ ] **Step 5: Confirm green and commit**
+- [x] **Step 5: Confirm green and commit**
 
 Run: `Rscript -e 'devtools::test(filter="report-machine", reporter="summary")'`
 
@@ -334,7 +341,7 @@ Commit: `git commit -m "feat: add machine report contract"`
 - Modify: `man/dcc_run.Rd`
 - Modify: `NEWS.md`
 
-- [ ] **Step 1: Write integration and failure-isolation tests**
+- [x] **Step 1: Write integration and failure-isolation tests**
 
 ```r
 test_that("one run publishes selected audience reports atomically", {
@@ -361,24 +368,24 @@ test_that("renderer failure leaves cleaning evidence and failed manifest", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="report-integration", reporter="summary")'`
 
-- [ ] **Step 3: Add explicit report lifecycle states**
+- [x] **Step 3: Add explicit report lifecycle states**
 
 Use `pending`, `writing`, `success`, `partial_failure`, `failed`, and `skipped`;
 publish report files through a staging directory. A required renderer failure
 yields `partial_failure` or `failed` according to plan policy and is never
 reported as full success.
 
-- [ ] **Step 4: Preserve the existing report API**
+- [x] **Step 4: Preserve the existing report API**
 
 Keep `dcc_report()` as a documented compatibility dispatcher and deprecate only
 ambiguous arguments with lifecycle warnings. Do not remove an exported call in
 this phase.
 
-- [ ] **Step 5: Confirm green and commit**
+- [x] **Step 5: Confirm green and commit**
 
 Run: `Rscript -e 'devtools::test(filter="report", reporter="summary")'`
 
@@ -393,12 +400,12 @@ Commit: `git commit -m "feat: publish audience reports atomically"`
 - Modify: `NEWS.md`
 - Create: `docs/guides/reports-for-three-audiences.md`
 
-- [ ] **Step 1: Document one run rendered three ways**
+- [x] **Step 1: Document one run rendered three ways**
 
 Show the same run ID, totals, and hashes in the staff, statistical, and machine
 artifacts. State clearly that PDF is optional and not part of the base contract.
 
-- [ ] **Step 2: Run focused and full checks**
+- [x] **Step 2: Run focused and full checks**
 
 ```sh
 Rscript -e 'devtools::test(filter="report", reporter="summary")'
@@ -406,13 +413,13 @@ Rscript -e 'devtools::test(reporter="summary")'
 Rscript -e 'devtools::check(document = FALSE, error_on = "warning")'
 ```
 
-- [ ] **Step 3: Inspect generated reports**
+- [x] **Step 3: Inspect generated reports**
 
 Generate a multilingual fixture bundle, open the workbook with two independent
 readers, validate every JSON file, compare all audience totals to the normalized
 model, and confirm no sensitive examples appear under defaults.
 
-- [ ] **Step 4: Record completion**
+- [x] **Step 4: Record completion**
 
 Commit: `git commit -m "docs: complete normalized reporting phase"`
 
