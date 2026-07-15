@@ -3,14 +3,16 @@
 \alias{dcc_run}
 \title{Run a cleaning workflow with one command}
 \usage{
-dcc_run(data, config, output_dir,
-  mode = c("preview", "execute", "verify", "rerun"), id_var = NULL)
+dcc_run(data, config = NULL, output_dir = "dcc-results",
+  mode = c("preview", "execute", "verify", "rerun"), id_var = NULL,
+  plan = NULL)
 }
 \arguments{
 \item{data}{A data file path, a \code{dcc_data}, or a data.frame (or a
 manifest path in \code{"rerun"} mode).}
 
-\item{config}{A \code{dcc_config} from \code{\link{dcc_config}}.}
+\item{config}{Optional \code{dcc_config} from \code{\link{dcc_config}}.
+Supply this or \code{plan}, not both.}
 
 \item{output_dir}{Directory for the fixed output layout (created if
 needed).}
@@ -19,6 +21,9 @@ needed).}
 \code{"verify"}, \code{"rerun"}.}
 
 \item{id_var}{Record-id column; defaults to the config's \code{id_var}.}
+
+\item{plan}{Optional strict \code{.xlsx}/\code{.json} plan path or
+\code{dcc_plan}.}
 }
 \value{
 A \code{dcc_run} object with the mode, config, and written file paths
@@ -26,7 +31,7 @@ A \code{dcc_run} object with the mode, config, and written file paths
 }
 \description{
 The survey-staff entry point: orchestrates the Detect -> Execute ->
-Report pipeline from a \code{\link{dcc_config}} and writes a fixed
+Report pipeline from a \code{\link{dcc_config}} or strict plan and writes a fixed
 output layout. Preview is the default, so the safe path requires no
 extra care, and the raw input file is never modified in any mode. Files are
 written to a same-parent staging directory and published atomically. Existing

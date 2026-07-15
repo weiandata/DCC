@@ -134,3 +134,47 @@ test_that("config validation distinguishes legacy aliases from unknown IDs", {
     "warn"
   )
 })
+
+test_that("strict plan and compiled professional calls share results", {
+  data <- write_run_csv()
+  plan_path <- write_plan_workbook(plan_fixture(data))
+  plan <- dcc_read_plan(plan_path)
+  imported <- dcc_import(data, plan_import_spec(plan, data))
+  config <- plan_config(plan)
+
+  from_plan <- dcc_run(data, plan = plan_path,
+                       output_dir = tempfile("dcc-plan"))
+  professional <- dcc_run(imported, config, tempfile("dcc-config"))
+
+  a <- as.data.frame(from_plan$result$findings)
+  b <- as.data.frame(professional$result$findings)
+  attr(a, "dcc_data") <- NULL
+  attr(b, "dcc_data") <- NULL
+  expect_identical(a, b)
+  expect_identical(from_plan$mode, "preview")
+  expect_s3_class(from_plan$plan, "dcc_plan")
+  expect_false(any(grepl("cleaned-data", from_plan$files, fixed = TRUE)))
+})
+
+test_that("config and plan cannot both be supplied", {
+  data <- write_run_csv()
+  plan <- write_plan_workbook(plan_fixture(data))
+  out <- tempfile("dcc-both")
+  expect_error(
+    dcc_run(data, config = run_config(), plan = plan, output_dir = out),
+    class = "dcc_run_error"
+  )
+  expect_false(file.exists(out))
+})
+
+test_that("dcc_run requires one config source and plan mode is not rerun", {
+  data <- write_run_csv()
+  expect_error(dcc_run(data, output_dir = tempfile("dcc-none")),
+               class = "dcc_run_error")
+  plan <- write_plan_workbook(plan_fixture(data))
+  expect_error(
+    dcc_run(data, plan = plan, output_dir = tempfile("dcc-rerun-plan"),
+            mode = "rerun"),
+    class = "dcc_run_error"
+  )
+})

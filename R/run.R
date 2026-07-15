@@ -136,7 +136,8 @@ legacy_action_aliases <- function(rules) {
 #' Run a cleaning workflow with one command
 #'
 #' The survey-staff entry point: orchestrates the Detect -> Execute ->
-#' Report pipeline from a [dcc_config()] and writes a fixed output
+#' Report pipeline from a [dcc_config()] or strict [dcc_read_plan()] input and
+#' writes a fixed output
 #' layout. Preview is the default, so the safe path requires no extra
 #' care, and the raw input file is never modified in any mode.
 #'
@@ -157,13 +158,14 @@ legacy_action_aliases <- function(rules) {
 #'
 #' @param data A data file path, a `dcc_data`, or a data.frame (or a
 #'   manifest path in `"rerun"` mode).
-#' @param config A `dcc_config` from [dcc_config()] /
-#'   `dcc_read_config()`.
+#' @param config Optional `dcc_config` from [dcc_config()] /
+#'   `dcc_read_config()`. Supply this or `plan`, not both.
 #' @param output_dir Directory for the fixed output layout (created if
 #'   needed).
 #' @param mode One of `"preview"` (default), `"execute"`, `"verify"`,
 #'   `"rerun"`.
 #' @param id_var Record-id column; defaults to the config's `id_var`.
+#' @param plan Optional strict `.xlsx`/`.json` plan path or `dcc_plan`.
 #' @return A `dcc_run` object with the mode, config, and written file
 #'   paths (via [dcc_run_files()]).
 #' @examples
@@ -179,14 +181,13 @@ legacy_action_aliases <- function(rules) {
 #'   dcc_run_files(run)
 #' }
 #' @export
-dcc_run <- function(data, config, output_dir,
+dcc_run <- function(data, config = NULL, output_dir = "dcc-results",
                     mode = c("preview", "execute", "verify", "rerun"),
-                    id_var = NULL) {
+                    id_var = NULL, plan = NULL) {
   mode <- match.arg(mode)
-  if (!inherits(config, "dcc_config")) {
-    dcc_abort("`config` must be a dcc_config from dcc_config() or ",
-              "dcc_read_config().", class = "dcc_type_error")
-  }
+  resolved <- resolve_run_inputs(data, config, plan, mode)
+  data <- resolved$data
+  config <- resolved$config
   id_var <- id_var %||% config$id_var
   run_id <- new_run_id()
   staging <- new_run_staging(output_dir, run_id)
@@ -218,6 +219,7 @@ dcc_run <- function(data, config, output_dir,
   run$files <- published_paths(run$files, staging, target)
   run$run_dir <- target
   run$status <- status
+  run$plan <- resolved$plan
   run
 }
 
