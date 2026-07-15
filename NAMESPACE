@@ -48,6 +48,7 @@ export(dcc_dictionary)
 export(dcc_missing_states)
 export(dcc_import)
 export(dcc_validate_plan)
+export(dcc_template)
 
 S3method(print, dcc_data)
 S3method(print, dcc_validation)
