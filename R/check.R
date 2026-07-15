@@ -5,6 +5,54 @@ flatten_validation <- function(x) {
   out
 }
 
+workbook_column_width <- function(x, name) {
+  values <- c(name, as.character(utils::head(x, 200L)))
+  width <- suppressWarnings(max(nchar(values, type = "width"), na.rm = TRUE))
+  min(50, max(12, width + 2))
+}
+
+write_tabular_workbook <- function(tables, path) {
+  wb <- openxlsx2::wb_workbook(
+    creator = "DCC", title = "DCC diagnostics",
+    company = "WEIAN DATA TECH (Beijing) Co., Ltd."
+  )
+  wb <- openxlsx2::wb_set_base_font(wb, font_size = 10, font_name = "Aptos")
+  for (sheet in names(tables)) {
+    table <- as.data.frame(tables[[sheet]], stringsAsFactors = FALSE)
+    wb <- openxlsx2::wb_add_worksheet(wb, sheet, grid_lines = FALSE, zoom = 90)
+    if (nrow(table)) {
+      wb <- openxlsx2::wb_add_data(wb, sheet, table, with_filter = TRUE)
+    } else {
+      wb <- openxlsx2::wb_add_data(wb, sheet, as.list(names(table)),
+                                  col_names = FALSE)
+    }
+    last_col <- openxlsx2::int2col(ncol(table))
+    header <- paste0("A1:", last_col, "1")
+    wb <- openxlsx2::wb_add_fill(
+      wb, sheet, header, color = openxlsx2::wb_color(hex = "FF1F4E78")
+    )
+    wb <- openxlsx2::wb_add_font(
+      wb, sheet, header, color = openxlsx2::wb_color(hex = "FFFFFFFF"),
+      bold = TRUE
+    )
+    wb <- openxlsx2::wb_add_cell_style(
+      wb, sheet, header, vertical = "center", wrap_text = TRUE
+    )
+    wb <- openxlsx2::wb_set_row_heights(wb, sheet, 1, 24)
+    wb <- openxlsx2::wb_freeze_pane(wb, sheet, first_active_row = 2)
+    wb <- openxlsx2::wb_set_sheetview(wb, sheet, show_grid_lines = FALSE,
+                                      zoom_scale = 90)
+    for (j in seq_along(table)) {
+      wb <- openxlsx2::wb_set_col_widths(
+        wb, sheet, cols = j,
+        widths = workbook_column_width(table[[j]], names(table)[j])
+      )
+    }
+  }
+  openxlsx2::wb_save(wb, path, overwrite = FALSE)
+  invisible(path)
+}
+
 write_check_validation <- function(validation, path) {
   issues <- flatten_validation(validation)
   summary <- data.frame(
@@ -13,22 +61,27 @@ write_check_validation <- function(validation, path) {
               sum(validation$severity == "warn"), nrow(validation)),
     stringsAsFactors = FALSE
   )
-  writexl::write_xlsx(list(summary = summary, issues = issues), path)
+  write_tabular_workbook(list(summary = summary, issues = issues), path)
 }
 
 check_report_labels <- function(language) {
   if (language == "zh-CN") {
-    list(title = "DCC 数据检查报告 / Data check report",
-         status = "检查状态 / Status", issues = "问题 / Issues",
-         findings = "预览发现 / Preview findings",
-         safe = "原始数据未修改；本次检查未执行任何清洗动作。",
-         none = "无 / None")
+    list(title = "DCC \u6570\u636e\u68c0\u67e5\u62a5\u544a / Data check report",
+         status = "\u68c0\u67e5\u72b6\u6001 / Status",
+         issues = "\u95ee\u9898 / Issues",
+         findings = "\u9884\u89c8\u53d1\u73b0 / Preview findings",
+         safe = paste0("\u539f\u59cb\u6570\u636e\u672a\u4fee\u6539\uff1b",
+                       "\u672c\u6b21\u68c0\u67e5\u672a\u6267\u884c",
+                       "\u4efb\u4f55\u6e05\u6d17\u52a8\u4f5c\u3002"),
+         none = "\u65e0 / None")
   } else {
-    list(title = "DCC Data Check Report / 数据检查报告",
-         status = "Status / 检查状态", issues = "Issues / 问题",
-         findings = "Preview findings / 预览发现",
+    list(title = paste0("DCC Data Check Report / ",
+                        "\u6570\u636e\u68c0\u67e5\u62a5\u544a"),
+         status = "Status / \u68c0\u67e5\u72b6\u6001",
+         issues = "Issues / \u95ee\u9898",
+         findings = "Preview findings / \u9884\u89c8\u53d1\u73b0",
          safe = "Raw data was not changed; no cleaning action was executed.",
-         none = "None / 无")
+         none = "None / \u65e0")
   }
 }
 
@@ -175,14 +228,23 @@ dcc_check <- function(data, plan, output_dir = "dcc-check") {
   files <- validation_path
   if (status == "ready") {
     findings_path <- file.path(staging, "preview-findings.xlsx")
-    writexl::write_xlsx(as.data.frame(findings), findings_path)
+    staff_findings <- as.data.frame(findings)
+    preferred <- c("record_id", "variable", "check_id", "code", "severity",
+                   "evidence", "dimension", "detector_id", "finding_id")
+    staff_findings <- staff_findings[
+      , c(intersect(preferred, names(staff_findings)),
+          setdiff(names(staff_findings), preferred)), drop = FALSE
+    ]
+    write_tabular_workbook(
+      list(findings = staff_findings), findings_path
+    )
     files <- c(files, findings_path)
   }
   report_path <- file.path(staging, "staff-report.html")
   write_staff_check_report(plan, validation, findings, status, report_path)
   summary_path <- file.path(staging, "run-summary.txt")
   writeLines(c(
-    "DCC check summary / DCC 检查摘要",
+    "DCC check summary / DCC \u68c0\u67e5\u6458\u8981",
     paste0("status: ", status),
     paste0("blocking_issues: ", sum(validation$severity == "fail")),
     paste0("findings: ", nrow(findings)),
@@ -208,4 +270,3 @@ print.dcc_check_result <- function(x, ...) {
               x$status, nrow(x$validation), nrow(x$findings)))
   invisible(x)
 }
-

@@ -8,7 +8,7 @@ dcc_schema(name, as = c("object", "path"))
 \arguments{
 \item{name}{One of \code{"finding"}, \code{"disposition"},
 \code{"provenance"}, \code{"audit_log"}, \code{"rules"},
-\code{"actions"}, or \code{"manifest"}.}
+\code{"actions"}, \code{"manifest"}, or \code{"plan"}.}
 
 \item{as}{\code{"object"} (default) returns the parsed schema (requires
 the \code{jsonlite} package); \code{"path"} returns the installed file
@@ -21,8 +21,8 @@ The parsed schema (a list) or the schema file path.
 Returns the formal JSON Schema (draft-07) for one of DCC's public
 objects. The schemas are versioned artifacts installed with the package
 under \code{inst/schemas/}, so AI systems and external validators can
-check a rule file, action map, findings table, disposition, provenance,
-audit log, or manifest
+check a strict plan, rule file, action map, findings table, disposition,
+provenance, audit log, or manifest
 against a stable contract.
 }
 \examples{

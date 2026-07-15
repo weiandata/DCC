@@ -5,15 +5,28 @@ plan_sheet_contracts <- function() {
 
 plan_sheet_instructions <- function(language = "zh-CN") {
   zh <- list(
-    project = c("固定项目字段（不要修改列名）", "在黄色单元格填写"),
-    source = c("固定数据源字段（不要修改列名）", "在黄色单元格填写；不适用可留空"),
-    columns = c("原始列名", "标准列名", "数据类型", "用途", "是否必需 TRUE/FALSE", "中英文标签"),
-    values = c("标准列名", "原始取值", "取值标签"),
-    missing = c("标准列名", "原始缺失码", "缺失状态"),
-    multiselect = c("题目名", "布局", "原始列或字段", "选项值", "分隔符"),
-    rules = c("规则编号", "规则类型", "标准列名", "JSON 参数", "严重程度"),
-    actions = c("规则编号", "处理动作", "JSON 参数；无参数填 {}"),
-    outputs = c("固定输出设置", "设置值")
+    project = c("\u56fa\u5b9a\u9879\u76ee\u5b57\u6bb5\uff08\u4e0d\u8981\u4fee\u6539\u5217\u540d\uff09",
+                "\u5728\u9ec4\u8272\u5355\u5143\u683c\u586b\u5199"),
+    source = c("\u56fa\u5b9a\u6570\u636e\u6e90\u5b57\u6bb5\uff08\u4e0d\u8981\u4fee\u6539\u5217\u540d\uff09",
+               "\u5728\u9ec4\u8272\u5355\u5143\u683c\u586b\u5199\uff1b\u4e0d\u9002\u7528\u53ef\u7559\u7a7a"),
+    columns = c("\u539f\u59cb\u5217\u540d", "\u6807\u51c6\u5217\u540d",
+                "\u6570\u636e\u7c7b\u578b", "\u7528\u9014",
+                "\u662f\u5426\u5fc5\u9700 TRUE/FALSE",
+                "\u4e2d\u82f1\u6587\u6807\u7b7e"),
+    values = c("\u6807\u51c6\u5217\u540d", "\u539f\u59cb\u53d6\u503c",
+               "\u53d6\u503c\u6807\u7b7e"),
+    missing = c("\u6807\u51c6\u5217\u540d", "\u539f\u59cb\u7f3a\u5931\u7801",
+                "\u7f3a\u5931\u72b6\u6001"),
+    multiselect = c("\u9898\u76ee\u540d", "\u5e03\u5c40",
+                    "\u539f\u59cb\u5217\u6216\u5b57\u6bb5",
+                    "\u9009\u9879\u503c", "\u5206\u9694\u7b26"),
+    rules = c("\u89c4\u5219\u7f16\u53f7", "\u89c4\u5219\u7c7b\u578b",
+              "\u6807\u51c6\u5217\u540d", "JSON \u53c2\u6570",
+              "\u4e25\u91cd\u7a0b\u5ea6"),
+    actions = c("\u89c4\u5219\u7f16\u53f7", "\u5904\u7406\u52a8\u4f5c",
+                "JSON \u53c2\u6570\uff1b\u65e0\u53c2\u6570\u586b {}"),
+    outputs = c("\u56fa\u5b9a\u8f93\u51fa\u8bbe\u7f6e",
+                "\u8bbe\u7f6e\u503c")
   )
   en <- list(
     project = c("Fixed project field (do not rename)", "Enter values in yellow cells"),
@@ -56,8 +69,11 @@ inline_validation <- function(values) {
 }
 
 add_template_validation <- function(wb, sheet, dims, values, language) {
-  title <- if (language == "zh-CN") "请选择有效值 / Choose a value" else
-    "Choose a valid value / 请选择有效值"
+  title <- if (language == "zh-CN") {
+    "\u8bf7\u9009\u62e9\u6709\u6548\u503c / Choose a value"
+  } else {
+    "Choose a valid value / \u8bf7\u9009\u62e9\u6709\u6548\u503c"
+  }
   message <- paste(values, collapse = ", ")
   openxlsx2::wb_add_data_validation(
     wb, sheet = sheet, dims = dims, type = "list",

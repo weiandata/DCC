@@ -51,6 +51,7 @@ export(dcc_validate_plan)
 export(dcc_template)
 export(dcc_read_plan)
 export(dcc_check)
+export(dcc_help)
 
 S3method(print, dcc_data)
 S3method(print, dcc_validation)

@@ -24,6 +24,10 @@
 * `dcc_capabilities()$formats` now reports registry status, extensions,
   backend, semantics, and limitations; `dcc_doctor(formats = "all")` checks
   backend versions and platform constraints.
+* Add the versioned strict `dcc_plan` contract and published plan Schema;
+  protected bilingual `dcc_template()` workbook; exact Excel/JSON parsing with
+  cell coordinates or JSON Pointers; non-mutating `dcc_check()` diagnostics;
+  additive `dcc_run(plan =)` support; and synchronized `dcc_help()` guidance.
 
 # DCC 1.1.0
 

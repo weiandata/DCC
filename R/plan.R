@@ -17,7 +17,9 @@ plan_table_contracts <- function() {
 
 empty_plan_table <- function(section) {
   fields <- plan_table_contracts()[[section]]
-  out <- as.data.frame(setNames(rep(list(character()), length(fields)), fields),
+  out <- as.data.frame(stats::setNames(
+    rep(list(character()), length(fields)), fields
+  ),
                        stringsAsFactors = FALSE)
   data.table::as.data.table(out)
 }

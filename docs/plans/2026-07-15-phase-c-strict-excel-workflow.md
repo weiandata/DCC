@@ -14,6 +14,11 @@ delegate to Phase B import and the existing cleaning engine.
 **Tech Stack:** R >= 4.1, openxlsx2 >= 1.28, jsonlite, jsonvalidate,
 data.table, testthat.
 
+**Implementation status (2026-07-15): Complete.** The runtime remains free of
+`jsonvalidate`; the closed draft-07 plan Schema is tested against serialized
+fixtures using the existing `jsonlite` dependency. Full tests, `R CMD build`,
+and `R CMD check --no-manual` pass with `Status: OK`.
+
 ## Global Constraints
 
 - Phases A and B are complete.
@@ -41,7 +46,7 @@ data.table, testthat.
   multiselect, rules, actions, outputs)`.
 - Produces: `dcc_validate_plan(x)` and `dcc_schema("plan")`.
 
-- [ ] **Step 1: Write plan-constructor and validation tests**
+- [x] **Step 1: Write plan-constructor and validation tests**
 
 ```r
 test_that("dcc_plan has the exact versioned sections", {
@@ -61,11 +66,11 @@ test_that("unknown plan fields fail", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="plan", reporter="summary")'`
 
-- [ ] **Step 3: Implement the exact-section constructor**
+- [x] **Step 3: Implement the exact-section constructor**
 
 ```r
 new_dcc_plan <- function(project, source, columns,
@@ -88,12 +93,12 @@ new_dcc_plan <- function(project, source, columns,
 required columns, enumerations, unique IDs, cross-sheet foreign keys, declared
 source format/options, rule/action compatibility, and output policies.
 
-- [ ] **Step 4: Publish and validate the schema**
+- [x] **Step 4: Publish and validate the schema**
 
 Add `plan` to `dcc_schema()` and assert a serialized fixture validates while a
 plan with an unknown property fails under `jsonvalidate` with draft-07.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 ```bash
 Rscript -e 'devtools::test(filter="plan|schema", reporter="summary")'
@@ -118,7 +123,7 @@ git commit -m "feat(plan): add strict project contract"
 - Produces exact sheets: project, source, columns, values, missing,
   multiselect, rules, actions, outputs.
 
-- [ ] **Step 1: Write workbook-structure tests**
+- [x] **Step 1: Write workbook-structure tests**
 
 ```r
 test_that("dcc_template writes the exact strict workbook", {
@@ -133,11 +138,11 @@ test_that("dcc_template writes the exact strict workbook", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="template", reporter="summary")'`
 
-- [ ] **Step 3: Define sheet contracts and localized labels**
+- [x] **Step 3: Define sheet contracts and localized labels**
 
 ```r
 plan_sheet_contracts <- function() {
@@ -153,7 +158,7 @@ plan_sheet_contracts <- function() {
 }
 ```
 
-- [ ] **Step 4: Build the workbook with openxlsx2**
+- [x] **Step 4: Build the workbook with openxlsx2**
 
 Create each sheet, write stable English headers and Chinese instruction rows,
 add validation lists for type/role/state/rule/action/output values, unlock
@@ -161,13 +166,13 @@ input ranges with `wb_add_cell_style(..., locked = FALSE)`, protect sheets with
 `wb_protect_worksheet()`, and save with `wb_save()`. Do not set a password; the
 protection prevents accidental structural edits and is not a security control.
 
-- [ ] **Step 5: Check in a reproducible generated template**
+- [x] **Step 5: Check in a reproducible generated template**
 
 `tools/build-template.R` calls the same internal builder used by
 `dcc_template()`. Tests compare sheet names, headers, validations, and unlocked
 ranges rather than ZIP bytes or timestamps.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 ```bash
 Rscript tools/build-template.R
@@ -191,7 +196,7 @@ git commit -m "feat(plan): add strict Excel template"
 - Produces: `dcc_read_plan(path)` for XLSX or JSON.
 - Extends validation rows with `workbook`, `sheet`, `row`, `column`, `cell`.
 
-- [ ] **Step 1: Write strict parsing tests**
+- [x] **Step 1: Write strict parsing tests**
 
 ```r
 test_that("Excel plan errors identify the exact cell", {
@@ -211,11 +216,11 @@ test_that("unknown sheets and columns are not ignored", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="plan-read", reporter="summary")'`
 
-- [ ] **Step 3: Implement exact workbook parsing**
+- [x] **Step 3: Implement exact workbook parsing**
 
 ```r
 dcc_read_plan <- function(path) {
@@ -235,13 +240,13 @@ dcc_read_plan <- function(path) {
 }
 ```
 
-- [ ] **Step 4: Extend issue construction**
+- [x] **Step 4: Extend issue construction**
 
 Add location fields to `val_issue()` with empty defaults and use
 `openxlsx2::int2col()` plus source row offsets to calculate cell addresses.
 JSON plans use a JSON Pointer in `field` and leave workbook coordinates empty.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 ```bash
 Rscript -e 'devtools::test(filter="plan-read|validate", reporter="summary")'
@@ -262,7 +267,7 @@ git commit -m "feat(plan): parse strict plans with cell locations"
 - Produces: `dcc_check(data, plan, output_dir = "dcc-check")` returning
   `dcc_check_result` and writing diagnostics only.
 
-- [ ] **Step 1: Write immutability and diagnostic tests**
+- [x] **Step 1: Write immutability and diagnostic tests**
 
 ```r
 test_that("dcc_check validates and previews without changing input", {
@@ -277,18 +282,18 @@ test_that("dcc_check validates and previews without changing input", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="check", reporter="summary")'`
 
-- [ ] **Step 3: Implement preflight orchestration**
+- [x] **Step 3: Implement preflight orchestration**
 
 Read and validate the plan, create an import spec, call `dcc_import()`, run
 `dcc_doctor()` and `dcc_detect()`, then write `validation.xlsx`,
 `preview-findings.xlsx`, `staff-report.html`, and `run-summary.txt`. Do not call
 `dcc_execute()` with actions and do not write cleaned data or a manifest.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```bash
 Rscript -e 'devtools::test(filter="check|import|plan", reporter="summary")'
@@ -309,7 +314,7 @@ git commit -m "feat(workflow): add staff preflight"
   "dcc-results", mode = c("preview", "execute", "verify", "rerun"),
   id_var = NULL, plan = NULL)`.
 
-- [ ] **Step 1: Write compatibility and staff-call tests**
+- [x] **Step 1: Write compatibility and staff-call tests**
 
 ```r
 test_that("plan path and legacy config calls share results", {
@@ -326,11 +331,11 @@ test_that("config and plan cannot both be supplied", {
 })
 ```
 
-- [ ] **Step 2: Confirm red**
+- [x] **Step 2: Confirm red**
 
 Run: `Rscript -e 'devtools::test(filter="run", reporter="summary")'`
 
-- [ ] **Step 3: Add one resolver at the top of `dcc_run()`**
+- [x] **Step 3: Add one resolver at the top of `dcc_run()`**
 
 ```r
 resolve_run_inputs <- function(data, config, plan) {
@@ -350,7 +355,7 @@ resolve_run_inputs <- function(data, config, plan) {
 The remainder of `dcc_run()` receives resolved objects and continues through
 the Phase A atomic staging path.
 
-- [ ] **Step 4: Run compatibility tests and commit**
+- [x] **Step 4: Run compatibility tests and commit**
 
 ```bash
 Rscript -e 'devtools::test(filter="run|config|plan", reporter="summary")'
@@ -375,7 +380,7 @@ git commit -m "feat(workflow): accept strict plans in dcc_run"
 **Interfaces:**
 - Produces: `dcc_help(code = NULL, language = "zh-CN")`.
 
-- [ ] **Step 1: Write localization parity tests**
+- [x] **Step 1: Write localization parity tests**
 
 ```r
 test_that("every public error code has Chinese and English help", {
@@ -387,7 +392,7 @@ test_that("every public error code has Chinese and English help", {
 })
 ```
 
-- [ ] **Step 2: Implement `dcc_help()`**
+- [x] **Step 2: Implement `dcc_help()`**
 
 ```r
 dcc_help <- function(code = NULL, language = "zh-CN") {
@@ -400,13 +405,13 @@ dcc_help <- function(code = NULL, language = "zh-CN") {
 }
 ```
 
-- [ ] **Step 3: Write synchronized guides and example project**
+- [x] **Step 3: Write synchronized guides and example project**
 
 Both guides cover installation, template creation, plan editing, `dcc_check()`,
 preview, execute, output files, common error codes, and raw-data safety. The
 example uses synthetic data and a checked-in strict plan.
 
-- [ ] **Step 4: Run the phase gate and commit**
+- [x] **Step 4: Run the phase gate and commit**
 
 ```bash
 Rscript -e 'devtools::test(reporter="summary")'

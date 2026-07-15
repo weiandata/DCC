@@ -9,7 +9,8 @@
 #'   element of a `dcc_config`).
 #' @return A `dcc_validation` object: a `data.table` with `code`,
 #'   `severity`, `field`, `rows` (affected row indices, a list column),
-#'   and `fix`.
+#'   and `fix`. Excel-plan validation also fills `workbook`, `sheet`, `row`,
+#'   `column`, and `cell`.
 #' @examples
 #' rf <- tempfile(fileext = ".yaml")
 #' writeLines(c("checks:", "  - id: R001", "    type: range",

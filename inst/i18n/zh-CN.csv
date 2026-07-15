@@ -1,0 +1,69 @@
+code,explanation,fix
+CHECK_DETECTION_FAILED,导入后未能完成规则检测,检查消息中指出的规则并重新运行 dcc_check
+CHECK_IMPORT_FAILED,数据源无法按计划中的声明导入,检查数据路径格式选项列映射和编码
+CONFIG_AMBIGUOUS_LEGACY_ACTION_ID,旧版检测器动作名对应多个规则,改用准确的已声明规则编号
+CONFIG_LEGACY_ACTION_ID,旧版检测器动作名目前仅作过渡兼容,改用已声明的规则编号
+CONFIG_UNKNOWN_ACTION,处理动作没有对应的已声明规则,使用 rules 工作表中存在的规则编号
+DATA_DUP_ID,记录编号存在重复,确保数据源中的每个记录编号唯一
+DATA_NA_ID,一个或多个记录编号为空,运行前补齐所有记录编号
+DATA_NO_ID_VAR,导入数据中缺少声明的编号列,修正 id 角色或 columns 映射
+DATA_VAR_ABSENT,规则引用了导入数据中不存在的列,修正规则变量或 columns 映射
+FORMAT_BACKEND_MISSING,所需格式读取组件未安装,重新安装 DCC 及其全部依赖
+FORMAT_BACKEND_OLD,已安装的格式读取组件版本过旧,更新 DCC 及其依赖
+FORMAT_LIMITATION,所选格式存在已知限制,查看 dcc_capabilities 并在需要时改用更稳妥格式
+FORMAT_PLATFORM_UNSUPPORTED,当前平台不支持此格式,先把数据转换为受支持格式
+IMPORT_COLUMN_NAMES_REQUIRED,数据源没有提供已声明的列名,在 source 工作表填写定宽文件列名
+IMPORT_DELIMITER_REQUIRED,文本分隔符未填写,填写 source 中的 delimiter
+IMPORT_ENCODING_REQUIRED,未声明文本编码,填写 UTF-8 或 GB18030 等编码
+IMPORT_PROTECTED_OPTION,底层选项会削弱严格的原始数据保留,从 options_json 删除该受保护选项
+IMPORT_RANGE_REQUIRED,电子表格必须声明读取范围,填写 A1:Z500 等准确范围
+IMPORT_SHEET_REQUIRED,电子表格未声明工作表,填写准确工作表名称或序号
+IMPORT_SOURCE_MISSING,找不到数据源文件,选择一个确实存在的数据文件
+IMPORT_UNKNOWN_OPTION,当前格式不接受某个输入选项,删除或修正诊断中指出的选项
+IMPORT_WIDTHS_REQUIRED,定宽文本未声明各列宽度,用逗号分隔的正整数填写 widths
+PLAN_ACTION_PARAMETERS,动作参数不是 JSON 对象,无参数时填写 {}
+PLAN_ACTION_RULE,动作引用了不存在的规则编号,使用 rules 工作表中已声明的编号
+PLAN_ACTION_TYPE,动作名称不受支持,选择 exclude set_na flag 或 recode
+PLAN_COLUMN_DUPLICATE,原始列名或标准列名重复,确保每个 source_name 和 name 唯一
+PLAN_COLUMN_REQUIRED,列映射中的必填单元格为空,补齐 source_name name type 和 role
+PLAN_COLUMN_REQUIRED_FLAG,required 标志无效,只使用 TRUE 或 FALSE
+PLAN_COLUMN_ROLE,列用途不受支持,从 role 下拉列表选择
+PLAN_COLUMN_TYPE,标准数据类型不受支持,从 type 下拉列表选择类型
+PLAN_LANGUAGE,项目语言不受支持,使用 zh-CN 或 en
+PLAN_MISSING_FIELD,严格工作表缺少必需列,恢复原模板中的列
+PLAN_MISSING_SECTION,计划缺少必需区段,重新使用官方模板填写
+PLAN_MISSING_STATE,缺失状态不受支持,从 state 下拉列表选择
+PLAN_MISSING_VARIABLE,缺失码引用了不存在的标准列名,使用 columns 工作表中声明的 name
+PLAN_MULTIPLE_ID,多个列被标记为记录编号,最多保留一个 id 角色
+PLAN_MULTISELECT_LAYOUT,多选题布局不受支持,使用 delimited 或 columns
+PLAN_OUTPUT_DUPLICATE,同一输出设置出现多次,每个固定输出键只保留一行
+PLAN_OUTPUT_FORMAT,清洗结果格式不受支持,使用 csv xlsx 或 parquet
+PLAN_OUTPUT_KEY,输出键不属于模板 1.0,恢复 outputs 中的固定行
+PLAN_OUTPUT_LANGUAGE,报告语言不受支持,使用 zh-CN 或 en
+PLAN_PROJECT_REQUIRED,项目必填值为空,填写项目编号项目名称语言和版本
+PLAN_RULE_DUPLICATE,规则编号重复,确保每个规则编号唯一
+PLAN_RULE_ID,规则编号为空,为每条规则填写简短且唯一的编号
+PLAN_RULE_PARAMETERS,规则参数不是 JSON 对象,填写 {"max":100} 等有效对象
+PLAN_RULE_SEVERITY,规则严重程度不受支持,使用 info warn 或 fail
+PLAN_RULE_TYPE,规则类型不受支持,从规则类型下拉列表选择
+PLAN_RULE_VARIABLE,规则引用了不存在的标准列名,使用 columns 工作表中声明的 name
+PLAN_SECTION_TYPE,计划区段的结构错误,使用官方模板或 Schema 且不要改动结构
+PLAN_SOURCE_ENCODING,文本数据源没有编码,声明 UTF-8 或 GB18030 等编码
+PLAN_SOURCE_FORMAT,数据源格式不受支持,从 format 下拉列表选择
+PLAN_SOURCE_OPTIONS,高级数据源选项不是有效 JSON,填写一个 JSON 对象或留空 options_json
+PLAN_SOURCE_REQUIRED,数据源必填设置为空,填写数据路径和格式
+PLAN_TEMPLATE_VERSION,工作簿版本不是 1.0,用 dcc_template 创建新模板
+PLAN_UNKNOWN_FIELD,增加了未知字段或列,删除它并保持官方模板结构
+PLAN_UNKNOWN_SECTION,增加了未知计划区段,删除它并保留九个官方区段
+PLAN_VALUES_VARIABLE,取值标签引用了不存在的标准列名,使用 columns 工作表中声明的 name
+RULE_BAD_SEVERITY,编译后的规则严重程度无效,使用 info warn 或 fail
+RULE_DUP_ID,编译后的规则编号重复,确保每个规则编号唯一
+RULE_ITEMS_MISSING,按题目检测的规则没有题目列表,在 JSON 参数中添加 items
+RULE_NO_ID,编译后的规则没有编号,填写规则编号单元格
+RULE_RANGE_BOUNDS,范围规则没有最小值或最大值,在 JSON 参数中添加 min 或 max
+RULE_SCOREVAR_MISSING,得分异常规则没有得分变量,在 JSON 参数中添加 score_var
+RULE_SET_VALUES,集合规则没有允许值,在 JSON 参数中添加 values
+RULE_TIMEVAR_MISSING,作答时间规则没有时间变量,在 JSON 参数中添加 time_var
+RULE_TRAPS_MISSING,陷阱题规则没有答案映射,在 JSON 参数中添加 traps
+RULE_UNKNOWN_TYPE,编译后的规则类型未知,选择受支持的规则类型
+RULE_VAR_MISSING,范围或集合规则没有变量,在 variable 中填写标准列名

@@ -13,6 +13,11 @@ limitations; strict imports retain dictionaries, missing states, labels,
 source/spec hashes, and provenance. Cross-platform Stable certification remains
 part of Phase E, so newly added adapters report Experimental until that gate.
 
+Implementation note (2026-07-15): Phase 3 strict-plan workflow is implemented:
+the protected bilingual workbook and JSON share one versioned contract;
+validation reports Excel cells or JSON Pointers; `dcc_check()` is non-mutating;
+and `dcc_run(plan =)` remains preview-first and reuses the existing engine.
+
 Purpose: Guide all subsequent DCC remediation, development, review, and release
 work until the acceptance gates in this plan are met.
 

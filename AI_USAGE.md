@@ -25,6 +25,7 @@ dcc_schema("audit_log")     # JSON Schema for one audit-log row
 dcc_schema("manifest")      # JSON Schema for a reproducibility manifest
 dcc_schema("disposition")   # terminal state for every finding
 dcc_schema("provenance")    # stage boundaries, outcome, hashes, counts
+dcc_schema("plan")          # strict Excel/JSON project contract
 ```
 
 ## The safe flow
@@ -44,6 +45,9 @@ Never call `dcc_execute()` before previewing findings, and never treat a run as
 successful without `dcc_reconcile()`.
 
 ## Approved public functions
+
+Strict workflow: `dcc_template()`, `dcc_read_plan()`, `dcc_validate_plan()`,
+`dcc_check()`, `dcc_run(plan = ...)`, and `dcc_help()`.
 
 Input and detection: `dcc_read()`, `dcc_import()`, `dcc_dictionary()`,
 `dcc_missing_states()`, `dcc_rules()`, `dcc_detect()`,
@@ -67,6 +71,13 @@ For strict imports, never infer columns, types, missing codes, text encoding,
 worksheet, range, fixed widths, delimiter, ZIP member, or multi-select layout.
 Use the validated import specification from the DCC plan. Check the selected
 format's status and limitations before reading; XLSB remains Experimental.
+
+Prefer a JSON plan when generating a project automatically. Validate it against
+`dcc_schema("plan")`, then call `dcc_read_plan()` and `dcc_validate_plan()`.
+Excel validation reports workbook coordinates; JSON validation reports a JSON
+Pointer in `field`. Never add unknown fields or silently repair a rejected
+strict plan. Use `dcc_check()` and preview before any explicitly authorized
+execute call.
 
 ## A complete rule set and action map
 

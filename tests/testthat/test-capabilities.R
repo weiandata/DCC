@@ -38,7 +38,9 @@ test_that("stable correctness capabilities match engine contracts", {
   caps <- dcc_capabilities()
   stable <- caps$features$name[caps$features$status == "Stable"]
   expect_true(all(c("invalid_numeric", "declared_yaml_ids",
-                    "terminal_dispositions", "atomic_run_output") %in%
+                    "terminal_dispositions", "atomic_run_output",
+                    "strict_plan_contract", "protected_excel_template",
+                    "staff_preflight", "bilingual_workflow_help") %in%
                   stable))
 })
 

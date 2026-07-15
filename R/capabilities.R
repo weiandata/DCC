@@ -110,6 +110,10 @@ dcc_capability_features <- function() {
     feat("atomic_run_output", "Stable", "1.2.0"),
     feat("format_adapter_registry", "Stable", "1.2.0"),
     feat("canonical_import", "Experimental", "1.2.0"),
+    feat("strict_plan_contract", "Stable", "1.2.0"),
+    feat("protected_excel_template", "Stable", "1.2.0"),
+    feat("staff_preflight", "Stable", "1.2.0"),
+    feat("bilingual_workflow_help", "Stable", "1.2.0"),
     feat("to_irtc", "Planned", NA_character_)
   )
   data.frame(

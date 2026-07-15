@@ -1,0 +1,69 @@
+code,explanation,fix
+CHECK_DETECTION_FAILED,Detection could not complete after import,Review the rule named in the message and run dcc_check again
+CHECK_IMPORT_FAILED,The source could not be imported under the declared plan,Check the source path format options columns and encoding
+CONFIG_AMBIGUOUS_LEGACY_ACTION_ID,A legacy detector action name maps to more than one rule,Replace it with the exact declared rule id
+CONFIG_LEGACY_ACTION_ID,A legacy detector action name is still accepted temporarily,Replace it with the declared rule id
+CONFIG_UNKNOWN_ACTION,An action points to no declared rule,Use a rule id that exists on the rules sheet
+DATA_DUP_ID,Record identifiers are duplicated,Make every record id unique in the source data
+DATA_NA_ID,One or more record identifiers are blank,Fill every record id before running
+DATA_NO_ID_VAR,The declared id column is absent,Correct the id role or the columns mapping
+DATA_VAR_ABSENT,A rule refers to a column absent from imported data,Correct the rule variable or columns mapping
+FORMAT_BACKEND_MISSING,The required format reader is not installed,Reinstall DCC with all dependencies
+FORMAT_BACKEND_OLD,The installed format reader is too old,Update DCC and its dependencies
+FORMAT_LIMITATION,The selected format has a documented limitation,Review dcc_capabilities and choose a safer format if needed
+FORMAT_PLATFORM_UNSUPPORTED,This format is not supported on the current platform,Convert the source to a supported format
+IMPORT_COLUMN_NAMES_REQUIRED,The source does not provide declared column names,Declare fixed width column names in the source sheet
+IMPORT_DELIMITER_REQUIRED,The text delimiter is missing,Fill the delimiter source setting
+IMPORT_ENCODING_REQUIRED,Text encoding was not declared,Fill encoding such as UTF-8 or GB18030
+IMPORT_PROTECTED_OPTION,A low level option would weaken strict raw preservation,Remove the protected option from options_json
+IMPORT_RANGE_REQUIRED,A spreadsheet range is required,Fill an exact range such as A1:Z500
+IMPORT_SHEET_REQUIRED,A spreadsheet sheet was not declared,Fill the exact sheet name or number
+IMPORT_SOURCE_MISSING,The source file cannot be found,Choose an existing source file
+IMPORT_UNKNOWN_OPTION,The format does not accept one of the supplied options,Remove or correct the option named in the diagnostic
+IMPORT_WIDTHS_REQUIRED,Fixed width column widths are missing,Fill widths as comma separated positive numbers
+PLAN_ACTION_PARAMETERS,Action parameters are not a JSON object,Use {} when no parameters are needed
+PLAN_ACTION_RULE,An action refers to an unknown rule id,Use an id declared on the rules sheet
+PLAN_ACTION_TYPE,The action name is unsupported,Choose exclude set_na flag or recode
+PLAN_COLUMN_DUPLICATE,A source or canonical column name is duplicated,Make every source_name and name unique
+PLAN_COLUMN_REQUIRED,A required column mapping cell is blank,Fill every source_name name type and role cell
+PLAN_COLUMN_REQUIRED_FLAG,The required flag is invalid,Use TRUE or FALSE
+PLAN_COLUMN_ROLE,The column role is unsupported,Choose a role offered by the dropdown
+PLAN_COLUMN_TYPE,The canonical type is unsupported,Choose a type offered by the type dropdown
+PLAN_LANGUAGE,The project language is unsupported,Use zh-CN or en
+PLAN_MISSING_FIELD,A strict sheet is missing a required column,Restore the original template column
+PLAN_MISSING_SECTION,A required plan section is missing,Start again from the official template
+PLAN_MISSING_STATE,The missing value state is unsupported,Choose a state offered by the dropdown
+PLAN_MISSING_VARIABLE,A missing code refers to an unknown canonical name,Use a name declared on the columns sheet
+PLAN_MULTIPLE_ID,More than one column is marked as the record id,Keep the id role on at most one column
+PLAN_MULTISELECT_LAYOUT,The multi-select layout is unsupported,Use delimited or columns
+PLAN_OUTPUT_DUPLICATE,An output setting appears more than once,Keep one row for each fixed output key
+PLAN_OUTPUT_FORMAT,The cleaned output format is unsupported,Use csv xlsx or parquet
+PLAN_OUTPUT_KEY,An output key is not part of template 1.0,Restore the fixed outputs rows
+PLAN_OUTPUT_LANGUAGE,The report language is unsupported,Use zh-CN or en
+PLAN_PROJECT_REQUIRED,A required project value is blank,Fill project id project name language and version
+PLAN_RULE_DUPLICATE,A rule id is duplicated,Make every rule id unique
+PLAN_RULE_ID,A rule id is blank,Give every rule a short unique id
+PLAN_RULE_PARAMETERS,Rule parameters are not a JSON object,Enter a valid object such as {"max":100}
+PLAN_RULE_SEVERITY,Rule severity is unsupported,Use info warn or fail
+PLAN_RULE_TYPE,Rule type is unsupported,Choose a rule type offered by the dropdown
+PLAN_RULE_VARIABLE,A rule refers to an unknown canonical name,Use a name declared on the columns sheet
+PLAN_SECTION_TYPE,A plan section has the wrong structure,Use the official template or schema without changing structure
+PLAN_SOURCE_ENCODING,A text source has no encoding,Declare encoding such as UTF-8 or GB18030
+PLAN_SOURCE_FORMAT,The source format is unsupported,Choose a format offered by the dropdown
+PLAN_SOURCE_OPTIONS,Advanced source options are not valid JSON,Use one JSON object or leave options_json blank
+PLAN_SOURCE_REQUIRED,A required source setting is blank,Fill source path and format
+PLAN_TEMPLATE_VERSION,The workbook version is not 1.0,Create a fresh template with dcc_template
+PLAN_UNKNOWN_FIELD,An unknown field or column was added,Remove it and keep the official template structure
+PLAN_UNKNOWN_SECTION,An unknown plan section was added,Remove it and keep the nine official sections
+PLAN_VALUES_VARIABLE,A value label refers to an unknown canonical name,Use a name declared on the columns sheet
+RULE_BAD_SEVERITY,A compiled rule has invalid severity,Use info warn or fail
+RULE_DUP_ID,A compiled rule id is duplicated,Make every rule id unique
+RULE_ITEMS_MISSING,An item-based rule has no item list,Add items in the JSON parameters
+RULE_NO_ID,A compiled rule has no id,Fill the rule id cell
+RULE_RANGE_BOUNDS,A range rule has no minimum or maximum,Add min or max in JSON parameters
+RULE_SCOREVAR_MISSING,A score anomaly rule has no score variable,Add score_var in JSON parameters
+RULE_SET_VALUES,A set rule has no allowed values,Add values in JSON parameters
+RULE_TIMEVAR_MISSING,A response time rule has no time variable,Add time_var in JSON parameters
+RULE_TRAPS_MISSING,A trap item rule has no trap map,Add traps in JSON parameters
+RULE_UNKNOWN_TYPE,A compiled rule type is unknown,Choose a supported rule type
+RULE_VAR_MISSING,A range or set rule has no variable,Fill variable with a canonical column name

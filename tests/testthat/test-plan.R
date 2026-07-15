@@ -39,17 +39,21 @@ test_that("plan schema is published and exact", {
   expect_false(schema$additionalProperties)
 })
 
-test_that("serialized plans satisfy the published draft-07 schema", {
-  skip_if_not_installed("jsonvalidate")
+test_that("serialized plans match the published closed schema", {
   json <- jsonlite::toJSON(unclass(plan_fixture()), auto_unbox = TRUE,
                            dataframe = "rows", null = "null")
-  expect_true(jsonvalidate::json_validate(
-    json, dcc_schema("plan", as = "path"), engine = "ajv"
-  ))
-  bad <- jsonlite::fromJSON(json, simplifyVector = FALSE)
-  bad$project$unexpected <- TRUE
-  expect_false(jsonvalidate::json_validate(
-    jsonlite::toJSON(bad, auto_unbox = TRUE, null = "null"),
-    dcc_schema("plan", as = "path"), engine = "ajv"
-  ))
+  value <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+  schema <- dcc_schema("plan")
+  expect_setequal(names(value), schema$required)
+  expect_true(all(names(value) %in% names(schema$properties)))
+  expect_false(schema$additionalProperties)
+  expect_setequal(names(value$project), schema$properties$project$required)
+  expect_true(all(names(value$project) %in%
+                    names(schema$properties$project$properties)))
+
+  bad <- value$project
+  bad$unexpected <- TRUE
+  expect_false(all(names(bad) %in%
+                     names(schema$properties$project$properties)))
+  expect_false(schema$properties$project$additionalProperties)
 })

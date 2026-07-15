@@ -12,7 +12,8 @@ dcc_validate_rules(rules)
 \value{
 A \code{dcc_validation} object: a \code{data.table} with \code{code},
 \code{severity}, \code{field}, \code{rows} (affected row indices, a list
-column), and \code{fix}.
+column), \code{fix}, and optional workbook location fields \code{workbook},
+\code{sheet}, \code{row}, \code{column}, and \code{cell}.
 }
 \description{
 Checks a \code{\link{dcc_rules}} rule set for structural problems --

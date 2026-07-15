@@ -1,0 +1,32 @@
+{
+  "project": {
+    "template_version": "1.0",
+    "project_id": "strict-example",
+    "project_name": "DCC strict workflow example",
+    "language": "zh-CN"
+  },
+  "source": {
+    "path": "responses.csv",
+    "format": "csv",
+    "encoding": "UTF-8"
+  },
+  "columns": [
+    {"source_name": "sid", "name": "sid", "type": "character", "role": "id", "required": true, "label": "受访者编号 / Respondent id"},
+    {"source_name": "score", "name": "score", "type": "double", "role": "score", "required": true, "label": "得分 / Score"}
+  ],
+  "values": [],
+  "missing": [],
+  "multiselect": [],
+  "rules": [
+    {"id": "R001", "type": "range", "variable": "score", "parameters": "{\"min\":0,\"max\":100}", "severity": "warn"}
+  ],
+  "actions": [
+    {"rule_id": "R001", "action": "set_na", "parameters": "{}"}
+  ],
+  "outputs": [
+    {"key": "report_language", "value": "zh-CN"},
+    {"key": "cleaned_format", "value": "csv"},
+    {"key": "include_staff_report", "value": "TRUE"},
+    {"key": "include_audit_report", "value": "TRUE"}
+  ]
+}

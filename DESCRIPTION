@@ -18,7 +18,10 @@ Description: Rule-driven, auditable cleaning of survey and assessment
     with a cell-level audit log, answer-key scoring, multi-form to
     master item bank mapping, dual-layer 'HTML' reports with
     findings-to-changes reconciliation, cell-level lineage tracing, and
-    manifest-based one-command reproduction.
+    manifest-based one-command reproduction. Includes a protected bilingual
+    strict project workbook and matching 'JSON' contract with cell-addressed
+    validation, non-mutating preflight, preview-first execution, and localized
+    staff guidance.
 License: GPL (>= 2)
 Copyright: See file inst/COPYRIGHTS.
 Encoding: UTF-8
@@ -40,7 +43,6 @@ Imports:
     writexl,
     yaml
 Suggests:
-    jsonvalidate,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)

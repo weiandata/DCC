@@ -17,6 +17,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - One adapter registry for text, structured text, spreadsheets, statistical
   files, columnar files, RDS, and bounded compressed sources; capabilities and
   backend health diagnostics use this registry as their source of truth.
+- A strict versioned Excel/JSON project plan with a protected bilingual
+  template, cell-addressed validation, safe staff preflight, plan-based
+  one-command runs, bilingual help, and synthetic examples for staff,
+  statistical programmers, and AI agents.
 
 ### Fixed
 

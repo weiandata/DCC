@@ -32,6 +32,30 @@ Stable.
 
 ## Quick start
 
+For survey staff the shortest safe workflow uses a protected Excel plan and
+four simple functions:
+
+```r
+library(DCC)
+dcc_template("DCC-cleaning-plan.xlsx")
+dcc_check("responses.csv", "DCC-cleaning-plan.xlsx", "dcc-check")
+dcc_run("responses.csv", plan = "DCC-cleaning-plan.xlsx",
+        output_dir = "dcc-preview")                 # safe default
+dcc_help("PLAN_COLUMN_TYPE")                        # plain-language fix
+```
+
+Only yellow cells are editable. The bilingual template is strict: unknown or
+renamed sheets and columns fail with an exact Excel cell address. After review,
+run again with a new output directory and `mode = "execute"`. See the
+[Chinese](docs/quick-start-zh-CN.md) and [English](docs/quick-start-en.md)
+guides and the [synthetic example](examples/strict-excel-project/README.md).
+
+Statistical programmers may use the same `dcc_plan` through
+`dcc_read_plan()`/`dcc_validate_plan()`. AI agents can use JSON with
+`dcc_schema("plan")`; Excel and JSON validate to the same contract.
+
+### Programmatic pipeline
+
 ```r
 library(DCC)
 
@@ -108,15 +132,17 @@ identical to the in-memory path.
 of every Stable, Experimental, and Planned feature, rule type, action type, and
 input format, including extensions, backend, semantics, and limitations.
 `dcc_doctor(formats = "all")` checks installed backend versions and platform
-constraints. `dcc_schema()` returns published JSON Schemas for findings, audit
-logs, dispositions, provenance, rule files, action maps, and manifests, so programmatic and AI callers
-work against a stable contract.
+constraints. `dcc_schema()` returns published JSON Schemas for strict plans,
+findings, audit logs, dispositions, provenance, rule files, action maps, and
+manifests, so programmatic and AI callers work against a stable contract.
 
 ## Documentation
 
 - `vignette("dcc-pipeline")` — end-to-end walkthrough
 - [AI usage guide](AI_USAGE.md) — the safe validate-before-execute flow for
   general-purpose AI callers
+- [Strict Excel quick start (中文)](docs/quick-start-zh-CN.md) /
+  [English](docs/quick-start-en.md)
 - [Remediation engineering plan](ENGINEERING_PLAN.md) — approved baseline for
   subsequent development and release acceptance
 - [Design document](docs/design.md)

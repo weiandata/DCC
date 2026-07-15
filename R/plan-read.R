@@ -15,8 +15,9 @@ read_plan_sheet <- function(path, sheet, expected) {
     skip_empty_rows = FALSE, skip_empty_cols = FALSE, check_names = FALSE
   )
   if (!nrow(data)) {
-    return(as.data.frame(setNames(rep(list(character()), length(expected)),
-                                  expected), stringsAsFactors = FALSE))
+    return(as.data.frame(stats::setNames(
+      rep(list(character()), length(expected)), expected
+    ), stringsAsFactors = FALSE))
   }
   if (ncol(data) != length(expected)) {
     dcc_abort("Sheet `", sheet, "` data width does not match template 1.0.",
@@ -182,4 +183,3 @@ dcc_read_plan <- function(path) {
   dcc_abort("Plan must be a strict .xlsx or .json file.",
             class = "dcc_plan_error")
 }
-
