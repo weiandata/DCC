@@ -40,6 +40,7 @@ Imports:
     writexl,
     yaml
 Suggests:
+    jsonvalidate,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)

@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://weiandata.com/schemas/dcc/plan-1.0.schema.json",
+  "title": "DCC strict project plan 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project", "source", "columns", "values", "missing", "multiselect", "rules", "actions", "outputs"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template_version", "project_id", "project_name", "language"],
+      "properties": {
+        "template_version": {"const": "1.0"},
+        "project_id": {"type": "string", "minLength": 1},
+        "project_name": {"type": "string", "minLength": 1},
+        "language": {"enum": ["zh-CN", "en"]},
+        "created_by": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "format": {"type": "string", "minLength": 1},
+        "encoding": {"type": "string"},
+        "sheet": {}, "range": {}, "member": {}, "delimiter": {},
+        "widths": {}, "col_names": {}, "catalog_file": {},
+        "catalog_encoding": {}, "compression": {},
+        "max_uncompressed_bytes": {}, "options_json": {"type": "string"}
+      }
+    },
+    "columns": {"$ref": "#/definitions/columns"},
+    "values": {"$ref": "#/definitions/values"},
+    "missing": {"$ref": "#/definitions/missing"},
+    "multiselect": {"$ref": "#/definitions/multiselect"},
+    "rules": {"$ref": "#/definitions/rules"},
+    "actions": {"$ref": "#/definitions/actions"},
+    "outputs": {"$ref": "#/definitions/outputs"}
+  },
+  "definitions": {
+    "columns": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["source_name", "name", "type", "role", "required", "label"], "properties": {"source_name": {"type": "string"}, "name": {"type": "string"}, "type": {"enum": ["character", "integer", "double", "numeric", "logical", "date", "datetime"]}, "role": {"enum": ["id", "item", "score", "time", "group", "weight", "other"]}, "required": {"type": "boolean"}, "label": {"type": "string"}}}},
+    "values": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["variable", "value", "label"], "properties": {"variable": {"type": "string"}, "value": {}, "label": {"type": "string"}}}},
+    "missing": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["variable", "source_value", "state"], "properties": {"variable": {"type": "string"}, "source_value": {}, "state": {"enum": ["not_administered", "respondent_omission", "import_missing", "declared_missing_code", "cleared_by_cleaning"]}}}},
+    "multiselect": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["item", "layout", "source", "option", "delimiter"], "properties": {"item": {"type": "string"}, "layout": {"enum": ["delimited", "columns"]}, "source": {"type": "string"}, "option": {"type": "string"}, "delimiter": {"type": "string"}}}},
+    "rules": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "type", "variable", "parameters", "severity"], "properties": {"id": {"type": "string"}, "type": {"enum": ["range", "set", "expr", "skip_logic", "missing_items", "straightlining", "response_time", "trap_items", "score_anomaly"]}, "variable": {"type": "string"}, "parameters": {"type": "string"}, "severity": {"enum": ["info", "warn", "fail"]}}}},
+    "actions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["rule_id", "action", "parameters"], "properties": {"rule_id": {"type": "string"}, "action": {"enum": ["exclude", "set_na", "flag", "recode"]}, "parameters": {"type": "string"}}}},
+    "outputs": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["key", "value"], "properties": {"key": {"enum": ["report_language", "cleaned_format", "include_staff_report", "include_audit_report"]}, "value": {}}}}
+  }
+}
