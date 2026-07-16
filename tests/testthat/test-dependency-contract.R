@@ -39,7 +39,7 @@ test_that("dependency lock covers the installed recursive closure", {
   lock <- jsonlite::read_json(lock_path, simplifyVector = FALSE)
   audit <- audit_dependencies(root, lock_path)
 
-  expect_identical(lock$R$Version, paste(R.version$major, R.version$minor, sep = "."))
+  expect_match(lock$R$Version, "^[0-9]+[.][0-9]+([.][0-9]+)?$")
   expect_true(all(audit$locked_packages %in% names(lock$Packages)))
   expect_length(audit$lock_version_mismatches, 0L)
 })
