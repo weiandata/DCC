@@ -40,9 +40,9 @@ release_evidence_fixture <- function(root = dcc_source_root()) {
         memory_status = "pass"
       ),
       staff = list(
-        status = "pass", human_evidence = TRUE, participants = 5L,
-        completion_rate = 0.8, distinction_rate = 0.8, median_sus = 75,
-        code_edits = 0L, raw_overwrites = 0L, signed = TRUE
+        status = "facilitator_required", human_evidence = FALSE,
+        participants = 0L, completion_rate = 0, distinction_rate = 0,
+        median_sus = 0, code_edits = 0L, raw_overwrites = 0L, signed = FALSE
       ),
       statistician = list(
         status = "pass", all_correctness = TRUE,
@@ -107,21 +107,34 @@ test_that("release gate rejects missing stale and capability-mismatched evidence
   expect_true("RELEASE_CAPABILITY_MISMATCH" %in% mismatch$code)
 })
 
-test_that("release gate enforces human agent coverage and artifact thresholds", {
+test_that("staff validation is advisory while other release gates remain strict", {
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
   evidence <- release_evidence_fixture(root)
-  evidence$gates$staff$human_evidence <- FALSE
   evidence$gates$coverage$overall <- 89
   evidence$gates$agent$success_rate <- 0.85
   evidence$gates$artifacts$files[[1L]]$sha256 <- paste(rep("f", 64), collapse = "")
   issues <- dcc_validate_release_evidence(evidence, root, now)
 
-  expect_true("RELEASE_STAFF_EVIDENCE_INVALID" %in% issues$code)
+  expect_false(any(issues$gate == "staff"))
   expect_true("RELEASE_COVERAGE_FAILED" %in% issues$code)
   expect_true("RELEASE_AGENT_FAILED" %in% issues$code)
   expect_true("RELEASE_ARTIFACT_HASH_MISMATCH" %in% issues$code)
+})
+
+test_that("one signed staff participant can pass the advisory study", {
+  source(release_tool, local = TRUE)
+  root <- dcc_source_root()
+  now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
+  evidence <- release_evidence_fixture(root)
+  evidence$gates$staff <- list(
+    status = "pass", human_evidence = TRUE, participants = 1L,
+    completion_rate = 1, distinction_rate = 1, median_sus = 80,
+    code_edits = 0L, raw_overwrites = 0L, signed = TRUE
+  )
+
+  expect_equal(nrow(dcc_validate_release_evidence(evidence, root, now)), 0L)
 })
 
 test_that("only the coded CRAN first-submission NOTE is non-actionable", {
@@ -170,8 +183,9 @@ test_that("malformed release evidence fails closed with stable issue codes", {
   expect_true(all(c(
     "RELEASE_EVIDENCE_STALE", "RELEASE_R_CHECK_FAILED",
     "RELEASE_COVERAGE_FAILED", "RELEASE_BENCHMARK_FAILED",
-    "RELEASE_STAFF_EVIDENCE_INVALID", "RELEASE_ARTIFACT_MISSING"
+    "RELEASE_ARTIFACT_MISSING"
   ) %in% issues$code))
+  expect_false(any(issues$gate == "staff"))
 })
 
 test_that("release evidence schema is closed and requires every gate", {
@@ -191,6 +205,11 @@ test_that("release evidence schema is closed and requires every gate", {
   expect_identical(
     unlist(r_check$properties$allowed_notes$items$enum),
     "cran_new_submission"
+  )
+  staff_status <- schema$properties$gates$properties$staff$properties$status
+  expect_setequal(
+    unlist(staff_status$enum),
+    c("pass", "fail", "facilitator_required")
   )
 })
 

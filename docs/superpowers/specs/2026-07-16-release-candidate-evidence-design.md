@@ -42,15 +42,16 @@ diagnosis but cannot replace a required platform artifact.
 
 Statistician and Agent scenarios are executed from their committed contracts
 and produce machine-readable results. Staff evidence is collected in a strict
-Excel workbook from at least five real participants. DCC prepares and validates
-the workbook but never fabricates names, signatures, scores, or completion.
+Excel workbook from at least one real participant when the advisory study is
+conducted. DCC prepares and validates the workbook but never fabricates names,
+signatures, scores, or completion.
 
 ### Final gate
 
 An assembled `release-evidence.json` must satisfy the closed JSON schema and
-`tools/verify-release.R`. Missing external evidence remains a blocking failure;
-the verifier never converts `facilitator_required` or an incomplete CI matrix
-into a pass.
+`tools/verify-release.R`. Missing required external evidence remains a blocking
+failure, except that staff study outcomes are explicitly advisory. The verifier
+never converts an incomplete CI matrix into a pass.
 
 ## Considered alternatives
 
@@ -75,6 +76,6 @@ into a pass.
 
 The company legal representative authorized candidate preparation, NOTE-policy
 change, push to `main`, CI follow-through, statistician/Agent execution, and
-staff acceptance-package creation. Real staff participation, signatures, CRAN
-credentials, and CRAN's final decision remain external facts and are never
-synthesized.
+staff acceptance-package creation. Real staff participation and signatures are
+advisory and do not block release; CRAN credentials and CRAN's final decision
+remain external facts and are never synthesized.

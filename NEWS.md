@@ -41,10 +41,11 @@
   one-million-row time and memory baselines, and strict dependency/install
   verification with a complete offline source-repository builder.
 * Add explicit staff, statistician, and AI-Agent acceptance contracts. The
-  staff path includes a validated facilitator workbook but requires signed
-  real-user evidence; automated preparation cannot be reported as usability
-  success.
-* Add a five-participant staff acceptance workbook and an executable
+  staff path includes a validated facilitator workbook and requires signed
+  real-user evidence for a staff-study `pass`; automated preparation cannot be
+  reported as usability success, and staff-study status does not block release.
+* Add a staff acceptance workbook supporting one or more real participants
+  as an advisory, non-release-blocking usability study, and an executable
   twenty-task AI-Agent harness with closed per-task JSON, whitelist and
   validation/preview gates, artifact assertions, and evidence hashes.
 * Strict plan validation now surfaces format preflight codes such as

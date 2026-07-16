@@ -2,7 +2,7 @@ acceptance_path <- function(...) {
   dcc_source_path("tests", "acceptance", ...)
 }
 
-test_that("staff acceptance requires signed human evidence", {
+test_that("staff acceptance supports one or more signed participants", {
   scenarios <- yaml::read_yaml(acceptance_path("staff", "scenarios.yml"))
 
   expect_identical(scenarios$contract_version, "1.0")
@@ -13,6 +13,7 @@ test_that("staff acceptance requires signed human evidence", {
   expect_equal(scenarios$thresholds$maximum_minutes, 30)
   expect_identical(scenarios$thresholds$maximum_code_edits, 0L)
   expect_identical(scenarios$thresholds$maximum_raw_overwrites, 0L)
+  expect_identical(scenarios$thresholds$minimum_participants, 1L)
   expect_true(isTRUE(scenarios$human_evidence_required))
   workbook <- acceptance_path("staff", "facilitator-template.xlsx")
   expect_true(file.exists(workbook))
@@ -44,6 +45,33 @@ test_that("staff release workbook is blank, signed-evidence gated, and complete"
     col_names = FALSE
   )
   expect_identical(status[[1L]][1L], "facilitator_required")
+
+  minimum <- openxlsx2::wb_to_df(
+    wb, sheet = "评分摘要", rows = 5, cols = 3,
+    col_names = FALSE
+  )
+  expect_identical(minimum[[1L]][1L], 1)
+})
+
+test_that("staff test kit sources include a complete safe R workflow and manual", {
+  script <- acceptance_path("staff", "01-安装并完整测试.R")
+  manual <- acceptance_path("staff", "工作人员测试手册.md")
+  expect_true(file.exists(script))
+  expect_true(file.exists(manual))
+
+  code <- paste(readLines(script, warn = FALSE), collapse = "\n")
+  expect_match(code, "AUTHORIZE_EXECUTION <- FALSE", fixed = TRUE)
+  expect_match(code, "dcc_check(", fixed = TRUE)
+  expect_match(code, 'mode = "preview"', fixed = TRUE)
+  expect_match(code, 'mode = "execute"', fixed = TRUE)
+  expect_match(code, "sha256sum", fixed = TRUE)
+  expect_match(code, "dependencies = c(\"Depends\", \"Imports\", \"LinkingTo\")",
+               fixed = TRUE)
+
+  text <- paste(readLines(manual, warn = FALSE), collapse = "\n")
+  expect_match(text, "至少 1 名", fixed = TRUE)
+  expect_match(text, "不阻断 DCC 包发布", fixed = TRUE)
+  expect_match(text, "AUTHORIZE_EXECUTION", fixed = TRUE)
 })
 
 test_that("statistician acceptance covers correctness and caveats", {

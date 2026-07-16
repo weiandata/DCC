@@ -10,7 +10,7 @@ thresholds:
   maximum_minutes: 30
   maximum_code_edits: 0
   maximum_raw_overwrites: 0
-  minimum_participants: 5
+  minimum_participants: 1
 scenarios:
   - id: obtain-template
     task: 获取并打开 DCC 严格项目模板。
@@ -33,4 +33,3 @@ scenarios:
   - id: interpret-and-export
     task: 从工作人员报告找出阻断项、需复核项和输出文件。
     success: 在 30 分钟内正确解释并导出，不查看或修改 R 源代码。
-

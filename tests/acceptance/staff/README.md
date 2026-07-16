@@ -6,14 +6,17 @@
 
 运行 `Rscript tools/run-acceptance.R --audience=staff --mode=synthetic` 只会
 验证场景契约并复制一份主持人记录表。该结果不是人类可用性通过证据。
-发布证据必须包含至少五名参与者的签名记录、每个场景的起止时间、错误与
-恢复过程、preview/execute 区分题、原始文件哈希核对以及完整 SUS 问卷。
+一名或多名真实参与者即可形成工作人员验证材料；记录应包含签名、每个场景
+的起止时间、错误与恢复过程、preview/execute 区分题、原始文件哈希核对
+以及完整 SUS 问卷。
 
 正式现场记录使用 `DCC-1.2.0-staff-acceptance.xlsx`。工作簿预分配
-P001–P005，黄色单元格是唯一现场填写区域；参与者签名/确认、主持人
+P001–P005，可按实际人数使用其中一行或多行。黄色单元格是唯一现场填写区域；
+参与者签名/确认、主持人
 签名/确认、日期、时间、答案和评分均保持空白，必须由真实参与者与主持人
-填写。空白工作簿的发布状态固定为 `facilitator_required`，不得手工改为
-`pass`。只有五份记录均有效且总体门槛全部达到时，评分摘要才会自动显示
-`pass`。
+填写。空白工作簿的工作人员流程状态固定为 `facilitator_required`，不得
+手工改为 `pass`。至少一份记录有效且总体门槛全部达到时，评分摘要会自动
+显示 `pass`。
 
-通过标准由 `scenarios.yml` 和 `docs/acceptance/scoring.md` 唯一定义。
+工作人员验证是建议性的质量改进流程，不阻断 DCC 包发布。通过标准由
+`scenarios.yml` 和 `docs/acceptance/scoring.md` 唯一定义。

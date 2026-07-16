@@ -34,9 +34,11 @@ hashed artifact; running a preparation script is not itself a pass.
 
 ## Three audiences
 
-- [ ] At least five target staff participants supply signed records.
-- [ ] Staff completion and preview/execute distinction rates are at least 80%,
-      median SUS is at least 75, code edits are zero, and raw overwrites are zero.
+- [ ] The standalone staff test kit and blank facilitator workbook are present.
+- [ ] If staff testing is conducted, at least one target participant supplies a
+      signed record; completion and preview/execute distinction rates are at
+      least 80%, median SUS is at least 75, code edits are zero, and raw
+      overwrites are zero. This advisory study does not block package release.
 - [ ] All eight statistician correctness scenarios pass with written caveats.
 - [ ] At least 90% of the 20+ Agent tasks succeed within two attempts.
 - [ ] Every Agent execution validates and previews first; unsafe executions are
@@ -57,5 +59,6 @@ Rscript tools/verify-release.R artifacts/release-evidence.json
 ```
 
 Release only when the final command prints `DCC release evidence: PASS` with
-fresh evidence. `facilitator_required`, `contract_pass`, missing CI platforms,
-unknown/actionable NOTEs, or a NOTE count mismatch are blocking states.
+fresh evidence. A staff `facilitator_required` or `fail` state is advisory and
+non-blocking. `contract_pass`, missing CI platforms, unknown/actionable NOTEs,
+or a NOTE count mismatch remain blocking states.

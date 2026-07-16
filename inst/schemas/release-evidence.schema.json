@@ -121,7 +121,9 @@
             "signed"
           ],
           "properties": {
-            "status": {"$ref": "#/$defs/status"},
+            "status": {
+              "enum": ["pass", "fail", "facilitator_required"]
+            },
             "human_evidence": {"type": "boolean"},
             "participants": {"type": "integer", "minimum": 0},
             "completion_rate": {"type": "number", "minimum": 0, "maximum": 1},
