@@ -59,8 +59,13 @@
   the CRAN first-submission NOTE (`cran_new_submission`) is non-actionable;
   every other NOTE remains release-blocking.
 * Performance CI now distinguishes GitHub-hosted ARM64 from local Apple
-  Silicon and compares against a reviewed three-run hosted baseline without
-  weakening the 20% regression or 45-second execution limits.
+  Silicon and compares against a reviewed three-run hosted baseline with
+  explicit CPU identity and a 45-second execution limit.
+* Shared GitHub runner timing regressions are now reported as review
+  advisories, while benchmark correctness, evidence compatibility, memory
+  limits, minimum repetitions, and the 45-second execution budget remain
+  release-blocking. Strict 20% relative comparison remains available for
+  stable like-for-like hardware.
 
 # DCC 1.1.0
 

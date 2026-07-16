@@ -24,9 +24,11 @@ hashed artifact; running a preparation script is not itself a pass.
 
 - [ ] Stable formats have identical semantic hashes on Linux, macOS, and Windows.
 - [ ] No format with external-required evidence is marked Stable.
-- [ ] The reviewed one-million-row benchmark has at least three runs, no stage
-      regression above 20%, execution median at most 45 seconds, and a passing
-      memory report.
+- [ ] The reviewed one-million-row benchmark has at least three
+      correctness-valid runs, execution median at most 45 seconds, and a
+      passing memory report. Relative timing changes from shared GitHub
+      runners are reviewed as advisories; strict relative comparison is run
+      only on stable like-for-like hardware.
 - [ ] Dependency audit has no undeclared or runtime installer calls.
 - [ ] Clean installs and offline smoke tests pass on Linux, macOS, and Windows.
 - [ ] Complete internal repository contains DCC plus the exact locked dependency
