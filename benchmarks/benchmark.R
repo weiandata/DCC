@@ -17,6 +17,9 @@ if (!requireNamespace("DCC", quietly = TRUE)) {
   }
   pkgload::load_all(project_root, quiet = TRUE)
 }
+if (!"package:DCC" %in% search()) {
+  suppressPackageStartupMessages(library("DCC", character.only = TRUE))
+}
 suppressPackageStartupMessages(library(data.table))
 
 argument <- function(args, name, default = NULL) {
