@@ -156,7 +156,7 @@ main <- function() {
   on.exit(setwd(old), add = TRUE)
   status <- system2(
     file.path(R.home("bin"), "R"),
-    c("CMD", "build", "--no-manual", "--no-build-vignettes", shQuote(root)),
+    c("CMD", "build", "--no-manual", shQuote(root)),
     stdout = file.path(build_dir, "build.log"),
     stderr = file.path(build_dir, "build.log")
   )
