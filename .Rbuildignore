@@ -18,3 +18,4 @@
 ^\.markdownlint-cli2\.yaml$
 ^\.gitignore$
 ^\.lycheeignore$
+^renv\.lock$

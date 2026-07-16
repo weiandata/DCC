@@ -1,0 +1,49 @@
+name: Clean complete installation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / R release
+    env:
+      R_LIBS_USER: ${{ runner.temp }}/dcc-library
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: check
+      - name: Verify dependency contract
+        run: Rscript tools/verify-dependencies.R
+      - name: Build source archive
+        run: R CMD build --no-manual --no-build-vignettes .
+      - name: Install DCC into clean library
+        shell: bash
+        run: >-
+          R CMD INSTALL --library="$R_LIBS_USER"
+          DCC_*.tar.gz
+      - name: Offline doctor and supported-format smoke
+        shell: bash
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          NO_PROXY: ""
+        run: >-
+          Rscript -e 'options(repos = NULL); library(DCC);
+          stopifnot(is.list(dcc_doctor()));
+          source("tools/verify-format-matrix.R", local = TRUE)'

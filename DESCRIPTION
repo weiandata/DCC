@@ -56,3 +56,4 @@ URL: https://github.com/weiandata/DCC
 BugReports: https://github.com/weiandata/DCC/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Config/DCC/Installation: complete format backends in Imports; PDF optional
