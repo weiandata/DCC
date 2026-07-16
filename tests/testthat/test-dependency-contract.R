@@ -64,6 +64,15 @@ test_that("internal bundle contract is complete or fails closed", {
   expect_match(text, "SHA256SUMS", fixed = TRUE)
   expect_match(text, "license-inventory", fixed = TRUE)
   expect_match(text, "INTERNAL BUNDLE: INCOMPLETE", fixed = TRUE)
+  source(builder, local = TRUE)
+  install_script <- tempfile(fileext = ".R")
+  write_install_script(install_script)
+  install_text <- paste(readLines(install_script, warn = FALSE), collapse = "\n")
+  expect_match(
+    install_text, 'dependencies = c("Depends", "Imports", "LinkingTo")',
+    fixed = TRUE
+  )
+  expect_false(grepl("dependencies = TRUE", install_text, fixed = TRUE))
   expect_false(grepl("user data", text, fixed = TRUE) &&
                  grepl("file.copy(user", text, fixed = TRUE))
 })
@@ -77,6 +86,8 @@ test_that("internal bundle checksums use relocatable relative paths", {
 
   write_checksums(root)
   line <- readLines(file.path(root, "SHA256SUMS"))
-  expect_match(line, " repository/file.txt$", perl = TRUE)
+  expect_match(
+    line, "^[0-9a-f]{64}  repository/file[.]txt$", perl = TRUE
+  )
   expect_false(grepl(basename(root), line, fixed = TRUE))
 })

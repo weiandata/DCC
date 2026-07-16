@@ -52,7 +52,7 @@ write_install_script <- function(path) {
     "dir.create(library_path, recursive = TRUE, showWarnings = FALSE)",
     "repository <- normalizePath('repository', mustWork = TRUE)",
     "options(repos = c(DCC_INTERNAL = paste0('file://', repository)))",
-    "install.packages('DCC', lib = library_path, dependencies = TRUE, type = 'source')",
+    "install.packages('DCC', lib = library_path, dependencies = c(\"Depends\", \"Imports\", \"LinkingTo\"), type = 'source')",
     ".libPaths(c(library_path, .libPaths()))",
     "library(DCC)",
     "print(dcc_doctor())"
@@ -98,7 +98,7 @@ write_checksums <- function(root) {
     normalizePath(files, mustWork = TRUE), nchar(normalized_root) + 2L
   )
   hashes <- unname(as.character(tools::sha256sum(files)))
-  writeLines(paste(hashes, gsub("\\\\", "/", relative)),
+  writeLines(paste0(hashes, "  ", gsub("\\\\", "/", relative)),
              file.path(root, "SHA256SUMS"), useBytes = TRUE)
 }
 
