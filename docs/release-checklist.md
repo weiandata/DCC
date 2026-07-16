@@ -14,7 +14,8 @@ hashed artifact; running a preparation script is not itself a pass.
 
 - [ ] Full release-image tests have zero failures, warnings, and skips.
 - [ ] Property, migration, and fault suites pass five consecutive runs.
-- [ ] `R CMD check --as-cran` has zero errors, warnings, and NOTEs.
+- [ ] `R CMD check --as-cran` has zero errors and warnings, zero actionable NOTEs;
+      the only permitted NOTE code is `cran_new_submission`.
 - [ ] Overall coverage is at least 90%; import, validation, rules, execution,
       audit, rerun, and report-model areas are each at least 95%.
 - [ ] All published JSON schemas validate their examples and generated bundles.
@@ -50,11 +51,11 @@ Rscript tools/run-release-tests.R '--filter=property|fault|backward' --runs=5 \
   --output=artifacts/property-fault.json
 Rscript tools/benchmarks/benchmark.R --rows=1000000 --runs=3
 Rscript tools/benchmarks/memory.R
-R CMD build --no-manual --no-build-vignettes .
+R CMD build .
 R CMD check --as-cran DCC_*.tar.gz
 Rscript tools/verify-release.R artifacts/release-evidence.json
 ```
 
 Release only when the final command prints `DCC release evidence: PASS` with
 fresh evidence. `facilitator_required`, `contract_pass`, missing CI platforms,
-or a development-version NOTE are blocking states.
+unknown/actionable NOTEs, or a NOTE count mismatch are blocking states.

@@ -1,9 +1,8 @@
 ## Submission status
 
-This is a preparatory file for DCC 1.2.0. Do not submit until
+This is the candidate record for DCC 1.2.0. Do not submit until
 `docs/release-checklist.md` is complete and `tools/verify-release.R` reports
-PASS from fresh evidence. The development version currently remains
-1.2.0.9000 and is not a CRAN release candidate.
+PASS from fresh evidence. `DESCRIPTION` is frozen at version 1.2.0.
 
 ## Test environments
 
@@ -14,10 +13,13 @@ The release workflow is configured for:
 * macOS, R release
 * Windows, R release
 
-Every release-candidate check uses `--as-cran` and treats a NOTE as failure.
-Final error, warning, NOTE, test warning, failure, and skip counts must all be
-zero. Results are intentionally not claimed here before those CI artifacts
-exist.
+Every release-candidate check uses `--as-cran` and requires zero actionable
+NOTEs. Errors, warnings, test failures, test warnings, and test skips must also
+all be zero.
+The only allowed NOTE code is `cran_new_submission`, used solely for CRAN's
+first-submission incoming classification. Any additional text in that NOTE,
+any other NOTE, or any count mismatch remains blocking. Results are not
+claimed here before the CI artifacts exist.
 
 ## Package scope and dependencies
 

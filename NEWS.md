@@ -1,4 +1,4 @@
-# DCC 1.2.0 (development)
+# DCC 1.2.0
 
 * Add stable finding `code` and `detector_id`; range checks now report
   `INVALID_NUMERIC` instead of silently coercing invalid values to missing.
@@ -47,6 +47,9 @@
 * Add a closed release-evidence schema and one fail-closed verifier covering R
   checks, zero-skip tests, coverage, format semantics, benchmarks, all three
   audiences, dependencies, schemas, versions, freshness, and artifact hashes.
+* Classify `R CMD check` NOTEs with an exact machine-readable allowlist: only
+  the CRAN first-submission NOTE (`cran_new_submission`) is non-actionable;
+  every other NOTE remains release-blocking.
 
 # DCC 1.1.0
 
