@@ -85,3 +85,39 @@ test_that("dcc_read loads Parquet and Feather", {
   arrow::write_feather(df, ft)
   expect_read_format(ft, "feather")
 })
+
+test_that("committed format evidence manifest is complete and truthful", {
+  manifest_path <- testthat::test_path(
+    "..", "fixtures", "formats", "manifest.json"
+  )
+  expect_true(file.exists(manifest_path))
+  manifest <- jsonlite::read_json(manifest_path, simplifyVector = TRUE)
+  expect_identical(manifest$contract_version, "1.0")
+  expect_true(all(c(
+    "path", "format", "compression", "encoding", "declared_encoding",
+    "locale",
+    "expected_canonical_hash", "expected_labels",
+    "expected_missing_states", "capability_level", "fixture_status"
+  ) %in% names(manifest$fixtures)))
+  expect_true(all(c(
+    "UTF-8", "UTF-8-BOM", "UTF-16LE", "UTF-16BE", "GB18030", "GBK",
+    "BIG5", "Shift-JIS", "windows-1252", "latin1"
+  ) %in% manifest$fixtures$encoding))
+  expect_true(all(c(
+    "csv", "tsv", "txt", "xlsx", "ods", "json", "jsonl", "rds",
+    "spss", "stata", "sas", "xpt", "parquet", "feather"
+  ) %in% manifest$fixtures$format))
+  expect_true(all(manifest$fixtures$capability_level != "Stable"))
+})
+
+test_that("local format evidence verifier accepts generated fixtures", {
+  tool <- testthat::test_path("..", "..", "tools",
+                              "verify-format-matrix.R")
+  output <- system2(
+    file.path(R.home("bin"), "Rscript"), c(tool, "--local"),
+    stdout = TRUE, stderr = TRUE
+  )
+  expect_identical(attr(output, "status") %||% 0L, 0L,
+                   info = paste(output, collapse = "\n"))
+  expect_true(any(grepl("FORMAT MATRIX: PASS", output, fixed = TRUE)))
+})

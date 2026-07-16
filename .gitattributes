@@ -1,0 +1,4 @@
+tests/fixtures/formats/generated/** binary
+tests/fixtures/formats/manifest.json text eol=lf
+*.R text eol=lf
+*.yml text eol=lf
