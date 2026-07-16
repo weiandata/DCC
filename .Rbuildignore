@@ -19,3 +19,4 @@
 ^\.gitignore$
 ^\.lycheeignore$
 ^renv\.lock$
+^cran-comments\.md$

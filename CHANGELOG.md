@@ -185,7 +185,7 @@ workflow with an adaptive larger-than-memory backend.
   identical to in-memory `dcc_detect()`; cross-record checks
   (`score_anomaly`, median-relative response time) are rejected with
   typed errors; column types are locked from the first chunk.
-- Add `benchmarks/benchmark.R` and the `R-benchmark` workflow: CI
+- Add `tools/benchmarks/benchmark.R` and the `R-benchmark` workflow: CI
   regression gate timing read/detect/execute at 1e4 and 1e6 rows
   (larger scales via `DCC_BENCH_ROWS`), with per-stage budgets and CSV
   artifacts, plus informational `chunked_csv`/`chunked_arrow` streaming

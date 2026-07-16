@@ -1,5 +1,5 @@
 acceptance_path <- function(...) {
-  testthat::test_path("..", "acceptance", ...)
+  dcc_source_path("tests", "acceptance", ...)
 }
 
 test_that("staff acceptance requires signed human evidence", {
@@ -64,9 +64,7 @@ test_that("agent suite has at least twenty bounded deterministic tasks", {
 })
 
 test_that("agent task result schema is a closed contract", {
-  path <- testthat::test_path(
-    "..", "..", "inst", "schemas", "agent-task-result.schema.json"
-  )
+  path <- dcc_source_path("inst", "schemas", "agent-task-result.schema.json")
   schema <- jsonlite::read_json(path, simplifyVector = FALSE)
 
   expect_identical(schema$`$schema`, "https://json-schema.org/draft/2020-12/schema")
@@ -81,7 +79,7 @@ test_that("agent task result schema is a closed contract", {
 })
 
 test_that("acceptance runner preserves the human evidence boundary", {
-  runner <- testthat::test_path("..", "..", "tools", "run-acceptance.R")
+  runner <- dcc_source_path("tools", "run-acceptance.R")
   expect_true(file.exists(runner))
   text <- paste(readLines(runner, warn = FALSE), collapse = "\n")
 

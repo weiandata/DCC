@@ -27,18 +27,18 @@ jobs:
         run: R CMD INSTALL .
       - name: Capture three-run benchmark
         run: >-
-          Rscript benchmarks/benchmark.R --rows=1000000 --runs=3
+          Rscript tools/benchmarks/benchmark.R --rows=1000000 --runs=3
           --output=artifacts/benchmark-current.json
       - name: Enforce memory ceiling
         run: >-
-          Rscript benchmarks/memory.R
+          Rscript tools/benchmarks/memory.R
           --input=artifacts/benchmark-current.json
           --output=artifacts/memory-current.json
       - name: Compare accepted like-for-like baseline
         run: >-
           Rscript tools/check-benchmarks.R
           --current=artifacts/benchmark-current.json
-          --baseline=benchmarks/baseline.json
+          --baseline=tools/benchmarks/baseline.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

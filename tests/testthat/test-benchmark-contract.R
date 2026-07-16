@@ -1,4 +1,4 @@
-benchmark_tool <- testthat::test_path("..", "..", "tools", "check-benchmarks.R")
+benchmark_tool <- dcc_source_path("tools", "check-benchmarks.R")
 
 test_that("benchmark contract requires every pipeline and audience stage", {
   expect_true(file.exists(benchmark_tool))
@@ -96,7 +96,7 @@ test_that("execution budget and minimum repetitions are hard gates", {
 
 test_that("accepted baseline records review rationale and memory ceilings", {
   source(benchmark_tool, local = TRUE)
-  path <- testthat::test_path("..", "..", "benchmarks", "baseline.json")
+  path <- dcc_source_path("tools", "benchmarks", "baseline.json")
   expect_true(file.exists(path))
   baseline <- jsonlite::read_json(path, simplifyVector = TRUE)
 
@@ -109,7 +109,7 @@ test_that("accepted baseline records review rationale and memory ceilings", {
 
 test_that("memory gate rejects undersized and unbounded evidence", {
   source(benchmark_tool, local = TRUE)
-  memory_tool <- testthat::test_path("..", "..", "benchmarks", "memory.R")
+  memory_tool <- dcc_source_path("tools", "benchmarks", "memory.R")
   expect_true(file.exists(memory_tool))
   source(memory_tool, local = TRUE)
   records <- data.frame(

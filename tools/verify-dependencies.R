@@ -93,7 +93,8 @@ write_dependency_lock <- function(root, path = file.path(root, "renv.lock")) {
   normalizePath(path, mustWork = TRUE)
 }
 
-audit_dependencies <- function(root = getwd()) {
+audit_dependencies <- function(root = getwd(),
+                               lock_path = file.path(root, "renv.lock")) {
   root <- normalizePath(root, mustWork = TRUE)
   description <- read.dcf(file.path(root, "DESCRIPTION"))
   imports <- description_packages(description, "Imports")
@@ -105,7 +106,6 @@ audit_dependencies <- function(root = getwd()) {
   undeclared <- setdiff(namespace_packages, c(imports, depends, "base"))
   missing_formats <- setdiff(format_dependencies(), imports)
   closure <- dependency_closure(imports)
-  lock_path <- file.path(root, "renv.lock")
   locked <- character()
   mismatches <- character()
   if (file.exists(lock_path)) {

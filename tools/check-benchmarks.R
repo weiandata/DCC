@@ -138,7 +138,7 @@ main <- function() {
     args, "current", "artifacts/benchmark-current.json"
   )
   baseline_path <- benchmark_argument(
-    args, "baseline", "benchmarks/baseline.json"
+    args, "baseline", "tools/benchmarks/baseline.json"
   )
   if (!file.exists(current_path)) {
     stop("Current benchmark evidence does not exist: ", current_path)

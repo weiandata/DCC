@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://weiandata.com/dcc/schemas/release-evidence-1.0.json",
+  "title": "DCC release evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "release", "gates"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package", "package_version", "created_at", "expires_at",
+        "capability_hash", "cran_version", "internal_version"
+      ],
+      "properties": {
+        "package": {"const": "DCC"},
+        "package_version": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "capability_hash": {"$ref": "#/$defs/sha256"},
+        "cran_version": {"type": "string", "minLength": 1},
+        "internal_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "r_check", "coverage", "format_matrix", "property_fault", "benchmark",
+        "staff", "statistician", "agent", "dependencies", "schemas", "artifacts"
+      ],
+      "properties": {
+        "r_check": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "status", "errors", "warnings", "notes", "test_failures",
+            "test_warnings", "test_skips"
+          ],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "errors": {"$ref": "#/$defs/nonnegativeInteger"},
+            "warnings": {"$ref": "#/$defs/nonnegativeInteger"},
+            "notes": {"$ref": "#/$defs/nonnegativeInteger"},
+            "test_failures": {"$ref": "#/$defs/nonnegativeInteger"},
+            "test_warnings": {"$ref": "#/$defs/nonnegativeInteger"},
+            "test_skips": {"$ref": "#/$defs/nonnegativeInteger"}
+          }
+        },
+        "coverage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "overall", "critical"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "overall": {"type": "number", "minimum": 0, "maximum": 100},
+            "critical": {
+              "type": "object", "additionalProperties": false,
+              "required": [
+                "import", "validation", "rules", "execution", "audit",
+                "rerun", "report-model"
+              ],
+              "properties": {
+                "import": {"$ref": "#/$defs/percentage"},
+                "validation": {"$ref": "#/$defs/percentage"},
+                "rules": {"$ref": "#/$defs/percentage"},
+                "execution": {"$ref": "#/$defs/percentage"},
+                "audit": {"$ref": "#/$defs/percentage"},
+                "rerun": {"$ref": "#/$defs/percentage"},
+                "report-model": {"$ref": "#/$defs/percentage"}
+              }
+            }
+          }
+        },
+        "format_matrix": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "platforms", "capability_hash", "failures"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "platforms": {"$ref": "#/$defs/platforms"},
+            "capability_hash": {"$ref": "#/$defs/sha256"},
+            "failures": {"$ref": "#/$defs/nonnegativeInteger"}
+          }
+        },
+        "property_fault": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "repeated_runs", "failures", "warnings", "skips"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "repeated_runs": {"type": "integer", "minimum": 0},
+            "failures": {"$ref": "#/$defs/nonnegativeInteger"},
+            "warnings": {"$ref": "#/$defs/nonnegativeInteger"},
+            "skips": {"$ref": "#/$defs/nonnegativeInteger"}
+          }
+        },
+        "benchmark": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "status", "rows", "runs", "execution_median_seconds",
+            "maximum_regression", "memory_status"
+          ],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "rows": {"type": "integer", "minimum": 0},
+            "runs": {"type": "integer", "minimum": 0},
+            "execution_median_seconds": {"type": "number", "minimum": 0},
+            "maximum_regression": {"type": "number"},
+            "memory_status": {"$ref": "#/$defs/status"}
+          }
+        },
+        "staff": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "status", "human_evidence", "participants", "completion_rate",
+            "distinction_rate", "median_sus", "code_edits", "raw_overwrites",
+            "signed"
+          ],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "human_evidence": {"type": "boolean"},
+            "participants": {"type": "integer", "minimum": 0},
+            "completion_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "distinction_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "median_sus": {"$ref": "#/$defs/percentage"},
+            "code_edits": {"$ref": "#/$defs/nonnegativeInteger"},
+            "raw_overwrites": {"$ref": "#/$defs/nonnegativeInteger"},
+            "signed": {"type": "boolean"}
+          }
+        },
+        "statistician": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "all_correctness", "caveats"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "all_correctness": {"type": "boolean"},
+            "caveats": {
+              "type": "array", "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "agent": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "status", "tasks", "success_rate", "maximum_attempts",
+            "unsafe_executions", "validation_preview_all", "ambiguous_correct"
+          ],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "tasks": {"type": "integer", "minimum": 0},
+            "success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "maximum_attempts": {"type": "integer", "minimum": 0},
+            "unsafe_executions": {"$ref": "#/$defs/nonnegativeInteger"},
+            "validation_preview_all": {"type": "boolean"},
+            "ambiguous_correct": {"type": "boolean"}
+          }
+        },
+        "dependencies": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "status", "undeclared_calls", "runtime_installers",
+            "complete_format_dependencies", "clean_install_platforms"
+          ],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "undeclared_calls": {"$ref": "#/$defs/nonnegativeInteger"},
+            "runtime_installers": {"$ref": "#/$defs/nonnegativeInteger"},
+            "complete_format_dependencies": {"type": "boolean"},
+            "clean_install_platforms": {"$ref": "#/$defs/platforms"}
+          }
+        },
+        "schemas": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "failures"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "failures": {"$ref": "#/$defs/nonnegativeInteger"}
+          }
+        },
+        "artifacts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["status", "files"],
+          "properties": {
+            "status": {"$ref": "#/$defs/status"},
+            "files": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["path", "sha256"],
+                "properties": {
+                  "path": {"type": "string", "minLength": 1},
+                  "sha256": {"$ref": "#/$defs/sha256"}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "status": {"const": "pass"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "percentage": {"type": "number", "minimum": 0, "maximum": 100},
+    "nonnegativeInteger": {"type": "integer", "minimum": 0},
+    "platforms": {
+      "type": "array", "minItems": 3, "uniqueItems": true,
+      "items": {"enum": ["linux", "macos", "windows"]}
+    }
+  }
+}

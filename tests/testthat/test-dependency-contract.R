@@ -1,9 +1,13 @@
-dependency_tool <- testthat::test_path(
-  "..", "..", "tools", "verify-dependencies.R"
-)
+dependency_tool <- dcc_source_path("tools", "verify-dependencies.R")
+
+dependency_contract_lock <- function(root, writer) {
+  path <- file.path(root, "renv.lock")
+  if (file.exists(path)) return(path)
+  writer(root, tempfile(fileext = ".lock"))
+}
 
 test_that("every format backend installs with DCC", {
-  description <- read.dcf(testthat::test_path("..", "..", "DESCRIPTION"))
+  description <- read.dcf(dcc_source_path("DESCRIPTION"))
   imports <- trimws(strsplit(description[1L, "Imports"], ",")[[1L]])
   imports <- sub("[[:space:]]*\\(.*$", "", imports)
   required <- c(
@@ -18,8 +22,9 @@ test_that("every format backend installs with DCC", {
 test_that("dependency audit rejects undeclared calls and runtime installers", {
   expect_true(file.exists(dependency_tool))
   source(dependency_tool, local = TRUE)
-  root <- testthat::test_path("..", "..")
-  audit <- audit_dependencies(root)
+  root <- dcc_source_root()
+  lock_path <- dependency_contract_lock(root, write_dependency_lock)
+  audit <- audit_dependencies(root, lock_path)
 
   expect_true(audit$ok)
   expect_length(audit$undeclared_namespace_calls, 0L)
@@ -29,19 +34,29 @@ test_that("dependency audit rejects undeclared calls and runtime installers", {
 
 test_that("dependency lock covers the installed recursive closure", {
   source(dependency_tool, local = TRUE)
-  root <- testthat::test_path("..", "..")
-  lock <- jsonlite::read_json(file.path(root, "renv.lock"), simplifyVector = FALSE)
-  audit <- audit_dependencies(root)
+  root <- dcc_source_root()
+  lock_path <- dependency_contract_lock(root, write_dependency_lock)
+  lock <- jsonlite::read_json(lock_path, simplifyVector = FALSE)
+  audit <- audit_dependencies(root, lock_path)
 
   expect_identical(lock$R$Version, paste(R.version$major, R.version$minor, sep = "."))
   expect_true(all(audit$locked_packages %in% names(lock$Packages)))
   expect_length(audit$lock_version_mismatches, 0L)
 })
 
+test_that("dependency lock evidence can be synthesized outside the internal bundle", {
+  source(dependency_tool, local = TRUE)
+  root <- withr::local_tempdir()
+  expect_true(file.copy(dcc_source_path("DESCRIPTION"), root))
+
+  path <- dependency_contract_lock(root, write_dependency_lock)
+  expect_true(file.exists(path))
+  lock <- jsonlite::read_json(path, simplifyVector = FALSE)
+  expect_true(all(format_dependencies() %in% names(lock$Packages)))
+})
+
 test_that("internal bundle contract is complete or fails closed", {
-  builder <- testthat::test_path(
-    "..", "..", "tools", "build-internal-bundle.R"
-  )
+  builder <- dcc_source_path("tools", "build-internal-bundle.R")
   expect_true(file.exists(builder))
   text <- paste(readLines(builder, warn = FALSE), collapse = "\n")
 
@@ -54,9 +69,7 @@ test_that("internal bundle contract is complete or fails closed", {
 })
 
 test_that("internal bundle checksums use relocatable relative paths", {
-  builder <- testthat::test_path(
-    "..", "..", "tools", "build-internal-bundle.R"
-  )
+  builder <- dcc_source_path("tools", "build-internal-bundle.R")
   source(builder, local = TRUE)
   root <- withr::local_tempdir()
   dir.create(file.path(root, "repository"))

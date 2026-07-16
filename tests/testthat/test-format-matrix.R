@@ -111,8 +111,7 @@ test_that("committed format evidence manifest is complete and truthful", {
 })
 
 test_that("local format evidence verifier accepts generated fixtures", {
-  tool <- testthat::test_path("..", "..", "tools",
-                              "verify-format-matrix.R")
+  tool <- dcc_source_path("tools", "verify-format-matrix.R")
   output <- system2(
     file.path(R.home("bin"), "Rscript"), c(tool, "--local"),
     stdout = TRUE, stderr = TRUE

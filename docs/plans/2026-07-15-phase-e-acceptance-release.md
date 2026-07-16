@@ -135,9 +135,9 @@ Commit: `git commit -m "ci: verify format and encoding support"`
 ### Task 3: Establish performance and memory release gates
 
 **Files:**
-- Modify: `benchmarks/benchmark.R`
-- Create: `benchmarks/memory.R`
-- Create: `benchmarks/baseline.json`
+- Modify: `tools/benchmarks/benchmark.R`
+- Create: `tools/benchmarks/memory.R`
+- Create: `tools/benchmarks/baseline.json`
 - Create: `tools/check-benchmarks.R`
 - Create: `.github/workflows/benchmark.yml`
 - Create: `tests/testthat/test-benchmark-contract.R`
@@ -165,9 +165,9 @@ changes. Baseline updates require review and a written reason.
 - [ ] **Step 4: Run local benchmarks**
 
 ```sh
-Rscript benchmarks/benchmark.R --runs=3
-Rscript benchmarks/memory.R
-Rscript tools/check-benchmarks.R --baseline=benchmarks/baseline.json
+Rscript tools/benchmarks/benchmark.R --runs=3
+Rscript tools/benchmarks/memory.R
+Rscript tools/check-benchmarks.R --baseline=tools/benchmarks/baseline.json
 ```
 
 - [ ] **Step 5: Commit**

@@ -248,7 +248,7 @@ DCC/
 ├── tests/testthat/     # deterministic unit tests, golden-file audit tests
 ├── vignettes/          # end-to-end pipeline walkthrough
 ├── data-raw/           # scripts generating synthetic fixtures
-└── benchmarks/         # performance benchmark scripts (CI)
+└── tools/benchmarks/   # performance benchmark scripts (CI/release)
 ```
 
 Exported functions use the `dcc_` prefix; detectors use `detect_`.
