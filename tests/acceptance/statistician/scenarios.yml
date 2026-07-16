@@ -1,0 +1,33 @@
+contract_version: "1.0"
+audience: statistician
+synthetic_data_only: true
+thresholds:
+  all_correctness_assertions: true
+  documented_caveats_required: true
+  reproducible_hashes_required: true
+scenarios:
+  - id: programmatic-import
+    task: 使用显式导入规范读取 CSV 并核对规范类型和列名。
+    assertion: 规范化数据的行列数、类型和 ID 完全匹配。
+  - id: labelled-missing
+    task: 导入带变量标签、值标签和用户缺失值的 SPSS 文件。
+    assertion: 标签和 declared_missing_code 状态均保留。
+  - id: custom-rules
+    task: 构造并验证自定义范围规则。
+    assertion: 仅越界记录生成稳定检查代码。
+  - id: preview-apply
+    task: 比较空动作 preview 与授权 apply。
+    assertion: preview 不改变数据，apply 与审计日志逐项对账。
+  - id: reproducibility
+    task: 对相同输入和规则重复检测。
+    assertion: finding_id 和结果哈希一致。
+  - id: full-table-export
+    task: 生成统计报告 CSV 表。
+    assertion: 所有表完整导出且清单 SHA-256 可验证。
+  - id: provenance
+    task: 检查导入、执行和报告模型的来源链。
+    assertion: 输入、规范、规则和清洗结果哈希可追踪。
+  - id: legacy-migration
+    task: 运行 dcc_read/dcc_detect/dcc_execute 兼容调用。
+    assertion: 旧调用继续工作，迁移限制写入 caveats。
+

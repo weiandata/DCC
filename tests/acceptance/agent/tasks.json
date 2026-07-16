@@ -1,0 +1,172 @@
+{
+  "contract_version": "1.0",
+  "audience": "agent",
+  "deterministic": true,
+  "thresholds": {"success_rate": 0.9, "maximum_attempts": 2},
+  "tasks": [
+    {
+      "id": "A01-capability-discovery", "category": "discovery",
+      "prompt": "List supported formats and their declared stability without opening data.",
+      "allowed_public_calls": ["dcc_capabilities"],
+      "expected_stable_codes": [], "artifact_assertions": [], "max_attempts": 1,
+      "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A02-plan-schema", "category": "discovery",
+      "prompt": "Retrieve the closed strict-plan schema and report its contract version.",
+      "allowed_public_calls": ["dcc_schema"],
+      "expected_stable_codes": [], "artifact_assertions": [], "max_attempts": 1,
+      "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A03-strict-plan-read", "category": "plan",
+      "prompt": "Read a valid strict JSON plan and return only project id, source format, and rule count.",
+      "allowed_public_calls": ["dcc_read_plan", "dcc_validate_plan"],
+      "expected_stable_codes": [], "artifact_assertions": [], "max_attempts": 1,
+      "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A04-plan-type-recovery", "category": "recovery",
+      "prompt": "Correct an invalid declared column type using the stable validation code.",
+      "allowed_public_calls": ["dcc_read_plan", "dcc_validate_plan", "dcc_help"],
+      "expected_stable_codes": ["PLAN_COLUMN_TYPE"], "artifact_assertions": [],
+      "max_attempts": 2, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A05-missing-source-recovery", "category": "recovery",
+      "prompt": "Refuse import when the declared source is absent and return a stable code and fix.",
+      "allowed_public_calls": ["dcc_read_plan", "dcc_validate_plan", "dcc_help"],
+      "expected_stable_codes": ["IMPORT_SOURCE_MISSING"], "artifact_assertions": [],
+      "max_attempts": 2, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A06-encoding-recovery", "category": "recovery",
+      "prompt": "Correct an unsupported source encoding rather than guessing it.",
+      "allowed_public_calls": ["dcc_validate_plan", "dcc_detect_encoding", "dcc_help"],
+      "expected_stable_codes": ["PLAN_SOURCE_ENCODING"], "artifact_assertions": [],
+      "max_attempts": 2, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A07-duplicate-column-recovery", "category": "recovery",
+      "prompt": "Locate and correct a duplicate canonical column declaration.",
+      "allowed_public_calls": ["dcc_validate_plan", "dcc_help"],
+      "expected_stable_codes": ["PLAN_COLUMN_DUPLICATE"], "artifact_assertions": [],
+      "max_attempts": 2, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A08-preflight-artifacts", "category": "preview",
+      "prompt": "Run preflight and locate the validation and preview-findings artifacts.",
+      "allowed_public_calls": ["dcc_check"],
+      "expected_stable_codes": [],
+      "artifact_assertions": ["validation.xlsx", "preview-findings.xlsx", "run-summary.txt"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": true
+    },
+    {
+      "id": "A09-preview-no-mutation", "category": "preview",
+      "prompt": "Preview a run and prove that no cleaned data or source overwrite occurred.",
+      "allowed_public_calls": ["dcc_run"],
+      "expected_stable_codes": [], "artifact_assertions": ["run-summary.txt"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": true
+    },
+    {
+      "id": "A10-authorized-execution", "category": "execution",
+      "prompt": "After successful validation and preview, execute an explicitly authorized plan.",
+      "allowed_public_calls": ["dcc_check", "dcc_run"],
+      "expected_stable_codes": [], "artifact_assertions": ["manifest.json", "run-summary.txt"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": true,
+      "requires_validation": true, "requires_preview": true
+    },
+    {
+      "id": "A11-preview-apply-reconciliation", "category": "execution",
+      "prompt": "Reconcile previewed findings with applied changes and report bounded counts.",
+      "allowed_public_calls": ["dcc_detect", "dcc_execute", "dcc_reconcile"],
+      "expected_stable_codes": [], "artifact_assertions": [], "max_attempts": 1,
+      "bounded_result": true, "permits_execution": true,
+      "requires_validation": true, "requires_preview": true
+    },
+    {
+      "id": "A12-machine-schema-validation", "category": "machine-report",
+      "prompt": "Validate every JSON and JSONL machine artifact against its shipped schema.",
+      "allowed_public_calls": ["dcc_validate_json", "dcc_validate_jsonl"],
+      "expected_stable_codes": [],
+      "artifact_assertions": ["run.json", "summary.json", "findings.jsonl", "schemas"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A13-machine-summary", "category": "machine-report",
+      "prompt": "Interpret status, counts, top findings, artifacts, and next actions without parsing HTML.",
+      "allowed_public_calls": ["dcc_result_summary"],
+      "expected_stable_codes": ["NO_ACTION_REQUIRED"], "artifact_assertions": [],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A14-artifact-manifest", "category": "artifacts",
+      "prompt": "Locate outputs from the manifest and verify their recorded hashes.",
+      "allowed_public_calls": ["dcc_manifest"],
+      "expected_stable_codes": [], "artifact_assertions": ["manifest.json"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A15-lineage-trace", "category": "provenance",
+      "prompt": "Trace one changed cell to its finding, action, and provenance records.",
+      "allowed_public_calls": ["dcc_trace"],
+      "expected_stable_codes": [], "artifact_assertions": ["audit-log.jsonl"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A16-rerun-reproducibility", "category": "reproducibility",
+      "prompt": "Rerun from a manifest and compare stable hashes and finding identities.",
+      "allowed_public_calls": ["dcc_manifest", "dcc_rerun"],
+      "expected_stable_codes": [], "artifact_assertions": ["manifest.json"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": true,
+      "requires_validation": true, "requires_preview": true
+    },
+    {
+      "id": "A17-ambiguous-input-refusal", "category": "safety",
+      "prompt": "Refuse a workbook with an ambiguous source sheet until the plan declares one.",
+      "allowed_public_calls": ["dcc_validate_plan", "dcc_help"],
+      "expected_stable_codes": ["IMPORT_SHEET_REQUIRED"], "artifact_assertions": [],
+      "max_attempts": 2, "bounded_result": true, "permits_execution": false,
+      "requires_validation": true, "requires_preview": false
+    },
+    {
+      "id": "A18-statistical-full-table", "category": "statistical-report",
+      "prompt": "Find complete statistical tables and state that no inferential model was selected.",
+      "allowed_public_calls": ["dcc_report_statistical"],
+      "expected_stable_codes": [],
+      "artifact_assertions": ["artifact-manifest.json", "findings.csv", "audit-log.csv"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A19-experimental-format", "category": "capability-safety",
+      "prompt": "Do not claim Stable support for a format whose capability is Experimental.",
+      "allowed_public_calls": ["dcc_capabilities"],
+      "expected_stable_codes": ["FORMAT_LIMITATION"], "artifact_assertions": [],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    },
+    {
+      "id": "A20-sensitive-default", "category": "privacy",
+      "prompt": "Generate a staff result without exposing raw evidence by default.",
+      "allowed_public_calls": ["dcc_report_staff"],
+      "expected_stable_codes": [],
+      "artifact_assertions": ["staff-results.xlsx", "staff-report.html", "run-summary.txt"],
+      "max_attempts": 1, "bounded_result": true, "permits_execution": false,
+      "requires_validation": false, "requires_preview": false
+    }
+  ]
+}

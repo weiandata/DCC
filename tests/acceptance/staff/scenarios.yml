@@ -1,0 +1,36 @@
+contract_version: "1.0"
+audience: staff
+language: zh-CN
+human_evidence_required: true
+synthetic_data_only: true
+thresholds:
+  completion_rate: 0.8
+  preview_execution_distinction_rate: 0.8
+  median_sus: 75
+  maximum_minutes: 30
+  maximum_code_edits: 0
+  maximum_raw_overwrites: 0
+  minimum_participants: 5
+scenarios:
+  - id: obtain-template
+    task: 获取并打开 DCC 严格项目模板。
+    success: 未修改工作表名称、机器列名或保护区。
+  - id: complete-workbook
+    task: 仅在允许填写的单元格中完成项目、数据源、变量、规则和输出设置。
+    success: 模板可以被 dcc_read_plan() 读取。
+  - id: correct-invalid-cell
+    task: 根据单元格地址和中文修复提示纠正一个无效变量类型。
+    success: PLAN_COLUMN_TYPE 消失且没有编辑 R 代码。
+  - id: run-check
+    task: 使用一条简单 R 命令运行 dcc_check()。
+    success: 能找到 validation.xlsx、preview-findings.xlsx 和 run-summary.txt。
+  - id: run-preview
+    task: 运行 preview 并说明原始数据是否会改变。
+    success: 正确回答 preview 不执行清洗动作且不覆盖原始文件。
+  - id: authorize-execution
+    task: 在检查 preview 后明确授权 execute。
+    success: 输出写入新目录，原始文件哈希不变。
+  - id: interpret-and-export
+    task: 从工作人员报告找出阻断项、需复核项和输出文件。
+    success: 在 30 分钟内正确解释并导出，不查看或修改 R 源代码。
+
