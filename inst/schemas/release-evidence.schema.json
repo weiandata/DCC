@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://weiandata.com/dcc/schemas/release-evidence-1.0.json",
+  "$id": "https://weiandata.com/dcc/schemas/release-evidence-1.1.json",
   "title": "DCC release evidence",
   "type": "object",
   "additionalProperties": false,
   "required": ["contract_version", "release", "gates"],
   "properties": {
-    "contract_version": {"const": "1.0"},
+    "contract_version": {"const": "1.1"},
     "release": {
       "type": "object",
       "additionalProperties": false,
@@ -102,7 +102,7 @@
           "type": "object", "additionalProperties": false,
           "required": [
             "status", "rows", "runs", "execution_median_seconds",
-            "maximum_regression", "memory_status"
+            "maximum_regression", "comparison_mode", "memory_status"
           ],
           "properties": {
             "status": {"$ref": "#/$defs/status"},
@@ -110,6 +110,7 @@
             "runs": {"type": "integer", "minimum": 0},
             "execution_median_seconds": {"type": "number", "minimum": 0},
             "maximum_regression": {"type": "number"},
+            "comparison_mode": {"enum": ["strict", "hosted_advisory"]},
             "memory_status": {"$ref": "#/$defs/status"}
           }
         },

@@ -39,6 +39,7 @@ jobs:
           Rscript tools/check-benchmarks.R
           --current=artifacts/benchmark-current.json
           --baseline=tools/benchmarks/baseline.json
+          --strict-relative=false
       - uses: actions/upload-artifact@v4
         if: always()
         with:

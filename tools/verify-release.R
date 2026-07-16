@@ -82,8 +82,8 @@ dcc_validate_release_evidence <- function(
       code = code, gate = gate, detail = detail, stringsAsFactors = FALSE
     )
   }
-  if (!is.list(evidence) || !identical(evidence$contract_version, "1.0")) {
-    add("RELEASE_CONTRACT_INVALID", "contract", "contract_version must be 1.0")
+  if (!is.list(evidence) || !identical(evidence$contract_version, "1.1")) {
+    add("RELEASE_CONTRACT_INVALID", "contract", "contract_version must be 1.1")
     return(release_issue_table(issues))
   }
   release <- evidence$release
@@ -213,14 +213,21 @@ dcc_validate_release_evidence <- function(
   }
   if (present("benchmark")) {
     item <- gate("benchmark")
+    comparison_mode <- as.character(item$comparison_mode)
+    mode_ok <- length(comparison_mode) == 1L &&
+      !is.na(comparison_mode) &&
+      comparison_mode %in% c("strict", "hosted_advisory")
+    relative_ok <- mode_ok &&
+      (!identical(comparison_mode, "strict") ||
+         release_at_most(item$maximum_regression, 0.2))
     if (!release_at_least(item$rows, 1e6) ||
         !release_at_least(item$runs, 3) ||
         !release_between(item$execution_median_seconds, 0, 45) ||
-        !release_at_most(item$maximum_regression, 0.2) ||
+        !relative_ok ||
         !identical(as.character(item$memory_status), "pass")) {
       add(
         "RELEASE_BENCHMARK_FAILED", "benchmark",
-        "one-million-row time, memory, repetition, and regression limits failed"
+        "one-million-row time, memory, repetition, or comparison-mode policy failed"
       )
     }
   }

@@ -15,10 +15,16 @@ benchmark_failure <- function(code, stage = NA_character_, detail = "") {
 }
 
 compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
-                               execution_budget = 45, minimum_runs = 3L) {
+                               execution_budget = 45, minimum_runs = 3L,
+                               strict_relative = TRUE) {
   failures <- list()
+  advisories <- list()
   add_failure <- function(code, stage = NA_character_, detail = "") {
     failures[[length(failures) + 1L]] <<-
+      benchmark_failure(code, stage, detail)
+  }
+  add_advisory <- function(code, stage = NA_character_, detail = "") {
+    advisories[[length(advisories) + 1L]] <<-
       benchmark_failure(code, stage, detail)
   }
   required_current <- c(
@@ -43,7 +49,11 @@ compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
     )
     return(list(
       ok = FALSE, comparison = data.frame(),
-      failures = do.call(rbind, failures)
+      failures = do.call(rbind, failures),
+      advisories = data.frame(
+        code = character(), stage = character(), detail = character(),
+        stringsAsFactors = FALSE
+      )
     ))
   }
 
@@ -96,8 +106,14 @@ compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
     baseline_memory <- as.numeric(reference$peak_memory_bytes[1L])
     relative <- current_seconds / baseline_seconds - 1
     relative_memory <- current_memory / baseline_memory - 1
-    if (!is.finite(relative) || relative > regression_limit) {
+    if (!is.finite(relative)) {
       add_failure(
+        "BENCHMARK_TIME_INVALID", stage,
+        "non-finite current or baseline timing"
+      )
+    } else if (relative > regression_limit) {
+      recorder <- if (isTRUE(strict_relative)) add_failure else add_advisory
+      recorder(
         "BENCHMARK_REGRESSION", stage,
         sprintf("time change %.1f%% exceeds %.1f%%", 100 * relative,
                 100 * regression_limit)
@@ -132,8 +148,11 @@ compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
   failure_table <- if (length(failures)) do.call(rbind, failures) else
     data.frame(code = character(), stage = character(), detail = character(),
                stringsAsFactors = FALSE)
+  advisory_table <- if (length(advisories)) do.call(rbind, advisories) else
+    data.frame(code = character(), stage = character(), detail = character(),
+               stringsAsFactors = FALSE)
   list(ok = nrow(failure_table) == 0L, comparison = comparison,
-       failures = failure_table)
+       failures = failure_table, advisories = advisory_table)
 }
 
 benchmark_argument <- function(args, name, default = NULL) {
@@ -141,6 +160,13 @@ benchmark_argument <- function(args, name, default = NULL) {
   hit <- args[startsWith(args, prefix)]
   if (!length(hit)) return(default)
   substring(hit[1L], nchar(prefix) + 1L)
+}
+
+benchmark_logical_argument <- function(args, name, default = TRUE) {
+  value <- tolower(benchmark_argument(args, name, as.character(default)))
+  if (value %in% c("true", "1", "yes")) return(TRUE)
+  if (value %in% c("false", "0", "no")) return(FALSE)
+  stop("--", name, " must be true or false.")
 }
 
 main <- function() {
@@ -163,14 +189,31 @@ main <- function() {
     cat("BENCHMARK: BLOCKED (baseline is not accepted)\n")
     quit(status = 1L)
   }
-  result <- compare_benchmarks(current$records, baseline$stages)
+  strict_relative <- benchmark_logical_argument(
+    args, "strict-relative", default = TRUE
+  )
+  result <- compare_benchmarks(
+    current$records, baseline$stages,
+    regression_limit = as.numeric(baseline$regression_limit),
+    execution_budget = as.numeric(baseline$execution_budget_seconds),
+    minimum_runs = as.integer(baseline$minimum_runs),
+    strict_relative = strict_relative
+  )
   if (nrow(result$comparison)) print(result$comparison, row.names = FALSE)
+  if (nrow(result$advisories)) {
+    cat("Benchmark advisories:\n")
+    print(result$advisories, row.names = FALSE)
+  }
   if (!result$ok) {
     print(result$failures, row.names = FALSE)
     cat("BENCHMARK: FAIL\n")
     quit(status = 1L)
   }
-  cat("BENCHMARK: PASS\n")
+  if (nrow(result$advisories)) {
+    cat("BENCHMARK: PASS WITH ADVISORIES\n")
+  } else {
+    cat("BENCHMARK: PASS\n")
+  }
 }
 
 if (sys.nframe() == 0L) main()

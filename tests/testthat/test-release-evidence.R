@@ -11,7 +11,7 @@ release_evidence_fixture <- function(root = dcc_source_root()) {
       "report-model")
   )
   list(
-    contract_version = "1.0",
+    contract_version = "1.1",
     release = list(
       package = "DCC", package_version = version,
       created_at = "2026-07-16T00:00:00Z",
@@ -37,7 +37,7 @@ release_evidence_fixture <- function(root = dcc_source_root()) {
       benchmark = list(
         status = "pass", rows = 1e6, runs = 3L,
         execution_median_seconds = 8.9, maximum_regression = 0.1,
-        memory_status = "pass"
+        comparison_mode = "strict", memory_status = "pass"
       ),
       staff = list(
         status = "facilitator_required", human_evidence = FALSE,
@@ -121,6 +121,20 @@ test_that("staff validation is advisory while other release gates remain strict"
   expect_true("RELEASE_COVERAGE_FAILED" %in% issues$code)
   expect_true("RELEASE_AGENT_FAILED" %in% issues$code)
   expect_true("RELEASE_ARTIFACT_HASH_MISMATCH" %in% issues$code)
+})
+
+test_that("release benchmark policy distinguishes strict and hosted timing", {
+  source(release_tool, local = TRUE)
+  root <- dcc_source_root()
+  now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
+  evidence <- release_evidence_fixture(root)
+  evidence$gates$benchmark$maximum_regression <- 0.8
+  evidence$gates$benchmark$comparison_mode <- "hosted_advisory"
+  expect_equal(nrow(dcc_validate_release_evidence(evidence, root, now)), 0L)
+
+  evidence$gates$benchmark$comparison_mode <- "strict"
+  strict <- dcc_validate_release_evidence(evidence, root, now)
+  expect_true("RELEASE_BENCHMARK_FAILED" %in% strict$code)
 })
 
 test_that("one signed staff participant can pass the advisory study", {
@@ -210,6 +224,13 @@ test_that("release evidence schema is closed and requires every gate", {
   expect_setequal(
     unlist(staff_status$enum),
     c("pass", "fail", "facilitator_required")
+  )
+  expect_identical(schema$properties$contract_version$const, "1.1")
+  benchmark <- schema$properties$gates$properties$benchmark
+  expect_true("comparison_mode" %in% unlist(benchmark$required))
+  expect_setequal(
+    unlist(benchmark$properties$comparison_mode$enum),
+    c("strict", "hosted_advisory")
   )
 })
 

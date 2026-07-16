@@ -69,6 +69,12 @@ Rscript tools/check-benchmarks.R \
 
 Strict review remains available by omitting `--strict-relative=false`.
 
+Release evidence contract 1.1 records `comparison_mode` as either `strict` or
+`hosted_advisory`. The release verifier applies the 20% relative-time limit
+only to strict evidence. Both modes continue to require one million rows,
+three runs, execution median at or below 45 seconds, and passing memory
+evidence.
+
 ## Tests
 
 The benchmark contract tests will prove:

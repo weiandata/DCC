@@ -42,6 +42,46 @@ test_that("benchmark comparator uses medians and rejects regressions", {
   expect_true("BENCHMARK_REGRESSION" %in% regression$failures$code)
 })
 
+test_that("hosted benchmark mode makes relative time noise advisory", {
+  source(benchmark_tool, local = TRUE)
+  stages <- benchmark_required_stages()
+  baseline <- data.frame(
+    platform_class = "Darwin-aarch64-R4.6", cpu_class = "GitHub ARM64",
+    stage = stages, median_seconds = rep(10, length(stages)),
+    peak_memory_bytes = rep(1e8, length(stages)), stringsAsFactors = FALSE
+  )
+  current <- do.call(rbind, lapply(seq_len(3L), function(run) {
+    data.frame(
+      platform_class = "Darwin-aarch64-R4.6", cpu_class = "GitHub ARM64",
+      run = run, stage = stages, seconds = rep(13, length(stages)),
+      peak_memory_bytes = rep(1e8, length(stages)), correctness = TRUE,
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  hosted <- compare_benchmarks(current, baseline, strict_relative = FALSE)
+  expect_true(hosted$ok)
+  expect_equal(nrow(hosted$failures), 0L)
+  expect_setequal(unique(hosted$advisories$code), "BENCHMARK_REGRESSION")
+
+  current$seconds[current$stage == "execution"] <- 46
+  over_budget <- compare_benchmarks(
+    current, baseline, strict_relative = FALSE
+  )
+  expect_false(over_budget$ok)
+  expect_true("BENCHMARK_EXECUTION_BUDGET" %in% over_budget$failures$code)
+
+  current$seconds <- 10
+  current$peak_memory_bytes[current$stage == "machine"] <- 1.3e8
+  memory_regression <- compare_benchmarks(
+    current, baseline, strict_relative = FALSE
+  )
+  expect_false(memory_regression$ok)
+  expect_true(
+    "BENCHMARK_MEMORY_REGRESSION" %in% memory_regression$failures$code
+  )
+})
+
 test_that("benchmark comparator refuses incomplete or unlike evidence", {
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
