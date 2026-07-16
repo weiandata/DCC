@@ -8,7 +8,12 @@ test_that("release candidate identity is frozen at DCC 1.2.0", {
 })
 
 test_that("local release evidence cannot leak into the source package", {
-  ignore <- readLines(dcc_source_path(".Rbuildignore"), warn = FALSE)
+  path <- dcc_source_path(".Rbuildignore")
+  if (!file.exists(path)) {
+    succeed("The installed package does not contain source build controls.")
+    return(invisible(NULL))
+  }
+  ignore <- readLines(path, warn = FALSE)
   expect_true("^artifacts$" %in% ignore)
   expect_true("^DCC[.]Rcheck" %in% ignore)
   expect_true("^DCC_.*[.]tar[.]gz$" %in% ignore)
