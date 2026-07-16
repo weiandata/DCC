@@ -44,3 +44,20 @@ report_model_fixture <- function(secret = "value 150 outside range") {
   result <- report_result_fixture(secret)
   dcc_report_model(result, report_run_fixture(result))
 }
+
+plan_with_reports <- function(data, staff = TRUE, statistical = TRUE,
+                              machine = TRUE) {
+  plan <- plan_fixture(data)
+  plan$outputs <- data.frame(
+    key = c(
+      "report_language", "cleaned_format", "include_staff_report",
+      "include_statistical_report", "include_machine_report",
+      "statistical_table_format", "include_sensitive_examples"
+    ),
+    value = c(
+      "zh-CN", "csv", staff, statistical, machine, "csv", "FALSE"
+    ),
+    stringsAsFactors = FALSE
+  )
+  plan
+}
