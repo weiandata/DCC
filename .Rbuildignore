@@ -20,3 +20,7 @@
 ^\.lycheeignore$
 ^renv\.lock$
 ^cran-comments\.md$
+^artifacts$
+^DCC[.]Rcheck
+^DCC_.*[.]tar[.]gz$
+^tests/acceptance/staff/.*[.]inspect[.]ndjson$
