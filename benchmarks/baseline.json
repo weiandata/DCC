@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "accepted": true,
+  "review_required": true,
+  "update_reason": "Initial Phase E one-million-row baseline from three successful local runs; CI reproduction remains required for release evidence.",
+  "measured_at": "2026-07-16T05:22:19Z",
+  "platform_class": "Darwin-aarch64-R4.6",
+  "cpu_class": "arm64 25.5.0",
+  "minimum_runs": 3,
+  "regression_limit": 0.2,
+  "execution_budget_seconds": 45,
+  "stages": [
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"import","median_seconds":0.586,"peak_memory_bytes":602434200},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"canonicalization","median_seconds":2.270,"peak_memory_bytes":1601525264},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"validation","median_seconds":0.020,"peak_memory_bytes":803385688},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"detection","median_seconds":0.352,"peak_memory_bytes":1145901024},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"preview","median_seconds":3.601,"peak_memory_bytes":1750702960},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"execution","median_seconds":8.898,"peak_memory_bytes":2280344880},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"report_model","median_seconds":3.572,"peak_memory_bytes":2654281280},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"staff","median_seconds":1.137,"peak_memory_bytes":2120738992},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"statistical","median_seconds":0.739,"peak_memory_bytes":2637518672},
+    {"platform_class":"Darwin-aarch64-R4.6","stage":"machine","median_seconds":8.033,"peak_memory_bytes":2229296376}
+  ]
+}
