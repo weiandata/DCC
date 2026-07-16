@@ -144,12 +144,22 @@ dcc_validate_release_evidence <- function(
   if (present("r_check")) {
     item <- gate("r_check")
     fields <- c(
-      "errors", "warnings", "notes", "test_failures", "test_warnings",
+      "errors", "warnings", "actionable_notes", "test_failures", "test_warnings",
       "test_skips"
     )
+    allowed <- unlist(item$allowed_notes, use.names = FALSE)
+    if (!length(allowed)) allowed <- character()
+    notes <- release_number(item$notes)
+    allowed_ok <- is.character(allowed) && !anyNA(allowed) &&
+      !anyDuplicated(allowed) &&
+      all(allowed %in% "cran_new_submission") &&
+      is.finite(notes) && notes >= 0 && notes == length(allowed)
     if (!all(vapply(fields, function(name) release_zero(item[[name]]),
-                    logical(1)))) {
-      add("RELEASE_R_CHECK_FAILED", "r_check", "all check and test counts must be zero")
+                    logical(1))) || !allowed_ok) {
+      add(
+        "RELEASE_R_CHECK_FAILED", "r_check",
+        "errors, warnings, actionable notes, and tests must be zero; only the coded CRAN first-submission NOTE is allowed"
+      )
     }
   }
   if (present("coverage")) {

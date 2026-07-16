@@ -20,8 +20,11 @@ release_evidence_fixture <- function(root = dcc_source_root()) {
       cran_version = version, internal_version = version
     ),
     gates = list(
-      r_check = list(status = "pass", errors = 0L, warnings = 0L, notes = 0L,
-                     test_failures = 0L, test_warnings = 0L, test_skips = 0L),
+      r_check = list(
+        status = "pass", errors = 0L, warnings = 0L, notes = 0L,
+        actionable_notes = 0L, allowed_notes = list(),
+        test_failures = 0L, test_warnings = 0L, test_skips = 0L
+      ),
       coverage = list(status = "pass", overall = 91, critical = critical),
       format_matrix = list(
         status = "pass", platforms = c("linux", "macos", "windows"),
@@ -121,6 +124,31 @@ test_that("release gate enforces human agent coverage and artifact thresholds", 
   expect_true("RELEASE_ARTIFACT_HASH_MISMATCH" %in% issues$code)
 })
 
+test_that("only the coded CRAN first-submission NOTE is non-actionable", {
+  source(release_tool, local = TRUE)
+  root <- dcc_source_root()
+  now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
+  evidence <- release_evidence_fixture(root)
+  evidence$gates$r_check$notes <- 1L
+  evidence$gates$r_check$allowed_notes <- list("cran_new_submission")
+  expect_equal(nrow(dcc_validate_release_evidence(evidence, root, now)), 0L)
+
+  evidence$gates$r_check$allowed_notes <- list("html_tidy_unavailable")
+  unknown <- dcc_validate_release_evidence(evidence, root, now)
+  expect_true("RELEASE_R_CHECK_FAILED" %in% unknown$code)
+
+  evidence <- release_evidence_fixture(root)
+  evidence$gates$r_check$notes <- 2L
+  evidence$gates$r_check$allowed_notes <- list("cran_new_submission")
+  mismatch <- dcc_validate_release_evidence(evidence, root, now)
+  expect_true("RELEASE_R_CHECK_FAILED" %in% mismatch$code)
+
+  evidence <- release_evidence_fixture(root)
+  evidence$gates$r_check$actionable_notes <- 1L
+  actionable <- dcc_validate_release_evidence(evidence, root, now)
+  expect_true("RELEASE_R_CHECK_FAILED" %in% actionable$code)
+})
+
 test_that("malformed release evidence fails closed with stable issue codes", {
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
@@ -156,6 +184,13 @@ test_that("release evidence schema is closed and requires every gate", {
       "r_check", "coverage", "format_matrix", "property_fault", "benchmark",
       "staff", "statistician", "agent", "dependencies", "schemas", "artifacts"
     )
+  )
+  r_check <- schema$properties$gates$properties$r_check
+  expect_true(all(c("actionable_notes", "allowed_notes") %in%
+                    unlist(r_check$required)))
+  expect_identical(
+    unlist(r_check$properties$allowed_notes$items$enum),
+    "cran_new_submission"
   )
 })
 

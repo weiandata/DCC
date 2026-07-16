@@ -35,14 +35,19 @@
         "r_check": {
           "type": "object", "additionalProperties": false,
           "required": [
-            "status", "errors", "warnings", "notes", "test_failures",
-            "test_warnings", "test_skips"
+            "status", "errors", "warnings", "notes", "actionable_notes",
+            "allowed_notes", "test_failures", "test_warnings", "test_skips"
           ],
           "properties": {
             "status": {"$ref": "#/$defs/status"},
             "errors": {"$ref": "#/$defs/nonnegativeInteger"},
             "warnings": {"$ref": "#/$defs/nonnegativeInteger"},
             "notes": {"$ref": "#/$defs/nonnegativeInteger"},
+            "actionable_notes": {"$ref": "#/$defs/nonnegativeInteger"},
+            "allowed_notes": {
+              "type": "array", "uniqueItems": true,
+              "items": {"enum": ["cran_new_submission"]}
+            },
             "test_failures": {"$ref": "#/$defs/nonnegativeInteger"},
             "test_warnings": {"$ref": "#/$defs/nonnegativeInteger"},
             "test_skips": {"$ref": "#/$defs/nonnegativeInteger"}
