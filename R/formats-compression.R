@@ -11,6 +11,21 @@ validate_zip_member <- function(member) {
   normalized
 }
 
+path_within_directory <- function(path, directory,
+                                  windows = .Platform$OS.type == "windows") {
+  normalize_separators <- function(value) {
+    value <- gsub("\\\\", "/", value)
+    sub("/+$", "", value)
+  }
+  path <- normalize_separators(path)
+  directory <- normalize_separators(directory)
+  if (isTRUE(windows)) {
+    path <- tolower(path)
+    directory <- tolower(directory)
+  }
+  startsWith(path, paste0(directory, "/"))
+}
+
 resolve_compressed_source <- function(path, options = list()) {
   lower <- tolower(path)
   limit <- compression_size_limit(options)
@@ -48,9 +63,9 @@ resolve_compressed_source <- function(path, options = list()) {
     if (!file.exists(candidate) && length(extracted) == 1L) {
       candidate <- extracted
     }
-    root <- normalizePath(target_dir, mustWork = TRUE)
-    resolved <- normalizePath(candidate, mustWork = TRUE)
-    if (!startsWith(resolved, paste0(root, .Platform$file.sep))) {
+    root <- normalizePath(target_dir, winslash = "/", mustWork = TRUE)
+    resolved <- normalizePath(candidate, winslash = "/", mustWork = TRUE)
+    if (!path_within_directory(resolved, root)) {
       unlink(target_dir, recursive = TRUE, force = TRUE)
       dcc_abort("ZIP member escaped the extraction directory.",
                 class = "dcc_import_error")

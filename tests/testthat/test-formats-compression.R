@@ -11,6 +11,19 @@ test_that("ZIP requires a safe explicit member", {
                class = "dcc_import_error")
 })
 
+test_that("ZIP containment handles Windows separators without weakening safety", {
+  expect_true(path_within_directory(
+    "D:\\temp\\dcc-unzip\\responses.csv",
+    "D:\\temp\\dcc-unzip",
+    windows = TRUE
+  ))
+  expect_false(path_within_directory(
+    "D:\\temp\\dcc-unzip-escape\\responses.csv",
+    "D:\\temp\\dcc-unzip",
+    windows = TRUE
+  ))
+})
+
 test_that("gzip sources import without changing compressed bytes", {
   gz <- tempfile(fileext = ".csv.gz")
   con <- gzfile(gz, open = "wt", encoding = "UTF-8")
