@@ -54,8 +54,8 @@ test_that("staff release workbook is blank, signed-evidence gated, and complete"
 })
 
 test_that("staff test kit sources include a complete safe R workflow and manual", {
-  script <- acceptance_path("staff", "01-安装并完整测试.R")
-  manual <- acceptance_path("staff", "工作人员测试手册.md")
+  script <- acceptance_path("staff", "staff-test.R")
+  manual <- acceptance_path("staff", "staff-test-manual-zh-CN.md")
   expect_true(file.exists(script))
   expect_true(file.exists(manual))
 

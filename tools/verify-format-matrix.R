@@ -12,6 +12,14 @@ find_project_root <- function(path = getwd()) {
   }
 }
 
+script_project_root <- function() {
+  args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("^--file=", args, value = TRUE)
+  if (!length(file_arg)) return(find_project_root())
+  script <- sub("^--file=", "", file_arg[[1L]])
+  find_project_root(dirname(normalizePath(script, mustWork = TRUE)))
+}
+
 canonical_matrix_hash <- function(data) {
   data <- as.data.frame(data, check.names = FALSE, stringsAsFactors = FALSE)
   normalized <- lapply(data, function(column) {
@@ -41,7 +49,7 @@ read_fixture <- function(record, root) {
 }
 
 main <- function() {
-  root <- find_project_root()
+  root <- script_project_root()
   if (!requireNamespace("DCC", quietly = TRUE)) {
     if (!requireNamespace("pkgload", quietly = TRUE)) {
       stop("Install DCC first, or install pkgload to verify from source.")
