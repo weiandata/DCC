@@ -261,7 +261,8 @@ main <- function() {
   stages <- split(records, records$stage)
   summary <- do.call(rbind, lapply(stages, function(stage) {
     data.frame(
-      platform_class = stage$platform_class[1L], stage = stage$stage[1L],
+      platform_class = stage$platform_class[1L],
+      cpu_class = stage$cpu_class[1L], stage = stage$stage[1L],
       median_seconds = stats::median(stage$seconds),
       peak_memory_bytes = stats::median(stage$peak_memory_bytes),
       stringsAsFactors = FALSE
@@ -273,7 +274,7 @@ main <- function() {
     summary$stage
   ), , drop = FALSE]
   evidence <- list(
-    contract_version = "1.0", generated_at = format(
+    contract_version = "1.1", generated_at = format(
       Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"
     ),
     platform_class = context$platform_class, cpu_class = context$cpu_class,

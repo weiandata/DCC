@@ -23,6 +23,29 @@ test_that("staff acceptance requires signed human evidence", {
   )
 })
 
+test_that("staff release workbook is blank, signed-evidence gated, and complete", {
+  workbook <- acceptance_path(
+    "staff", "DCC-1.2.0-staff-acceptance.xlsx"
+  )
+  expect_true(file.exists(workbook))
+  wb <- suppressWarnings(openxlsx2::wb_load(workbook, data_only = FALSE))
+  expect_identical(
+    unname(openxlsx2::wb_get_sheet_names(wb)),
+    c("说明", "参与者", "场景记录", "区分测试", "SUS问卷", "签署", "评分摘要")
+  )
+
+  signatures <- openxlsx2::wb_to_df(
+    wb, sheet = "签署", rows = 6:10, cols = 2:7, col_names = FALSE
+  )
+  expect_true(all(is.na(signatures)))
+
+  status <- openxlsx2::wb_to_df(
+    wb, sheet = "评分摘要", rows = 20, cols = 5,
+    col_names = FALSE
+  )
+  expect_identical(status[[1L]][1L], "facilitator_required")
+})
+
 test_that("statistician acceptance covers correctness and caveats", {
   scenarios <- yaml::read_yaml(
     acceptance_path("statistician", "scenarios.yml")
@@ -78,6 +101,42 @@ test_that("agent task result schema is a closed contract", {
   )
 })
 
+test_that("agent execution scoring blocks calls outside the task whitelist", {
+  tool <- dcc_source_path("tools", "agent-acceptance.R")
+  expect_true(file.exists(tool))
+  source(tool, local = TRUE)
+  task <- list(
+    id = "T01", category = "discovery", prompt = "Discover.",
+    allowed_public_calls = list("dcc_capabilities"),
+    expected_stable_codes = list(), artifact_assertions = list(),
+    max_attempts = 1L, bounded_result = TRUE, permits_execution = FALSE,
+    requires_validation = FALSE, requires_preview = FALSE
+  )
+  suite <- list(
+    tasks = list(task),
+    thresholds = list(success_rate = 0.9, maximum_attempts = 2L)
+  )
+  good <- agent_task_result(
+    task_id = "T01", calls = "dcc_capabilities",
+    result = list(executed = FALSE)
+  )
+  expect_true(agent_score_results(suite, list(good))$ok)
+  path <- tempfile(fileext = ".json")
+  agent_write_task_result(good, path)
+  serialized <- jsonlite::read_json(path, simplifyVector = FALSE)
+  expect_type(serialized$calls, "list")
+  expect_length(serialized$calls, 1L)
+  expect_type(serialized$stable_codes, "list")
+  expect_length(serialized$stable_codes, 0L)
+  expect_true(agent_score_results(suite, list(serialized))$ok)
+
+  unsafe <- good
+  unsafe$calls <- c("dcc_capabilities", "system")
+  score <- agent_score_results(suite, list(unsafe))
+  expect_false(score$ok)
+  expect_true("CALL_OUTSIDE_WHITELIST" %in% score$failures$code)
+})
+
 test_that("acceptance runner preserves the human evidence boundary", {
   runner <- dcc_source_path("tools", "run-acceptance.R")
   expect_true(file.exists(runner))
@@ -86,4 +145,6 @@ test_that("acceptance runner preserves the human evidence boundary", {
   expect_match(text, "facilitator_required", fixed = TRUE)
   expect_match(text, "human_evidence = FALSE", fixed = TRUE)
   expect_match(text, "--audience", fixed = TRUE)
+  expect_match(text, "agent-acceptance.R", fixed = TRUE)
+  expect_match(text, "mode, \"execute\"", fixed = TRUE)
 })

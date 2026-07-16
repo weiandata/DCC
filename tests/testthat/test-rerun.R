@@ -57,6 +57,26 @@ test_that("rerun works from a manifest YAML file", {
   expect_true(rr$reproduced)
 })
 
+test_that("strict-plan manifests rerun through the strict plan compiler", {
+  data_file <- tempfile(fileext = ".csv")
+  writeLines(c("sid,score", "S001,90", "S002,150"), data_file)
+  plan_file <- write_plan_json(plan_fixture(data_file))
+  plan <- dcc_read_plan(plan_file)
+  imported <- dcc_import(data_file, plan_import_spec(plan, data_file))
+  rules <- plan_ruleset(plan)
+  findings <- dcc_detect(imported, rules, id_var = "sid")
+  result <- dcc_execute(
+    imported, findings, actions = list(R001 = "set_na"), id_var = "sid"
+  )
+
+  manifest <- dcc_manifest(result)
+  expect_identical(manifest$ruleset$source, normalizePath(plan_file))
+  rerun <- dcc_rerun(manifest)
+  expect_true(rerun$reproduced)
+  expect_true(rerun$data_match)
+  expect_true(rerun$audit_match)
+})
+
 test_that("changed inputs are typed errors, not false reproductions", {
   p <- pipeline_fixture()
   m <- dcc_manifest(p$result)

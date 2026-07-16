@@ -44,12 +44,22 @@
   staff path includes a validated facilitator workbook but requires signed
   real-user evidence; automated preparation cannot be reported as usability
   success.
+* Add a five-participant staff acceptance workbook and an executable
+  twenty-task AI-Agent harness with closed per-task JSON, whitelist and
+  validation/preview gates, artifact assertions, and evidence hashes.
+* Strict plan validation now surfaces format preflight codes such as
+  `IMPORT_SOURCE_MISSING` and `IMPORT_SHEET_REQUIRED` before import, and
+  `dcc_rerun()` can reproduce manifests whose rules came from strict JSON or
+  Excel plans through the same canonical import compiler.
 * Add a closed release-evidence schema and one fail-closed verifier covering R
   checks, zero-skip tests, coverage, format semantics, benchmarks, all three
   audiences, dependencies, schemas, versions, freshness, and artifact hashes.
 * Classify `R CMD check` NOTEs with an exact machine-readable allowlist: only
   the CRAN first-submission NOTE (`cran_new_submission`) is non-actionable;
   every other NOTE remains release-blocking.
+* Performance CI now distinguishes GitHub-hosted ARM64 from local Apple
+  Silicon and compares against a reviewed three-run hosted baseline without
+  weakening the 20% regression or 45-second execution limits.
 
 # DCC 1.1.0
 

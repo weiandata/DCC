@@ -111,19 +111,46 @@ dcc_rerun <- function(manifest) {
     dcc_abort("Rule file missing: ", manifest$ruleset$source,
               class = "dcc_rerun_error")
   }
-  rules <- dcc_rules(manifest$ruleset$source)
+  source_extension <- tolower(tools::file_ext(manifest$ruleset$source))
+  strict_plan <- NULL
+  rules <- if (source_extension %in% c("json", "xlsx")) {
+    strict_plan <- tryCatch(
+      dcc_read_plan(manifest$ruleset$source),
+      error = function(e) {
+        dcc_abort(
+          "Could not reload strict plan: ", conditionMessage(e),
+          class = "dcc_rerun_error"
+        )
+      }
+    )
+    validation <- dcc_validation_errors(dcc_validate_plan(strict_plan))
+    if (nrow(validation)) {
+      dcc_abort(
+        "Strict plan validation failed during rerun: ",
+        validation$code[1L], " (", validation$fix[1L], ")",
+        class = "dcc_rerun_error"
+      )
+    }
+    plan_ruleset(strict_plan)
+  } else {
+    dcc_rules(manifest$ruleset$source)
+  }
   if (!identical(rules$hash, manifest$ruleset$hash)) {
     dcc_abort("Rule file hash mismatch for ", manifest$ruleset$source,
               "; the rules changed since the original run.",
               class = "dcc_rerun_error")
   }
 
-  x <- dcc_read(inp$source, format = inp$format,
-                encoding = if (identical(inp$encoding, "native")) {
-                  "auto"
-                } else {
-                  inp$encoding
-                })
+  x <- if (!is.null(strict_plan)) {
+    dcc_import(inp$source, plan_import_spec(strict_plan, inp$source))
+  } else {
+    dcc_read(inp$source, format = inp$format,
+             encoding = if (identical(inp$encoding, "native")) {
+               "auto"
+             } else {
+               inp$encoding
+             })
+  }
   findings <- dcc_detect(x, rules, id_var = manifest$id_var)
   result <- dcc_execute(x, findings, actions = manifest$actions,
                         id_var = manifest$id_var,

@@ -17,13 +17,15 @@ test_that("benchmark comparator uses medians and rejects regressions", {
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
-    platform_class = "Darwin-arm64-R4.6", stage = stages,
+    platform_class = "Darwin-arm64-R4.6", cpu_class = "GitHub ARM64",
+    stage = stages,
     median_seconds = rep(10, length(stages)),
     peak_memory_bytes = rep(1e8, length(stages)), stringsAsFactors = FALSE
   )
   current <- do.call(rbind, lapply(seq_len(3L), function(run) {
     data.frame(
-      platform_class = "Darwin-arm64-R4.6", run = run, stage = stages,
+      platform_class = "Darwin-arm64-R4.6", cpu_class = "GitHub ARM64",
+      run = run, stage = stages,
       seconds = rep(11, length(stages)), peak_memory_bytes = rep(1.1e8, length(stages)),
       correctness = TRUE,
       stringsAsFactors = FALSE
@@ -44,13 +46,15 @@ test_that("benchmark comparator refuses incomplete or unlike evidence", {
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
-    platform_class = "Linux-x86_64-R4.6", stage = stages,
+    platform_class = "Linux-x86_64-R4.6", cpu_class = "GitHub X64",
+    stage = stages,
     median_seconds = rep(10, length(stages)),
     peak_memory_bytes = rep(1e8, length(stages)), stringsAsFactors = FALSE
   )
   current <- do.call(rbind, lapply(seq_len(3L), function(run) {
     data.frame(
-      platform_class = "Linux-x86_64-R4.6", run = run, stage = stages,
+      platform_class = "Linux-x86_64-R4.6", cpu_class = "GitHub X64",
+      run = run, stage = stages,
       seconds = rep(10, length(stages)), peak_memory_bytes = rep(1e8, length(stages)),
       correctness = TRUE,
       stringsAsFactors = FALSE
@@ -66,19 +70,27 @@ test_that("benchmark comparator refuses incomplete or unlike evidence", {
   mismatch <- compare_benchmarks(unlike, baseline)
   expect_false(mismatch$ok)
   expect_true("BENCHMARK_PLATFORM_MISMATCH" %in% mismatch$failures$code)
+
+  unlike_cpu <- current
+  unlike_cpu$cpu_class <- "local arm64"
+  cpu_mismatch <- compare_benchmarks(unlike_cpu, baseline)
+  expect_false(cpu_mismatch$ok)
+  expect_true("BENCHMARK_CPU_MISMATCH" %in% cpu_mismatch$failures$code)
 })
 
 test_that("execution budget and minimum repetitions are hard gates", {
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
-    platform_class = "Linux-x86_64-R4.6", stage = stages,
+    platform_class = "Linux-x86_64-R4.6", cpu_class = "GitHub X64",
+    stage = stages,
     median_seconds = rep(40, length(stages)),
     peak_memory_bytes = rep(1e8, length(stages)), stringsAsFactors = FALSE
   )
   current <- do.call(rbind, lapply(seq_len(3L), function(run) {
     data.frame(
-      platform_class = "Linux-x86_64-R4.6", run = run, stage = stages,
+      platform_class = "Linux-x86_64-R4.6", cpu_class = "GitHub X64",
+      run = run, stage = stages,
       seconds = ifelse(stages == "execution", 46, 40),
       peak_memory_bytes = rep(1e8, length(stages)), correctness = TRUE,
       stringsAsFactors = FALSE
@@ -100,10 +112,14 @@ test_that("accepted baseline records review rationale and memory ceilings", {
   expect_true(file.exists(path))
   baseline <- jsonlite::read_json(path, simplifyVector = TRUE)
 
-  expect_identical(baseline$contract_version, "1.0")
+  expect_identical(baseline$contract_version, "1.1")
   expect_true(nzchar(baseline$update_reason))
   expect_true(isTRUE(baseline$review_required))
+  expect_identical(baseline$cpu_class, "GitHub ARM64")
+  expect_identical(baseline$source_ci_run, "29478665017")
+  expect_match(baseline$source_artifact_sha256, "^[0-9a-f]{64}$")
   expect_setequal(baseline$stages$stage, benchmark_required_stages())
+  expect_true(all(baseline$stages$cpu_class == baseline$cpu_class))
   expect_true(all(baseline$stages$peak_memory_bytes > 0))
 })
 

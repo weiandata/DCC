@@ -228,8 +228,23 @@ run_statistician <- function(root, output_dir, mode) {
 }
 
 run_agent <- function(root, output_dir, mode) {
+  if (identical(mode, "execute")) {
+    load_dcc(root)
+    source(file.path(root, "tools", "agent-acceptance.R"), local = TRUE)
+    evidence <- run_agent_execution(root, output_dir)
+    path <- normalizePath(
+      file.path(output_dir, "agent-execution.json"), mustWork = TRUE
+    )
+    if (!identical(evidence$status, "pass")) {
+      print(evidence$failures, row.names = FALSE)
+      cat("AGENT EXECUTION: FAIL\n")
+      quit(status = 1L)
+    }
+    cat("AGENT EXECUTION: PASS\n", path, "\n")
+    return(invisible(evidence))
+  }
   if (!identical(mode, "contract")) {
-    stop("Agent acceptance supports --mode=contract only.")
+    stop("Agent acceptance supports --mode=contract or --mode=execute.")
   }
   suite <- jsonlite::read_json(
     file.path(root, "tests", "acceptance", "agent", "tasks.json"),

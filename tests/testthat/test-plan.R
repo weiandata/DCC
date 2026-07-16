@@ -30,6 +30,30 @@ test_that("plan validation checks enumerations and cross-sheet references", {
                   validation$code))
 })
 
+test_that("plan validation exposes source preflight codes before import", {
+  missing <- plan_fixture()
+  missing$source$path <- tempfile(fileext = ".csv")
+  missing_validation <- dcc_validate_plan(missing)
+  expect_true(
+    "IMPORT_SOURCE_MISSING" %in%
+      dcc_validation_errors(missing_validation)$code
+  )
+
+  workbook <- tempfile(fileext = ".xlsx")
+  writeLines("synthetic workbook placeholder", workbook)
+  ambiguous <- plan_fixture()
+  ambiguous$source$path <- workbook
+  ambiguous$source$format <- "xlsx"
+  ambiguous$source$encoding <- ""
+  ambiguous$source$sheet <- ""
+  ambiguous$source$range <- "A1:B3"
+  ambiguous_validation <- dcc_validate_plan(ambiguous)
+  expect_true(
+    "IMPORT_SHEET_REQUIRED" %in%
+      dcc_validation_errors(ambiguous_validation)$code
+  )
+})
+
 test_that("expression rules do not require a separate variable", {
   p <- plan_fixture()
   p$rules$type <- "expr"

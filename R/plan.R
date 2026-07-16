@@ -138,6 +138,49 @@ plan_json_object_ok <- function(x) {
   is.list(value) && !is.null(names(value))
 }
 
+plan_source_path <- function(plan) {
+  path <- as.character(plan$source$path %||% "")
+  if (length(path) != 1L || is.na(path) || !nzchar(trimws(path))) return("")
+  path <- path.expand(path)
+  absolute <- grepl("^(/|[A-Za-z]:[/\\\\])", path)
+  source <- plan_source_info(plan)
+  if (!absolute && !is.null(source$path) && nzchar(source$path)) {
+    path <- file.path(dirname(source$path), path)
+  }
+  path
+}
+
+plan_source_preflight <- function(plan) {
+  source <- plan$source
+  if (!is.list(source) || is.null(names(source))) return(empty_validation())
+  format <- tolower(as.character(source$format %||% ""))
+  if (length(format) != 1L || is.na(format) || !nzchar(format) ||
+      !format %in% names(dcc_format_registry())) {
+    return(empty_validation())
+  }
+  options_json <- as.character(source$options_json %||% "")
+  if (nzchar(options_json) && !plan_json_object_ok(options_json)) {
+    return(empty_validation())
+  }
+  path <- plan_source_path(plan)
+  if (!nzchar(path)) return(empty_validation())
+  options <- tryCatch(plan_import_options(plan), error = function(e) NULL)
+  if (is.null(options)) return(empty_validation())
+  spec <- structure(list(options = options), class = "dcc_import_spec")
+  report <- tryCatch(
+    dcc_get_adapter(format)$validator(path, spec),
+    error = function(e) empty_validation()
+  )
+  if (!inherits(report, "dcc_validation") || !nrow(report)) return(report)
+  report <- report[report$code != "IMPORT_ENCODING_REQUIRED"]
+  if (!nrow(report)) return(empty_validation())
+  report$field <- ifelse(
+    report$field == "source", "source.path",
+    paste0("source.", report$field)
+  )
+  report[]
+}
+
 #' Validate a strict DCC project plan
 #'
 #' Validates the common, versioned contract used by strict Excel workbooks and
@@ -393,6 +436,17 @@ dcc_validate_plan <- function(x) {
   if (length(table_rows)) {
     add("PLAN_OUTPUT_TABLE_FORMAT", "fail", "outputs.value", table_rows,
         fix = "Use `csv` or `parquet` for statistical tables.")
+  }
+
+  source_preflight <- plan_source_preflight(x)
+  if (nrow(source_preflight)) {
+    for (i in seq_len(nrow(source_preflight))) {
+      add(
+        source_preflight$code[i], source_preflight$severity[i],
+        source_preflight$field[i], source_preflight$rows[[i]],
+        source_preflight$fix[i]
+      )
+    }
   }
 
   finish()

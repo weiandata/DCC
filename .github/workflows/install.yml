@@ -31,7 +31,8 @@ jobs:
       - name: Verify dependency contract
         run: Rscript tools/verify-dependencies.R
       - name: Build source archive
-        run: R CMD build --no-manual --no-build-vignettes .
+        shell: bash
+        run: R CMD build --no-manual .
       - name: Install DCC into clean library
         shell: bash
         run: >-

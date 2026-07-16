@@ -22,11 +22,12 @@ compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
       benchmark_failure(code, stage, detail)
   }
   required_current <- c(
-    "platform_class", "run", "stage", "seconds", "peak_memory_bytes",
+    "platform_class", "cpu_class", "run", "stage", "seconds", "peak_memory_bytes",
     "correctness"
   )
   required_baseline <- c(
-    "platform_class", "stage", "median_seconds", "peak_memory_bytes"
+    "platform_class", "cpu_class", "stage", "median_seconds",
+    "peak_memory_bytes"
   )
   absent_current <- setdiff(required_current, names(current))
   absent_baseline <- setdiff(required_baseline, names(baseline))
@@ -54,6 +55,16 @@ compare_benchmarks <- function(current, baseline, regression_limit = 0.20,
       "BENCHMARK_PLATFORM_MISMATCH",
       detail = paste("current", paste(current_platform, collapse = ","),
                      "baseline", paste(baseline_platform, collapse = ","))
+    )
+  }
+  current_cpu <- unique(as.character(current$cpu_class))
+  baseline_cpu <- unique(as.character(baseline$cpu_class))
+  if (length(current_cpu) != 1L || length(baseline_cpu) != 1L ||
+      !identical(current_cpu, baseline_cpu)) {
+    add_failure(
+      "BENCHMARK_CPU_MISMATCH",
+      detail = paste("current", paste(current_cpu, collapse = ","),
+                     "baseline", paste(baseline_cpu, collapse = ","))
     )
   }
 
