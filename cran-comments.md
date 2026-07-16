@@ -1,3 +1,5 @@
+# CRAN submission comments
+
 ## Submission status
 
 This is the candidate record for DCC 1.2.0. Do not submit until

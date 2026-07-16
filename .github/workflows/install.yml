@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} / R release
     env:
-      R_LIBS_USER: ${{ runner.temp }}/dcc-library
+      R_LIBS_USER: ${{ github.workspace }}/.dcc-library
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2

@@ -3,7 +3,11 @@ config:
   MD024:
     siblings_only: true
   MD025: false
+  MD060: false
 
 ignores:
   - .git/**
+  - DCC.Rcheck/**
   - docs/Repository_Template_Development_Guide.md
+  - docs/plans/**
+  - docs/superpowers/plans/**

@@ -86,4 +86,3 @@ The dependency verifier rejects undeclared namespace calls, runtime installer
 calls, missing format backends in `Imports`, incomplete lockfiles, and locked
 version drift. Clean-install CI repeats installation and format smoke tests on
 Linux, macOS, and Windows with repository access disabled during the smoke step.
-

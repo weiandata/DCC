@@ -10,4 +10,3 @@
 恢复过程、preview/execute 区分题、原始文件哈希核对以及完整 SUS 问卷。
 
 通过标准由 `scenarios.yml` 和 `docs/acceptance/scoring.md` 唯一定义。
-
