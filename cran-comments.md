@@ -41,3 +41,10 @@ package.
 URLs and external references must be rechecked on the final source tarball.
 Any platform limitation or unavailable external fixture is reported as a
 capability/evidence limitation, not described as a passing Stable result.
+
+## Spelling
+
+The incoming feasibility check flags "WeianData", "backends", and "preflight"
+in `DESCRIPTION` as possibly misspelled. All three are intentional and spelled
+correctly: "WeianData" is the copyright holder's company name, and "backends"
+and "preflight" are standard technical terms used as written.
