@@ -23,6 +23,9 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           needs: check
+      - name: Pin dependencies to renv.lock
+        shell: bash
+        run: Rscript tools/ci-install-locked.R
       - name: Install DCC once
         run: R CMD INSTALL .
       - name: Capture three-run benchmark

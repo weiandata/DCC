@@ -28,6 +28,9 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           needs: check
+      - name: Pin dependencies to renv.lock
+        shell: bash
+        run: Rscript tools/ci-install-locked.R
       - name: Verify dependency contract
         run: Rscript tools/verify-dependencies.R
       - name: Build source archive

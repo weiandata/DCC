@@ -23,6 +23,9 @@ jobs:
         with:
           extra-packages: any::covr, any::DT, any::htmltools
           needs: coverage
+      - name: Pin dependencies to renv.lock
+        shell: bash
+        run: Rscript tools/ci-install-locked.R
       - name: Measure and enforce coverage
         run: >-
           Rscript tools/coverage-report.R
