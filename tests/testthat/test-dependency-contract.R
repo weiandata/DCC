@@ -7,6 +7,7 @@ dependency_contract_lock <- function(root, writer) {
 }
 
 test_that("every format backend installs with DCC", {
+  skip_without_dcc_source()
   description <- read.dcf(dcc_source_path("DESCRIPTION"))
   imports <- trimws(strsplit(description[1L, "Imports"], ",")[[1L]])
   imports <- sub("[[:space:]]*\\(.*$", "", imports)
@@ -20,6 +21,7 @@ test_that("every format backend installs with DCC", {
 })
 
 test_that("dependency audit rejects undeclared calls and runtime installers", {
+  skip_without_dcc_source()
   expect_true(file.exists(dependency_tool))
   source(dependency_tool, local = TRUE)
   root <- dcc_source_root()
@@ -33,6 +35,7 @@ test_that("dependency audit rejects undeclared calls and runtime installers", {
 })
 
 test_that("dependency lock covers the installed recursive closure", {
+  skip_without_dcc_source()
   source(dependency_tool, local = TRUE)
   root <- dcc_source_root()
   lock_path <- dependency_contract_lock(root, write_dependency_lock)
@@ -45,6 +48,7 @@ test_that("dependency lock covers the installed recursive closure", {
 })
 
 test_that("dependency lock evidence can be synthesized outside the internal bundle", {
+  skip_without_dcc_source()
   source(dependency_tool, local = TRUE)
   root <- withr::local_tempdir()
   expect_true(file.copy(dcc_source_path("DESCRIPTION"), root))
@@ -56,6 +60,7 @@ test_that("dependency lock evidence can be synthesized outside the internal bund
 })
 
 test_that("internal bundle contract is complete or fails closed", {
+  skip_without_dcc_source()
   builder <- dcc_source_path("tools", "build-internal-bundle.R")
   expect_true(file.exists(builder))
   text <- paste(readLines(builder, warn = FALSE), collapse = "\n")
@@ -78,6 +83,7 @@ test_that("internal bundle contract is complete or fails closed", {
 })
 
 test_that("internal bundle checksums use relocatable relative paths", {
+  skip_without_dcc_source()
   builder <- dcc_source_path("tools", "build-internal-bundle.R")
   source(builder, local = TRUE)
   root <- withr::local_tempdir()

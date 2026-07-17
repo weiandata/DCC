@@ -3,6 +3,7 @@ acceptance_path <- function(...) {
 }
 
 test_that("staff acceptance supports one or more signed participants", {
+  skip_without_dcc_source()
   scenarios <- yaml::read_yaml(acceptance_path("staff", "scenarios.yml"))
 
   expect_identical(scenarios$contract_version, "1.0")
@@ -25,6 +26,7 @@ test_that("staff acceptance supports one or more signed participants", {
 })
 
 test_that("staff release workbook is blank, signed-evidence gated, and complete", {
+  skip_without_dcc_source()
   workbook <- acceptance_path(
     "staff", "DCC-1.2.0-staff-acceptance.xlsx"
   )
@@ -54,6 +56,7 @@ test_that("staff release workbook is blank, signed-evidence gated, and complete"
 })
 
 test_that("staff test kit sources include a complete safe R workflow and manual", {
+  skip_without_dcc_source()
   script <- acceptance_path("staff", "staff-test.R")
   manual <- acceptance_path("staff", "staff-test-manual-zh-CN.md")
   expect_true(file.exists(script))
@@ -75,6 +78,7 @@ test_that("staff test kit sources include a complete safe R workflow and manual"
 })
 
 test_that("statistician acceptance covers correctness and caveats", {
+  skip_without_dcc_source()
   scenarios <- yaml::read_yaml(
     acceptance_path("statistician", "scenarios.yml")
   )
@@ -91,6 +95,7 @@ test_that("statistician acceptance covers correctness and caveats", {
 })
 
 test_that("agent suite has at least twenty bounded deterministic tasks", {
+  skip_without_dcc_source()
   suite <- jsonlite::read_json(
     acceptance_path("agent", "tasks.json"), simplifyVector = FALSE
   )
@@ -115,6 +120,7 @@ test_that("agent suite has at least twenty bounded deterministic tasks", {
 })
 
 test_that("agent task result schema is a closed contract", {
+  skip_without_dcc_source()
   path <- dcc_source_path("inst", "schemas", "agent-task-result.schema.json")
   schema <- jsonlite::read_json(path, simplifyVector = FALSE)
 
@@ -130,6 +136,7 @@ test_that("agent task result schema is a closed contract", {
 })
 
 test_that("agent execution scoring blocks calls outside the task whitelist", {
+  skip_without_dcc_source()
   tool <- dcc_source_path("tools", "agent-acceptance.R")
   expect_true(file.exists(tool))
   source(tool, local = TRUE)
@@ -166,6 +173,7 @@ test_that("agent execution scoring blocks calls outside the task whitelist", {
 })
 
 test_that("acceptance runner preserves the human evidence boundary", {
+  skip_without_dcc_source()
   runner <- dcc_source_path("tools", "run-acceptance.R")
   expect_true(file.exists(runner))
   text <- paste(readLines(runner, warn = FALSE), collapse = "\n")

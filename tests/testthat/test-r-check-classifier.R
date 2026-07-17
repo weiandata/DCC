@@ -13,6 +13,7 @@ r_check_log <- function(body, status = "Status: 1 NOTE") {
 }
 
 test_that("classifier allows only an exact first-submission incoming NOTE", {
+  skip_without_dcc_source()
   expect_true(file.exists(r_check_classifier_tool))
   source(r_check_classifier_tool, local = TRUE)
   result <- classify_r_check_log(r_check_log(c(
@@ -28,6 +29,7 @@ test_that("classifier allows only an exact first-submission incoming NOTE", {
 })
 
 test_that("classifier rejects extra text in the first-submission NOTE", {
+  skip_without_dcc_source()
   source(r_check_classifier_tool, local = TRUE)
   result <- classify_r_check_log(r_check_log(c(
     "Maintainer: 'Release Owner <owner@example.com>'",
@@ -42,6 +44,7 @@ test_that("classifier rejects extra text in the first-submission NOTE", {
 })
 
 test_that("classifier rejects HTML tooling and NOTE count mismatches", {
+  skip_without_dcc_source()
   source(r_check_classifier_tool, local = TRUE)
   html <- tempfile(fileext = ".log")
   writeLines(c(
@@ -62,6 +65,7 @@ test_that("classifier rejects HTML tooling and NOTE count mismatches", {
 })
 
 test_that("classifier writes closed machine-readable evidence", {
+  skip_without_dcc_source()
   source(r_check_classifier_tool, local = TRUE)
   clean <- tempfile(fileext = ".log")
   writeLines(c("* checking tests ... OK", "* DONE", "Status: OK"), clean)

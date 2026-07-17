@@ -1,4 +1,5 @@
 test_that("release candidate identity is frozen at DCC 1.2.0", {
+  skip_without_dcc_source()
   description <- read.dcf(dcc_source_path("DESCRIPTION"))
   expect_identical(unname(description[1L, "Version"]), "1.2.0")
 
@@ -8,6 +9,7 @@ test_that("release candidate identity is frozen at DCC 1.2.0", {
 })
 
 test_that("local release evidence cannot leak into the source package", {
+  skip_without_dcc_source()
   path <- dcc_source_path(".Rbuildignore")
   if (!file.exists(path)) {
     succeed("The installed package does not contain source build controls.")

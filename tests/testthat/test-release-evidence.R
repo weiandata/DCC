@@ -70,6 +70,7 @@ release_evidence_fixture <- function(root = dcc_source_root()) {
 }
 
 test_that("complete fresh release evidence passes", {
+  skip_without_dcc_source()
   expect_true(file.exists(release_tool))
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
@@ -84,6 +85,7 @@ test_that("complete fresh release evidence passes", {
 })
 
 test_that("release gate rejects missing stale and capability-mismatched evidence", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   evidence <- release_evidence_fixture(root)
@@ -108,6 +110,7 @@ test_that("release gate rejects missing stale and capability-mismatched evidence
 })
 
 test_that("staff validation is advisory while other release gates remain strict", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
@@ -124,6 +127,7 @@ test_that("staff validation is advisory while other release gates remain strict"
 })
 
 test_that("release benchmark policy distinguishes strict and hosted timing", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
@@ -138,6 +142,7 @@ test_that("release benchmark policy distinguishes strict and hosted timing", {
 })
 
 test_that("one signed staff participant can pass the advisory study", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
@@ -152,6 +157,7 @@ test_that("one signed staff participant can pass the advisory study", {
 })
 
 test_that("only the coded CRAN first-submission NOTE is non-actionable", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   now <- as.POSIXct("2026-07-16 12:00:00", tz = "UTC")
@@ -177,6 +183,7 @@ test_that("only the coded CRAN first-submission NOTE is non-actionable", {
 })
 
 test_that("malformed release evidence fails closed with stable issue codes", {
+  skip_without_dcc_source()
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
   evidence <- release_evidence_fixture(root)
@@ -203,6 +210,7 @@ test_that("malformed release evidence fails closed with stable issue codes", {
 })
 
 test_that("release evidence schema is closed and requires every gate", {
+  skip_without_dcc_source()
   path <- dcc_source_path("inst", "schemas", "release-evidence.schema.json")
   schema <- jsonlite::read_json(path, simplifyVector = FALSE)
   expect_false(schema$additionalProperties)
@@ -235,6 +243,7 @@ test_that("release evidence schema is closed and requires every gate", {
 })
 
 test_that("coverage report groups every critical code area", {
+  skip_without_dcc_source()
   tool <- dcc_source_path("tools", "coverage-report.R")
   expect_true(file.exists(tool))
   source(tool, local = TRUE)
