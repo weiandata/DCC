@@ -11,7 +11,7 @@
   "Packages": {
     "arrow": {
       "Package": "arrow",
-      "Version": "24.0.0",
+      "Version": "25.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
