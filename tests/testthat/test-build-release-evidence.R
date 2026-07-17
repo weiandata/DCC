@@ -56,6 +56,7 @@ builder_fixture_sources <- function(dir) {
 }
 
 test_that("assembled evidence passes the release gate validator", {
+  skip_without_dcc_source()
   expect_true(file.exists(builder_tool))
   source(builder_tool, local = TRUE)
   source(release_tool, local = TRUE)
@@ -73,6 +74,7 @@ test_that("assembled evidence passes the release gate validator", {
 })
 
 test_that("assembled evidence records the CI-verified platform sets", {
+  skip_without_dcc_source()
   source(builder_tool, local = TRUE)
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
@@ -91,6 +93,7 @@ test_that("assembled evidence records the CI-verified platform sets", {
 })
 
 test_that("the builder writes a file the CLI validator can read", {
+  skip_without_dcc_source()
   source(builder_tool, local = TRUE)
   source(release_tool, local = TRUE)
   root <- dcc_source_root()
@@ -106,6 +109,7 @@ test_that("the builder writes a file the CLI validator can read", {
 })
 
 test_that("a benchmark artifact without an execution stage is rejected", {
+  skip_without_dcc_source()
   source(builder_tool, local = TRUE)
   expect_error(
     evidence_execution_median(list(summary = list(list(stage = "import",

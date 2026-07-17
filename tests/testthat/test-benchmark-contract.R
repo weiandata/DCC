@@ -1,6 +1,7 @@
 benchmark_tool <- dcc_source_path("tools", "check-benchmarks.R")
 
 test_that("benchmark contract requires every pipeline and audience stage", {
+  skip_without_dcc_source()
   expect_true(file.exists(benchmark_tool))
   source(benchmark_tool, local = TRUE)
 
@@ -14,6 +15,7 @@ test_that("benchmark contract requires every pipeline and audience stage", {
 })
 
 test_that("benchmark comparator uses medians and rejects regressions", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
@@ -43,6 +45,7 @@ test_that("benchmark comparator uses medians and rejects regressions", {
 })
 
 test_that("hosted benchmark mode makes relative time noise advisory", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
@@ -83,6 +86,7 @@ test_that("hosted benchmark mode makes relative time noise advisory", {
 })
 
 test_that("benchmark comparator refuses incomplete or unlike evidence", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
@@ -119,6 +123,7 @@ test_that("benchmark comparator refuses incomplete or unlike evidence", {
 })
 
 test_that("execution budget and minimum repetitions are hard gates", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   stages <- benchmark_required_stages()
   baseline <- data.frame(
@@ -147,6 +152,7 @@ test_that("execution budget and minimum repetitions are hard gates", {
 })
 
 test_that("accepted baseline records review rationale and memory ceilings", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   path <- dcc_source_path("tools", "benchmarks", "baseline.json")
   expect_true(file.exists(path))
@@ -164,6 +170,7 @@ test_that("accepted baseline records review rationale and memory ceilings", {
 })
 
 test_that("memory gate rejects undersized and unbounded evidence", {
+  skip_without_dcc_source()
   source(benchmark_tool, local = TRUE)
   memory_tool <- dcc_source_path("tools", "benchmarks", "memory.R")
   expect_true(file.exists(memory_tool))
