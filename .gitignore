@@ -8,4 +8,14 @@ Thumbs.db
 
 # Local environment and secrets
 .env
-.codegraph/ # 别把索引缓存提交进去
+
+# CodeGraph 索引缓存（注意：.gitignore 不支持行尾注释）
+.codegraph/
+
+# R build and check output
+DCC.Rcheck/
+DCC_*.tar.gz
+
+# Local release / acceptance evidence
+artifacts/
+tests/acceptance/staff/*.inspect.ndjson
