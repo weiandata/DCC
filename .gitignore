@@ -19,3 +19,6 @@ DCC_*.tar.gz
 # Local release / acceptance evidence
 artifacts/
 tests/acceptance/staff/*.inspect.ndjson
+
+# WAEF local cache
+.waef/cache/

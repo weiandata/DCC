@@ -1,0 +1,9 @@
+schema: 1
+framework: WAEF
+version: "4.2"
+repository: weiandata/WAEF
+tag: "v4.2"
+commit: "3f61a59aace865b162f383a95ecb0372c23880e4"
+profiles:
+  - "r-package"
+updated_by: "https://github.com/weiandata/WAEF/pull/13"

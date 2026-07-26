@@ -1,0 +1,7 @@
+name: "DCC"
+owner: "package-maintainers"
+status: "active"
+purpose: "Provide auditable rule-driven survey and assessment data cleaning"
+risk: "high"
+publication: "allowed"
+language: "R"

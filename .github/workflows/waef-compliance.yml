@@ -1,0 +1,13 @@
+name: WAEF Compliance
+on: [pull_request, push]
+permissions:
+  contents: read
+jobs:
+  compliance:
+    uses: weiandata/WAEF/.github/workflows/compliance.yml@3f61a59aace865b162f383a95ecb0372c23880e4
+    with:
+      waef_commit: 3f61a59aace865b162f383a95ecb0372c23880e4
+      lock_path: .waef/waef.lock.yml
+    secrets:
+      WAEF_APP_ID: ${{ secrets.WAEF_APP_ID }}
+      WAEF_APP_PRIVATE_KEY: ${{ secrets.WAEF_APP_PRIVATE_KEY }}
