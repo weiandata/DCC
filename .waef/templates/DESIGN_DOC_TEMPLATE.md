@@ -1,4 +1,4 @@
-<!-- WAEF-TEMPLATE-VERSION: 4.2 -->
+<!-- WAEF-TEMPLATE-VERSION: 4.3 -->
 # Design: <feature/change title>
 
 ## Goal

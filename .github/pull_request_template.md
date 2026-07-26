@@ -56,7 +56,7 @@
 - [ ] Required reviewers have reviewed the final material state.
 
 <!-- WAEF:START -->
-<!-- WAEF-TEMPLATE-VERSION: 4.2 -->
+<!-- WAEF-TEMPLATE-VERSION: 4.3 -->
 # WAEF Review Evidence
 
 ## Related Issue

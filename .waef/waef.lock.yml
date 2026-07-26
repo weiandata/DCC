@@ -1,9 +1,9 @@
 schema: 1
 framework: WAEF
-version: "4.2"
+version: "4.3"
 repository: weiandata/WAEF
-tag: "v4.2"
-commit: "3f61a59aace865b162f383a95ecb0372c23880e4"
+tag: "v4.3"
+commit: "bd0eaa76490fd4e79f8ecb28a75dd0fdda6623e7"
 profiles:
   - "r-package"
 updated_by: "https://github.com/weiandata/DCC/pull/19"

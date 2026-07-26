@@ -4,10 +4,50 @@ permissions:
   contents: read
 jobs:
   compliance:
-    uses: weiandata/WAEF/.github/workflows/compliance.yml@3f61a59aace865b162f383a95ecb0372c23880e4
-    with:
-      waef_commit: 3f61a59aace865b162f383a95ecb0372c23880e4
-      lock_path: .waef/waef.lock.yml
-    secrets:
-      WAEF_APP_ID: ${{ secrets.WAEF_APP_ID }}
-      WAEF_APP_PRIVATE_KEY: ${{ secrets.WAEF_APP_PRIVATE_KEY }}
+    name: WAEF Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out consumer repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+
+      - name: Restrict public organization bridge
+        env:
+          CALLER_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test "${CALLER_REPOSITORY}" = "weiandata/DCC"
+
+      - name: Create private WAEF read token
+        id: waef-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859
+        with:
+          app-id: ${{ secrets.WAEF_APP_ID }}
+          private-key: ${{ secrets.WAEF_APP_PRIVATE_KEY }}
+          owner: weiandata
+          repositories: WAEF
+
+      - name: Check out exact private WAEF source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          repository: weiandata/WAEF
+          ref: bd0eaa76490fd4e79f8ecb28a75dd0fdda6623e7
+          token: ${{ steps.waef-token.outputs.token }}
+          path: .waef/cache
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify exact private WAEF source
+        env:
+          WAEF_LOCK_PATH: .waef/waef.lock.yml
+        run: python3 .waef/cache/scripts/verify_framework_checkout.py --lock "$GITHUB_WORKSPACE/$WAEF_LOCK_PATH" --checkout .waef/cache
+
+      - name: Install pinned validator requirements
+        run: python3 -m pip install --disable-pip-version-check --requirement .waef/cache/requirements.txt
+
+      - name: Validate consumer repository
+        env:
+          WAEF_LOCK_PATH: .waef/waef.lock.yml
+        run: python3 .waef/cache/scripts/validate_repository.py "$GITHUB_WORKSPACE" --event "$GITHUB_EVENT_PATH" --lock-path "$WAEF_LOCK_PATH"
