@@ -15,6 +15,7 @@ External runtime dependencies
 
 The following packages are separately distributed; their source is not bundled
 in DCC and their copyright remains with their respective holders.
+Dependencies retain their upstream ownership and license terms.
 
 Package: data.table
 Use: Core tabular data processing

@@ -1,4 +1,5 @@
 ^\.github$
+^\.waef$
 ^AGENTS\.md$
 ^ENGINEERING_PLAN\.md$
 ^AI_USAGE\.md$

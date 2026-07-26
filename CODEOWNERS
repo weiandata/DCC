@@ -1,1 +1,9 @@
 * @makunxiang-weiandata
+
+# WAEF governance ownership
+/AGENTS.md @weiandata/waef-maintainers
+/.waef/ @weiandata/waef-maintainers
+/.github/workflows/waef-compliance.yml @weiandata/waef-maintainers
+/.github/workflows/ @weiandata/organization-governance
+/CODEOWNERS @weiandata/organization-governance
+/DESCRIPTION @weiandata/organization-governance

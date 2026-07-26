@@ -80,3 +80,10 @@ Use only synthetic, public, or explicitly authorized data in tests and examples.
 
 The template workflow validates Markdown and links. Each generated repository
 must document and automate its language-specific setup and validation commands.
+
+<!-- WAEF:START -->
+<!-- WAEF-TEMPLATE-VERSION: 4.3 -->
+<!-- markdownlint-disable-file MD041 -->
+Read `.waef/waef.lock.yml`, then follow the Issue, approved plan, categorized
+branch, Pull Request, validation, accountable review, and release sequence.
+<!-- WAEF:END -->
