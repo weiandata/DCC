@@ -17,7 +17,7 @@ install.packages("DCC", dependencies = TRUE)
 For an approved source archive while a package repository remains available:
 
 ```r
-install.packages("DCC_1.2.0.tar.gz", repos = getOption("repos"),
+install.packages("DCC_1.2.1.tar.gz", repos = getOption("repos"),
                  type = "source", dependencies = TRUE)
 ```
 

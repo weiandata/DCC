@@ -214,12 +214,24 @@ build_plan_workbook <- function(language = "zh-CN") {
 #' and workbook structure are locked; yellow input cells remain editable. Sheet
 #' protection has no password and prevents accidental edits only.
 #'
-#' @param path Destination `.xlsx` path. Existing files are never overwritten.
+#' @param path Destination `.xlsx` path. Required and never defaulted:
+#'   the caller chooses every location DCC writes to. Existing files are
+#'   never overwritten.
 #' @param language Primary instruction language, `"zh-CN"` or `"en"`; both
 #'   languages remain visible in the workbook.
 #' @return The normalized destination path, invisibly.
+#' @examples
+#' path <- tempfile(fileext = ".xlsx")
+#' dcc_template(path)
+#' file.exists(path)
 #' @export
-dcc_template <- function(path = "DCC-cleaning-plan.xlsx", language = "zh-CN") {
+dcc_template <- function(path, language = "zh-CN") {
+  if (missing(path)) {
+    dcc_abort("`path` must be supplied; DCC never writes to a default ",
+              "location. Use e.g. file.path(tempdir(), ",
+              "\"DCC-cleaning-plan.xlsx\").",
+              class = "dcc_template_error")
+  }
   if (!is.character(path) || length(path) != 1L || is.na(path) ||
       !nzchar(path) || tolower(tools::file_ext(path)) != "xlsx") {
     dcc_abort("`path` must be one .xlsx file path.",

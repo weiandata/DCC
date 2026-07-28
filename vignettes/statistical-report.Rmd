@@ -18,10 +18,11 @@ before/after missingness and distributions, types, scoring, mapping,
 parameters, hashes, and provenance.
 
 ```{r workflow, eval=FALSE}
-run <- dcc_run(data_path, plan = plan_path, output_dir = "dcc-run",
+out_dir <- file.path(tempdir(), "dcc-run")
+run <- dcc_run(data_path, plan = plan_path, output_dir = out_dir,
                mode = "execute")
 model <- dcc_report_model(run$result, run)
-dcc_report_statistical(model, "dcc-run/statistical",
+dcc_report_statistical(model, file.path(out_dir, "statistical"),
                        table_format = "parquet")
 ```
 

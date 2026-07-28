@@ -1,10 +1,31 @@
 # CRAN submission comments
 
+## Resubmission
+
+This is a resubmission. Following the review of the 2026-07-17 submission:
+
+* `DESCRIPTION` no longer single-quotes file-format and markup names (CSV,
+  Parquet, JSON, JSONL, YAML, HTML, PDF) or the package's own `dcc_data`
+  container. Only third-party software names ('Excel', 'SPSS', 'Stata',
+  'SAS') remain quoted.
+* No exported function has a default write path any more. `dcc_check()`,
+  `dcc_run()`, and `dcc_template()` previously defaulted to `"dcc-check"`,
+  `"dcc-results"`, and `"DCC-cleaning-plan.xlsx"` relative to `getwd()`;
+  the destination is now a required argument and calling without it raises
+  an error that points to `tempdir()`. Every other file-writing function
+  (`dcc_report()`, `dcc_export_log()`, `dcc_manifest()`,
+  `dcc_report_staff()`, `dcc_report_statistical()`,
+  `dcc_report_machine()`, `dcc_write_config_template()`) already required an
+  explicit path.
+* All examples, tests, and vignettes write only under `tempdir()`; the
+  remaining vignette chunk that showed a relative output directory now uses
+  `file.path(tempdir(), "dcc-run")`.
+
 ## Submission status
 
-This is the candidate record for DCC 1.2.0. Do not submit until
+This is the candidate record for DCC 1.2.1. Do not submit until
 `docs/release-checklist.md` is complete and `tools/verify-release.R` reports
-PASS from fresh evidence. `DESCRIPTION` is frozen at version 1.2.0.
+PASS from fresh evidence. `DESCRIPTION` is frozen at version 1.2.1.
 
 ## Test environments
 

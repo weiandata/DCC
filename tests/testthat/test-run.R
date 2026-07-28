@@ -178,3 +178,10 @@ test_that("dcc_run requires one config source and plan mode is not rerun", {
     class = "dcc_run_error"
   )
 })
+
+test_that("dcc_run requires an explicit output_dir", {
+  csv <- write_run_csv()
+  expect_error(dcc_run(csv, run_config()), class = "dcc_run_error")
+  expect_error(dcc_run(csv, run_config()), "never writes to a default")
+  expect_error(dcc_run(csv, run_config(), ""), class = "dcc_run_error")
+})

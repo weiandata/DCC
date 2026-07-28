@@ -1,7 +1,7 @@
 Package: DCC
 Type: Package
 Title: Data Cleaning Center for Survey and Assessment Data
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: c(
     person("Kunxiang", "Ma", role = c("aut", "cre"),
            email = "makunxiang@weiandata.com"),
@@ -10,21 +10,21 @@ Authors@R: c(
 Description: Rule-driven, auditable cleaning of survey and assessment
     response data, implementing the WeianData Detect-Execute-Report
     workflow. Provides a multi-format, multi-encoding input layer
-    ('CSV', 'Excel', 'SPSS', 'Stata', 'SAS', 'Parquet', 'JSON'), the
-    'dcc_data' container with a provenance chain, level-0 structural
+    (CSV, 'Excel', 'SPSS', 'Stata', 'SAS', Parquet, JSON), the
+    dcc_data container with a provenance chain, level-0 structural
     diagnostics, five built-in response-quality detectors (missing
     items, straight-lining, response time, trap items, score
-    anomalies), a declarative 'YAML' rule engine, an execution engine
+    anomalies), a declarative YAML rule engine, an execution engine
     with a cell-level audit log, answer-key scoring, multi-form to
     master item bank mapping, a normalized report model rendered as bilingual
-    staff workbooks and 'HTML', complete statistical bundles, and versioned
-    machine 'JSON'/'JSONL' with findings-to-changes reconciliation,
+    staff workbooks and HTML, complete statistical bundles, and versioned
+    machine JSON/JSONL with findings-to-changes reconciliation,
     cell-level lineage tracing, and
     manifest-based one-command reproduction. Includes a protected bilingual
-    strict project workbook and matching 'JSON' contract with cell-addressed
+    strict project workbook and matching JSON contract with cell-addressed
     validation, non-mutating preflight, preview-first execution, and localized
     staff guidance. All formally supported input backends install with the
-    package; 'PDF' is optional rather than a fixed report output.
+    package; PDF is optional rather than a fixed report output.
 License: GPL (>= 2)
 Copyright: See file inst/COPYRIGHTS.
 Encoding: UTF-8

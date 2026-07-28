@@ -17,7 +17,7 @@ builder_fixture_sources <- function(dir) {
       file.path(fmt_dir, paste0("format-", platform, ".json"))
     )
   }
-  tarball <- file.path(dir, "DCC_1.2.0.tar.gz")
+  tarball <- file.path(dir, "DCC_1.2.1.tar.gz")
   writeLines("candidate tarball", tarball)
   list(
     coverage = write_builder_json(

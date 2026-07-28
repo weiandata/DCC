@@ -28,7 +28,7 @@ test_that("staff acceptance supports one or more signed participants", {
 test_that("staff release workbook is blank, signed-evidence gated, and complete", {
   skip_without_dcc_source()
   workbook <- acceptance_path(
-    "staff", "DCC-1.2.0-staff-acceptance.xlsx"
+    "staff", "DCC-1.2.1-staff-acceptance.xlsx"
   )
   expect_true(file.exists(workbook))
   wb <- suppressWarnings(openxlsx2::wb_load(workbook, data_only = FALSE))
