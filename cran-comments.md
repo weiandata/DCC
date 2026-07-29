@@ -44,6 +44,15 @@ first-submission incoming classification. Any additional text in that NOTE,
 any other NOTE, or any count mismatch remains blocking. Results are not
 claimed here before the CI artifacts exist.
 
+`DCC_1.2.1.tar.gz` was additionally checked on win-builder:
+
+* Windows, R Under development (unstable) (2026-07-28 r90311 ucrt): Status 1 NOTE
+* Windows, R 4.6.1 (2026-06-24 ucrt): Status 1 NOTE
+
+In both runs the only NOTE is the incoming-feasibility NOTE: new submission
+plus the possibly-misspelled words discussed under "Spelling". There were no
+errors and no warnings.
+
 ## Package scope and dependencies
 
 DCC cleans survey and assessment response data. All declared input-format
@@ -65,7 +74,15 @@ capability/evidence limitation, not described as a passing Stable result.
 
 ## Spelling
 
-The incoming feasibility check flags "WeianData", "backends", and "preflight"
-in `DESCRIPTION` as possibly misspelled. All three are intentional and spelled
-correctly: "WeianData" is the copyright holder's company name, and "backends"
-and "preflight" are standard technical terms used as written.
+The incoming feasibility check flags five words in `DESCRIPTION` as possibly
+misspelled. All five are intentional and spelled correctly:
+
+* "WeianData" is the copyright holder's company name.
+* "backends" and "preflight" are standard technical terms used as written.
+* "JSONL" is the newline-delimited JSON format written by the machine report.
+* "dcc" is the first token of `dcc_data`, the exported S3 container class the
+  package's readers return.
+
+"JSONL" and "dcc" are newly flagged in 1.2.1 only because the review of 1.2.0
+asked for the single quotes around format names to be removed; the words
+themselves are unchanged.
