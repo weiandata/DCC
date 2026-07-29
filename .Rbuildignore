@@ -25,3 +25,4 @@
 ^DCC[.]Rcheck
 ^DCC_.*[.]tar[.]gz$
 ^tests/acceptance/staff/.*[.]inspect[.]ndjson$
+^\.claude$

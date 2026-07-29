@@ -3,7 +3,7 @@
 \alias{dcc_run}
 \title{Run a cleaning workflow with one command}
 \usage{
-dcc_run(data, config = NULL, output_dir = "dcc-results",
+dcc_run(data, config = NULL, output_dir,
   mode = c("preview", "execute", "verify", "rerun"), id_var = NULL,
   plan = NULL)
 }
@@ -15,7 +15,8 @@ manifest path in \code{"rerun"} mode).}
 Supply this or \code{plan}, not both.}
 
 \item{output_dir}{Directory for the fixed output layout (created if
-needed).}
+needed). Required and never defaulted: the caller chooses every location
+DCC writes to.}
 
 \item{mode}{One of \code{"preview"} (default), \code{"execute"},
 \code{"verify"}, \code{"rerun"}.}

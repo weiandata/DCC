@@ -54,3 +54,8 @@ test_that("strict template exposes fixed three-audience report controls", {
       "statistical_table_format", "include_sensitive_examples")
   )
 })
+
+test_that("dcc_template requires an explicit path", {
+  expect_error(dcc_template(), class = "dcc_template_error")
+  expect_error(dcc_template(), "never writes to a default")
+})

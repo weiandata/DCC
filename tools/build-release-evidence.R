@@ -83,7 +83,7 @@ evidence_default_sources <- function(root) {
     statistician = a("acceptance", "statistician", "statistician-evidence.json"),
     agent = a("acceptance", "agent-run", "agent-execution.json"),
     staff = a("acceptance", "staff", "staff-evidence.json"),
-    tarball = a("cran", "DCC_1.2.0.tar.gz")
+    tarball = a("cran", "DCC_1.2.1.tar.gz")
   )
 }
 

@@ -164,7 +164,8 @@ legacy_action_aliases <- function(rules) {
 #' @param config Optional `dcc_config` from [dcc_config()] /
 #'   `dcc_read_config()`. Supply this or `plan`, not both.
 #' @param output_dir Directory for the fixed output layout (created if
-#'   needed).
+#'   needed). Required and never defaulted: the caller chooses every
+#'   location DCC writes to.
 #' @param mode One of `"preview"` (default), `"execute"`, `"verify"`,
 #'   `"rerun"`.
 #' @param id_var Record-id column; defaults to the config's `id_var`.
@@ -184,9 +185,19 @@ legacy_action_aliases <- function(rules) {
 #'   dcc_run_files(run)
 #' }
 #' @export
-dcc_run <- function(data, config = NULL, output_dir = "dcc-results",
+dcc_run <- function(data, config = NULL, output_dir,
                     mode = c("preview", "execute", "verify", "rerun"),
                     id_var = NULL, plan = NULL) {
+  if (missing(output_dir)) {
+    dcc_abort("`output_dir` must be supplied; DCC never writes to a default ",
+              "location. Use e.g. file.path(tempdir(), \"dcc-results\").",
+              class = "dcc_run_error")
+  }
+  if (!is.character(output_dir) || length(output_dir) != 1L ||
+      is.na(output_dir) || !nzchar(output_dir)) {
+    dcc_abort("`output_dir` must be one directory path.",
+              class = "dcc_run_error")
+  }
   mode <- match.arg(mode)
   resolved <- resolve_run_inputs(data, config, plan, mode)
   data <- resolved$data

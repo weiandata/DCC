@@ -1,7 +1,7 @@
-# DCC 1.2.0 CRAN 发布流程
+# DCC 1.2.1 CRAN 发布流程
 
 本文档说明如何从一个已冻结的 DCC 提交生成、验证并提交 CRAN 源码包。
-最终上传物必须是 `R CMD build` 生成的 `DCC_1.2.0.tar.gz`，并且必须与
+最终上传物必须是 `R CMD build` 生成的 `DCC_1.2.1.tar.gz`，并且必须与
 GitHub 全绿提交完全对应。
 
 CRAN 的权威要求以以下官方文档为准：
@@ -63,7 +63,7 @@ test -d R
 ```sh
 Rscript -e 'd <- read.dcf("DESCRIPTION");
 stopifnot(d[1, "Package"] == "DCC");
-stopifnot(d[1, "Version"] == "1.2.0");
+stopifnot(d[1, "Version"] == "1.2.1");
 cat(d[1, "Package"], d[1, "Version"], "\n");
 cat(d[1, "Authors@R"], "\n")'
 ```
@@ -71,7 +71,7 @@ cat(d[1, "Authors@R"], "\n")'
 成功条件：
 
 - 输出包名 `DCC`；
-- 输出版本 `1.2.0`；
+- 输出版本 `1.2.1`；
 - `Authors@R` 中只有一个 `cre`，并且邮箱可接收 CRAN 邮件。
 
 检查候选提交：
@@ -88,7 +88,7 @@ git log -1 --format='%H%n%ad%n%s' --date=iso-strict
 - 没有未知的已跟踪文件修改；
 - 记录完整 40 位提交 SHA。
 
-生成的 `DCC.Rcheck/`、`DCC_1.2.0.tar.gz` 和 `artifacts/` 可以是未跟踪
+生成的 `DCC.Rcheck/`、`DCC_1.2.1.tar.gz` 和 `artifacts/` 可以是未跟踪
 文件，但最终包必须在 GitHub 全绿后重新构建。
 
 ## 3. 检查包元数据和 CRAN 政策
@@ -250,15 +250,15 @@ R CMD build --no-manual .
 
 成功条件：
 
-- 输出 `* building 'DCC_1.2.0.tar.gz'`；
-- 当前目录生成 `DCC_1.2.0.tar.gz`；
+- 输出 `* building 'DCC_1.2.1.tar.gz'`；
+- 当前目录生成 `DCC_1.2.1.tar.gz`；
 - 包名符合 `PACKAGE_VERSION.tar.gz`。
 
 检查大小和内容：
 
 ```sh
-ls -lh DCC_1.2.0.tar.gz
-tar -tzf DCC_1.2.0.tar.gz
+ls -lh DCC_1.2.1.tar.gz
+tar -tzf DCC_1.2.1.tar.gz
 ```
 
 成功条件：
@@ -268,14 +268,14 @@ tar -tzf DCC_1.2.0.tar.gz
 - 不包含 `.git/`、`.github/`、`artifacts/`、`DCC.Rcheck/`、
   `cran-comments.md`、内部离线仓库或验收原始记录。
 
-保留：本轮构建的 `DCC_1.2.0.tar.gz`。
+保留：本轮构建的 `DCC_1.2.1.tar.gz`。
 
 ## 7. 对实际 tarball 运行 CRAN 检查
 
 必须检查将要上传的 tarball，而不是只检查源码目录：
 
 ```sh
-R CMD check --as-cran --no-manual DCC_1.2.0.tar.gz
+R CMD check --as-cran --no-manual DCC_1.2.1.tar.gz
 ```
 
 成功条件：
@@ -325,7 +325,7 @@ jq . artifacts/release/r-check-final.json
 
 - `DCC.Rcheck/00check.log`
 - `artifacts/release/r-check-final.json`
-- 被检查的 `DCC_1.2.0.tar.gz`
+- 被检查的 `DCC_1.2.1.tar.gz`
 
 ## 8. 检查 GitHub 发布矩阵
 
@@ -376,7 +376,7 @@ GitHub 网页：
 CRAN policy 建议无法直接使用 Windows 的维护者使用
 [win-builder](https://win-builder.r-project.org/) 检查最终 tarball。DCC
 已有 GitHub Windows 检查，但首次提交仍建议把完全相同的
-`DCC_1.2.0.tar.gz` 发送到 win-builder。
+`DCC_1.2.1.tar.gz` 发送到 win-builder。
 
 如果 CRAN 或本地检查提示 macOS ARM64 问题，使用
 [macbuilder](https://mac.r-project.org/macbuilder/submit.html) 检查相同
@@ -394,7 +394,7 @@ GitHub 全绿后，从相同提交重新构建：
 git rev-parse HEAD
 git rev-parse origin/main
 R CMD build --no-manual .
-R CMD check --as-cran --no-manual DCC_1.2.0.tar.gz
+R CMD check --as-cran --no-manual DCC_1.2.1.tar.gz
 ```
 
 成功条件：
@@ -406,23 +406,23 @@ R CMD check --as-cran --no-manual DCC_1.2.0.tar.gz
 
 ```sh
 mkdir -p artifacts/cran
-cp DCC_1.2.0.tar.gz artifacts/cran/DCC_1.2.0.tar.gz
-shasum -a 256 artifacts/cran/DCC_1.2.0.tar.gz \
-  > artifacts/cran/DCC_1.2.0.sha256
+cp DCC_1.2.1.tar.gz artifacts/cran/DCC_1.2.1.tar.gz
+shasum -a 256 artifacts/cran/DCC_1.2.1.tar.gz \
+  > artifacts/cran/DCC_1.2.1.sha256
 ```
 
 验证校验和：
 
 ```sh
-shasum -a 256 -c artifacts/cran/DCC_1.2.0.sha256
+shasum -a 256 -c artifacts/cran/DCC_1.2.1.sha256
 ```
 
-成功条件：输出 `artifacts/cran/DCC_1.2.0.tar.gz: OK`。
+成功条件：输出 `artifacts/cran/DCC_1.2.1.tar.gz: OK`。
 
 最终保留：
 
-- `artifacts/cran/DCC_1.2.0.tar.gz`
-- `artifacts/cran/DCC_1.2.0.sha256`
+- `artifacts/cran/DCC_1.2.1.tar.gz`
+- `artifacts/cran/DCC_1.2.1.sha256`
 - `artifacts/cran/release-metadata.json`
 - `artifacts/cran/r-check-final.json`
 - GitHub 全绿 run URL
@@ -433,7 +433,7 @@ shasum -a 256 -c artifacts/cran/DCC_1.2.0.sha256
 
 首次提交建议包含：
 
-- 包版本：DCC 1.2.0；
+- 包版本：DCC 1.2.1；
 - 测试平台：Ubuntu R-devel、Ubuntu release、macOS release、Windows
   release；
 - 0 ERROR、0 WARNING；
@@ -450,7 +450,7 @@ shasum -a 256 -c artifacts/cran/DCC_1.2.0.sha256
 
 填写：
 
-- Package source：最终的 `artifacts/cran/DCC_1.2.0.tar.gz`；
+- Package source：最终的 `artifacts/cran/DCC_1.2.1.tar.gz`；
 - Maintainer email：`makunxiang@weiandata.com`；
 - Optional comment：使用 `cran-comments.md` 中的简短说明。
 
@@ -498,14 +498,14 @@ CRAN 检查页面可能需要至少 48 小时才完全更新。确认页面和�
 创建版本标签：
 
 ```sh
-git tag -a v1.2.0 -m "DCC 1.2.0"
-git push origin v1.2.0
+git tag -a v1.2.1 -m "DCC 1.2.1"
+git push origin v1.2.1
 ```
 
 创建 GitHub Release 时附上：
 
 - CRAN 链接；
-- `NEWS.md` 的 1.2.0 摘要；
+- `NEWS.md` 的 1.2.1 摘要；
 - 最终源码包 SHA-256；
 - 对应 commit SHA。
 
@@ -528,14 +528,14 @@ git push origin v1.2.0
 如果 CRAN 已接受后发现严重问题：
 
 - 立即评估是否需要请求归档；
-- 使用新版本修复，不修改已经发布的 1.2.0 tarball；
+- 使用新版本修复，不修改已经发布的 1.2.1 tarball；
 - 与 CRAN 的已发布包沟通使用 `CRAN@R-project.org`，提交问题使用
   `CRAN-submissions@R-project.org`；
 - 所有邮件使用纯文本，避免 HTML。
 
 ## 16. 发布完成定义
 
-DCC 1.2.0 只有同时满足以下条件才算完成：
+DCC 1.2.1 只有同时满足以下条件才算完成：
 
 - 本地完整发布测试通过；
 - 本地最终 tarball 的 `R CMD check --as-cran` 通过；

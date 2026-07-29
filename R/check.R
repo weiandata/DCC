@@ -151,11 +151,17 @@ publish_check <- function(staging, output_dir) {
 #'
 #' @param data Existing source data file path.
 #' @param plan Strict `.xlsx`/`.json` plan path or a `dcc_plan`.
-#' @param output_dir New directory for check diagnostics.
+#' @param output_dir New directory for check diagnostics. Required and never
+#'   defaulted: the caller chooses every location DCC writes to.
 #' @return A `dcc_check_result` with status, validation, findings, imported data,
 #'   and written files.
 #' @export
-dcc_check <- function(data, plan, output_dir = "dcc-check") {
+dcc_check <- function(data, plan, output_dir) {
+  if (missing(output_dir)) {
+    dcc_abort("`output_dir` must be supplied; DCC never writes to a default ",
+              "location. Use e.g. file.path(tempdir(), \"dcc-check\").",
+              class = "dcc_check_error")
+  }
   if (!is.character(data) || length(data) != 1L || is.na(data) ||
       !file.exists(data)) {
     dcc_abort("`data` must be one existing source file path.",

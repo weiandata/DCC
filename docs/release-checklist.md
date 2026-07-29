@@ -1,4 +1,4 @@
-# DCC 1.2.0 release checklist
+# DCC 1.2.1 release checklist
 
 The checklist is evidence-driven. A checked box must point to a signed or
 hashed artifact; running a preparation script is not itself a pass.

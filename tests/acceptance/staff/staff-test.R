@@ -1,10 +1,10 @@
-# DCC 1.2.0 工作人员完整测试脚本
+# DCC 1.2.1 工作人员完整测试脚本
 #
 # 第一次运行请保持 FALSE。确认检查和预览结果后，如主持人批准执行，
 # 将下一行改为 TRUE，并重新运行本脚本。
 AUTHORIZE_EXECUTION <- FALSE
 
-required_version <- "1.2.0"
+required_version <- "1.2.1"
 
 script_path <- function() {
   args <- commandArgs(trailingOnly = FALSE)
@@ -164,4 +164,4 @@ result <- tryCatch(
 message("\n测试脚本运行完成。")
 message("请打开：", summary_file)
 message("工作人员记录表：",
-        file.path(kit_dir, "DCC-1.2.0-staff-acceptance.xlsx"))
+        file.path(kit_dir, "DCC-1.2.1-staff-acceptance.xlsx"))

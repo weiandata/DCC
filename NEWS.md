@@ -1,3 +1,15 @@
+# DCC 1.2.1
+
+* `dcc_check()`, `dcc_run()`, and `dcc_template()` no longer default their
+  write destination to the working directory. `output_dir` and `path` are now
+  required; calling without them raises the package's own error instead of
+  writing to `getwd()`. Existing calls that pass a destination are unaffected.
+* `dcc_run()` validates `output_dir` as one non-empty string before any work
+  starts.
+* Documentation and `DESCRIPTION` follow CRAN's quoting convention: only
+  third-party software names are single-quoted; file formats such as CSV,
+  JSON, YAML, and HTML are not.
+
 # DCC 1.2.0
 
 * Add stable finding `code` and `detector_id`; range checks now report

@@ -47,3 +47,11 @@ test_that("dcc_check refuses existing outputs and invalid argument types", {
   expect_error(dcc_check(data.frame(sid = "S1"), plan, tempfile("check")),
                class = "dcc_check_error")
 })
+
+test_that("dcc_check requires an explicit output_dir", {
+  data <- tempfile(fileext = ".csv")
+  writeLines(c("sid,score", "S1,90"), data)
+  plan <- write_plan_workbook(plan_fixture(data))
+  expect_error(dcc_check(data, plan), class = "dcc_check_error")
+  expect_error(dcc_check(data, plan), "never writes to a default")
+})
