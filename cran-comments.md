@@ -1,88 +1,60 @@
 # CRAN submission comments
 
-## Resubmission
+Resubmission of DCC 1.2.1 at Uwe Ligges' request, after the earlier submission
+was lost during review. The sources are unchanged apart from the `tools/`
+documentation described below.
 
-This is a resubmission. Following the review of the 2026-07-17 submission:
+## Regarding the code in `tools/`
 
-* `DESCRIPTION` no longer single-quotes file-format and markup names (CSV,
-  Parquet, JSON, JSONL, YAML, HTML, PDF) or the package's own `dcc_data`
-  container. Only third-party software names ('Excel', 'SPSS', 'Stata',
-  'SAS') remain quoted.
-* No exported function has a default write path any more. `dcc_check()`,
-  `dcc_run()`, and `dcc_template()` previously defaulted to `"dcc-check"`,
-  `"dcc-results"`, and `"DCC-cleaning-plan.xlsx"` relative to `getwd()`;
-  the destination is now a required argument and calling without it raises
-  an error that points to `tempdir()`. Every other file-writing function
-  (`dcc_report()`, `dcc_export_log()`, `dcc_manifest()`,
-  `dcc_report_staff()`, `dcc_report_statistical()`,
-  `dcc_report_machine()`, `dcc_write_config_template()`) already required an
-  explicit path.
-* All examples, tests, and vignettes write only under `tempdir()`; the
-  remaining vignette chunk that showed a relative output directory now uses
-  `file.path(tempdir(), "dcc-run")`.
+### When is it executed?
 
-## Submission status
+Never at install time. The package has no `configure`, `configure.win`,
+`cleanup`, `Makefile`, or `src/`, and no `.onLoad`/`.onAttach` hook. Nothing in
+`R/` refers to `tools/`, and `R CMD INSTALL` does not copy the directory into
+the library, so it does not exist in an installed DCC.
 
-This is the candidate record for DCC 1.2.1. Do not submit until
-`docs/release-checklist.md` is complete and `tools/verify-release.R` reports
-PASS from fresh evidence. `DESCRIPTION` is frozen at version 1.2.1.
+These are maintainer and CI release scripts. They run only when I invoke them
+from a source checkout, or from our GitHub Actions workflows. During
+`R CMD check` a few tests `source()` some of them to unit-test their pure
+helper functions; every script keeps its work inside `main()` behind
+`if (sys.nframe() == 0L) main()`, so sourcing only defines functions. One test
+additionally runs `Rscript tools/verify-format-matrix.R --local` in a
+subprocess, which is read-only and writes no file.
+
+### Are packages installed?
+
+Not by building, installing, checking, or using DCC. All input backends are
+ordinary `Imports`. One script, `tools/ci-install-locked.R`, installs packages
+via `pak::pkg_install()` to pin our CI runner's library to `renv.lock`; it is
+only ever a GitHub Actions step and is not referenced from `R/`, `tests/`,
+`man/`, or `vignettes/`.
+
+Please note that `tools/build-internal-bundle.R` installs nothing: the
+`install.packages(...)` text in it is a string literal that it writes into an
+offline bundle for internal users to run themselves.
+
+### Are files written to the user or library file space?
+
+No. Nothing writes to `.libPaths()` or to the user's home directory. No
+exported function has a default write path, and all examples, tests, and
+vignettes write only under `tempdir()`. When I run a `tools/` script
+deliberately, its output stays inside the source checkout.
+
+`tools/README.md` is included in the tarball and documents this per script,
+with a table stating for each one whether it runs during check, whether it
+installs packages, and where it writes.
+
+## Check results
+
+`R CMD check --as-cran`: 0 errors, 0 warnings.
+
+The words flagged as possibly misspelled in `DESCRIPTION` are intentional:
+"WeianData" is the copyright holder's company name, "JSONL" is the
+newline-delimited JSON format, "dcc" is the first token of the exported class
+`dcc_data`, and "backends" and "preflight" are standard technical terms.
 
 ## Test environments
 
-The release workflow is configured for:
-
-* Ubuntu, R devel
-* Ubuntu, R release
-* macOS, R release
-* Windows, R release
-
-Every release-candidate check uses `--as-cran` and requires zero actionable
-NOTEs. Errors, warnings, test failures, test warnings, and test skips must also
-all be zero.
-The only allowed NOTE code is `cran_new_submission`, used solely for CRAN's
-first-submission incoming classification. Any additional text in that NOTE,
-any other NOTE, or any count mismatch remains blocking. Results are not
-claimed here before the CI artifacts exist.
-
-`DCC_1.2.1.tar.gz` was additionally checked on win-builder:
-
-* Windows, R Under development (unstable) (2026-07-28 r90311 ucrt): Status 1 NOTE
-* Windows, R 4.6.1 (2026-06-24 ucrt): Status 1 NOTE
-
-In both runs the only NOTE is the incoming-feasibility NOTE: new submission
-plus the possibly-misspelled words discussed under "Spelling". There were no
-errors and no warnings.
-
-## Package scope and dependencies
-
-DCC cleans survey and assessment response data. All declared input-format
-backends are ordinary `Imports` and install with DCC. No package is installed
-at runtime. Arrow is included because Parquet and Feather are declared input
-formats; PDF remains optional and is not a fixed output.
-
-The package writes files only when the caller requests a template, run, report,
-or export. Examples and tests use temporary directories and synthetic data.
-The internal offline bundle, dependency lock, acceptance records, benchmarks,
-and release evidence are build/review materials rather than a second DCC
-package.
-
-## Incoming checks
-
-URLs and external references must be rechecked on the final source tarball.
-Any platform limitation or unavailable external fixture is reported as a
-capability/evidence limitation, not described as a passing Stable result.
-
-## Spelling
-
-The incoming feasibility check flags five words in `DESCRIPTION` as possibly
-misspelled. All five are intentional and spelled correctly:
-
-* "WeianData" is the copyright holder's company name.
-* "backends" and "preflight" are standard technical terms used as written.
-* "JSONL" is the newline-delimited JSON format written by the machine report.
-* "dcc" is the first token of `dcc_data`, the exported S3 container class the
-  package's readers return.
-
-"JSONL" and "dcc" are newly flagged in 1.2.1 only because the review of 1.2.0
-asked for the single quotes around format names to be removed; the words
-themselves are unchanged.
+* Ubuntu, R devel and R release; macOS, R release; Windows, R release (CI)
+* win-builder, R devel and R release: the only NOTE was the incoming
+  feasibility NOTE (new submission plus the spellings above)

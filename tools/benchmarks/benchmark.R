@@ -10,17 +10,23 @@ find_project_root <- function(path = getwd()) {
   }
 }
 
-project_root <- find_project_root()
-if (!requireNamespace("DCC", quietly = TRUE)) {
-  if (!requireNamespace("pkgload", quietly = TRUE)) {
-    stop("Install DCC first, or install pkgload to benchmark from source.")
+# Attaching DCC and locating the checkout are deferred to main() so that
+# `source()`ing this file has no side effects at all.
+project_root <- NULL
+
+bootstrap <- function() {
+  project_root <<- find_project_root()
+  if (!requireNamespace("DCC", quietly = TRUE)) {
+    if (!requireNamespace("pkgload", quietly = TRUE)) {
+      stop("Install DCC first, or install pkgload to benchmark from source.")
+    }
+    pkgload::load_all(project_root, quiet = TRUE)
   }
-  pkgload::load_all(project_root, quiet = TRUE)
+  if (!"package:DCC" %in% search()) {
+    suppressPackageStartupMessages(library("DCC", character.only = TRUE))
+  }
+  suppressPackageStartupMessages(library(data.table))
 }
-if (!"package:DCC" %in% search()) {
-  suppressPackageStartupMessages(library("DCC", character.only = TRUE))
-}
-suppressPackageStartupMessages(library(data.table))
 
 argument <- function(args, name, default = NULL) {
   prefix <- paste0("--", name, "=")
@@ -231,6 +237,7 @@ run_once <- function(run, csv, source_data, spec, rules, context) {
 }
 
 main <- function() {
+  bootstrap()
   args <- commandArgs(trailingOnly = TRUE)
   rows <- as.integer(argument(
     args, "rows", Sys.getenv("DCC_BENCH_ROWS", "1000000")
@@ -291,4 +298,5 @@ main <- function() {
   cat(normalizePath(output, mustWork = TRUE), "\n")
 }
 
-main()
+# Only acts when run directly (Rscript). `source()` just defines functions.
+if (sys.nframe() == 0L) main()

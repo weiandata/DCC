@@ -1,35 +1,43 @@
 #!/usr/bin/env Rscript
 
-devtools::load_all(quiet = TRUE)
-root <- file.path("examples", "strict-excel-project")
-json_path <- file.path(root, "DCC-cleaning-plan.json")
-xlsx_path <- file.path(root, "DCC-cleaning-plan.xlsx")
-plan <- dcc_read_plan(json_path)
-if (file.exists(xlsx_path)) unlink(xlsx_path)
-dcc_template(xlsx_path, language = plan$project$language)
-wb <- openxlsx2::wb_load(xlsx_path)
-defaults <- plan_template_defaults(plan$project$language)
-for (section in c("project", "source")) {
-  tab <- defaults[[section]]
-  supplied <- plan[[section]]
-  hit <- match(names(supplied), tab$key)
-  tab$value[hit] <- vapply(supplied, as.character, character(1))
-  wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
-                               col_names = FALSE)
-}
-for (section in names(plan_table_contracts())) {
-  tab <- as.data.frame(plan[[section]], stringsAsFactors = FALSE)
-  if (section == "outputs") {
-    supplied <- tab
-    supplied$key[supplied$key == "include_audit_report"] <-
-      "include_statistical_report"
-    tab <- defaults$outputs
-    hit <- match(supplied$key, tab$key)
-    tab$value[hit[!is.na(hit)]] <- supplied$value[!is.na(hit)]
-  }
-  if (nrow(tab)) {
+# Maintainer-only: regenerate the example strict-Excel project in the source
+# tree. Never runs during installation or `R CMD check`; requires devtools.
+
+main <- function() {
+  devtools::load_all(quiet = TRUE)
+  root <- file.path("examples", "strict-excel-project")
+  json_path <- file.path(root, "DCC-cleaning-plan.json")
+  xlsx_path <- file.path(root, "DCC-cleaning-plan.xlsx")
+  plan <- dcc_read_plan(json_path)
+  if (file.exists(xlsx_path)) unlink(xlsx_path)
+  dcc_template(xlsx_path, language = plan$project$language)
+  wb <- openxlsx2::wb_load(xlsx_path)
+  defaults <- plan_template_defaults(plan$project$language)
+  for (section in c("project", "source")) {
+    tab <- defaults[[section]]
+    supplied <- plan[[section]]
+    hit <- match(names(supplied), tab$key)
+    tab$value[hit] <- vapply(supplied, as.character, character(1))
     wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
                                  col_names = FALSE)
   }
+  for (section in names(plan_table_contracts())) {
+    tab <- as.data.frame(plan[[section]], stringsAsFactors = FALSE)
+    if (section == "outputs") {
+      supplied <- tab
+      supplied$key[supplied$key == "include_audit_report"] <-
+        "include_statistical_report"
+      tab <- defaults$outputs
+      hit <- match(supplied$key, tab$key)
+      tab$value[hit[!is.na(hit)]] <- supplied$value[!is.na(hit)]
+    }
+    if (nrow(tab)) {
+      wb <- openxlsx2::wb_add_data(wb, section, tab, start_row = 3,
+                                   col_names = FALSE)
+    }
+  }
+  openxlsx2::wb_save(wb, xlsx_path, overwrite = TRUE)
 }
-openxlsx2::wb_save(wb, xlsx_path, overwrite = TRUE)
+
+# Only acts when run directly (Rscript). `source()` just defines main().
+if (sys.nframe() == 0L) main()
