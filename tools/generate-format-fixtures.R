@@ -251,4 +251,5 @@ main <- function() {
   cat(action, length(entries), "format evidence records at", path, "\n")
 }
 
-main()
+# Only acts when run directly (Rscript). `source()` just defines functions.
+if (sys.nframe() == 0L) main()

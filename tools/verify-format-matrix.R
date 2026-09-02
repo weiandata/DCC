@@ -164,4 +164,5 @@ main <- function() {
       " external evidence required)\n", sep = "")
 }
 
-main()
+# Only acts when run directly (Rscript). `source()` just defines functions.
+if (sys.nframe() == 0L) main()
