@@ -1,5 +1,9 @@
 # DCC — Data Cleaning Center
 
+CRAN status verified on 2026-10-28: [DCC 1.2.1](https://cran.r-project.org/web/packages/DCC/index.html)
+was published on 2026-09-25. Install the released version with
+`install.packages("DCC")`; the GitHub command below installs the development version.
+
 Rule-driven, auditable cleaning of survey and assessment response data,
 implementing the WeianData **Detect → Execute → Report** workflow.
 
@@ -21,6 +25,7 @@ statistical programmers, and AI agents.
 ## Installation
 
 ```r
+install.packages("DCC")  # CRAN release
 # install.packages("remotes")
 remotes::install_github("weiandata/DCC")
 ```

@@ -1,5 +1,8 @@
 # DCC 1.2.1 CRAN 发布流程
 
+> 状态更新（2026-10-28）：[DCC 1.2.1 已于 2026-09-25 上架 CRAN](https://cran.r-project.org/web/packages/DCC/index.html)。
+> 下文保留该版本的发布操作流程，不表示仍待首次提交；后续更新须使用高于 CRAN 当前版本的版本号。
+
 本文档说明如何从一个已冻结的 DCC 提交生成、验证并提交 CRAN 源码包。
 最终上传物必须是 `R CMD build` 生成的 `DCC_1.2.1.tar.gz`，并且必须与
 GitHub 全绿提交完全对应。
